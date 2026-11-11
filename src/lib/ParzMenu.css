@@ -193,6 +193,10 @@
 .ltb-search input,.ltb-expand input{flex:1;min-width:0;background:none;border:0;outline:0;margin:0;color:var(--ltb-text-active);font-family:var(--ltb-font);font-weight:500;font-size:14px}
 .ltb-search input::placeholder,.ltb-expand input::placeholder{color:var(--ltb-text);opacity:.85}
 .ltb-search input::-webkit-search-cancel-button,.ltb-expand input::-webkit-search-cancel-button{-webkit-appearance:none}
+/* Safari на iPhone (и часть браузеров Android) приближает страницу, когда фокус попадает в поле со шрифтом меньше 16px.
+   На сенсорных экранах держим 16px — так поиск открывается без скачка масштаба. */
+@media (hover:none),(pointer:coarse){.ltb-search input,.ltb-expand input{font-size:16px}}
+.ltb{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .ltb-search kbd,.ltb-expand-kbd{flex:none;font-family:var(--ltb-font);font-weight:600;font-size:11px;line-height:1;border:1px solid var(--ltb-search-border);border-radius:6px;padding:3px 7px;color:var(--ltb-text)}
 /* капсула-кнопка поиска и кнопка, раскрывающаяся в строку */
 /* поиск внутри группы справа: круг раскрывается в строку, группа растёт вместе с ним */

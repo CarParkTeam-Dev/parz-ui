@@ -34,18 +34,34 @@
   "module": "./dist/parz-ui.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/types/index.d.ts", "import": "./dist/parz-ui.js" },
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/parz-ui.js"
+    },
     "./style.css": "./dist/parz-ui.css",
     "./package.json": "./package.json"
   },
-  "files": ["dist", "docs", "README.md", "README.ru.md", "README.hy.md", "LICENSE"],
-  "sideEffects": ["*.css"],
+  "files": [
+    "dist",
+    "docs",
+    "README.md",
+    "README.ru.md",
+    "README.hy.md",
+    "CHANGELOG.md",
+    "CHANGELOG.ru.md",
+    "CHANGELOG.hy.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json",
     "prepare": "npm run build:lib",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "release": "node scripts/release.mjs",
     "preview": "vite preview"
   },
   "peerDependencies": {

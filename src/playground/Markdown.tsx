@@ -1,7 +1,7 @@
 import { Fragment, type ReactNode } from 'react';
 
 /** Маленький рендер Markdown для README: заголовки, абзацы, списки, таблицы, блоки кода, `код`, **жирный**, ссылки. */
-function inline(text: string, key = 0): ReactNode[] {
+export function inline(text: string, key = 0): ReactNode[] {
   const out: ReactNode[] = [];
   const re = /`([^`]+)`|\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)]+)\)/g;
   let last = 0, m: RegExpExecArray | null, i = 0;

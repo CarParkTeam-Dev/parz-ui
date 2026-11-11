@@ -6,6 +6,8 @@ import { ToggleEditor } from './ToggleEditor';
 import { CheckboxEditor } from './CheckboxEditor';
 import { SliderEditor } from './SliderEditor';
 import { Markdown } from './Markdown';
+import { ChangelogPage } from './Changelog';
+import { UpdateCheck } from './UpdateCheck';
 import { ParzBrand, ParzLogo, Splash } from './Brand';
 import { LANGS, LangCtx, tr, type Lang } from './i18n';
 import menuEn from '../../docs/parz-menu.en.md?raw';
@@ -23,15 +25,19 @@ import checkHy from '../../docs/parz-checkbox.hy.md?raw';
 import sliderEn from '../../docs/parz-slider.en.md?raw';
 import sliderRu from '../../docs/parz-slider.ru.md?raw';
 import sliderHy from '../../docs/parz-slider.hy.md?raw';
+import changesEn from '../../CHANGELOG.md?raw';
+import changesRu from '../../CHANGELOG.ru.md?raw';
+import changesHy from '../../CHANGELOG.hy.md?raw';
+import pkg from '../../package.json';
 
-type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'slider' | 'range' | 'brand';
+type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'slider' | 'range' | 'brand' | 'changelog';
 type Cmp = 'menu' | 'animo' | 'toggle' | 'check' | 'slider' | 'range';
 const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', toggle: 'Parz Toggle', check: 'Parz Checkbox', slider: 'Parz Slider', range: 'Parz Range' };
 const isCmp = (p: Page): p is Cmp => p in CMP_TITLE;
 type View = 'editor' | 'docs';
 type Route = { page: Page; view: View };
 type Go = (p: Page, v?: View) => void;
-const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', slider: 'parz-slider', range: 'parz-range', brand: 'brand' };
+const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', slider: 'parz-slider', range: 'parz-range', brand: 'brand', changelog: 'changelog' };
 const DOCS: Record<Cmp, Record<Lang, string>> = {
   menu: { en: menuEn, ru: menuRu, hy: menuHy },
   animo: { en: logoEn, ru: logoRu, hy: logoHy },
@@ -58,13 +64,14 @@ const INDEX: Omit<Hit, 'sub'>[] = [
   { page: 'slider', view: 'docs', title: 'Parz Slider', icon: 'description', words: 'parz slider docs props api документация пропсы ползунок փաստաթղթեր' },
   { page: 'range', view: 'editor', title: 'Parz Range', icon: 'tune', words: 'parz range interval between price filter multi thumbs промежуток диапазон интервал цена фильтр от до несколько միջակայք գին ֆիլտր' },
   { page: 'range', view: 'docs', title: 'Parz Range', icon: 'description', words: 'parz range docs props api документация пропсы промежуток փաստաթղթեր' },
+  { page: 'changelog', view: 'editor', title: 'Changelog', icon: 'history', words: 'changelog what is new whats new release releases update version history что нового изменения обновление версия выпуск история ինչ նոր կա փոփոխություններ թարմացում տարբերակ' },
   { page: 'brand', view: 'editor', title: 'Parz UI', icon: 'palette', words: 'parz logos brand svg zip pack логотипы бренд логопак լոգոներ' }
 ];
 function searchHits(q: string, lang: Lang): Hit[] {
   const w = q.trim().toLowerCase();
   if (!w) return [];
   return INDEX.filter(h => (h.title + ' ' + h.words).toLowerCase().includes(w))
-    .map(h => ({ ...h, sub: tr(lang, h.page === 'brand' ? 'Логотипы' : h.page === 'components' ? 'Все компоненты' : h.view === 'docs' ? 'Документация' : 'Редактор') }));
+    .map(h => ({ ...h, sub: tr(lang, h.page === 'brand' ? 'Логотипы' : h.page === 'changelog' ? 'Что нового' : h.page === 'components' ? 'Все компоненты' : h.view === 'docs' ? 'Документация' : 'Редактор') }));
 }
 
 function parseHash(): Route {
@@ -145,7 +152,7 @@ export function Site() {
   const items: TabItem[] = [
     { id: 'home', label: t('Главная'), icon: 'ms:home' },
     { id: 'components', label: t('Компоненты'), icon: 'ms:grid_view', badge: CATALOG.length },
-    { id: 'brand', label: t('Логотипы'), icon: 'ms:palette' }
+    { id: 'changelog', label: t('Изменения'), icon: 'ms:history' }
   ];
   // меню показывает, куда идём, сразу — капля не ждёт конца перехода
   const navValue = isCmp(route.page) ? 'components' : route.page;
@@ -159,6 +166,7 @@ export function Site() {
         {page === 'home' && <Home lang={lang} go={go} revealed={revealed} />}
         {page === 'components' && <ComponentsPage lang={lang} go={go} />}
         {page === 'brand' && <BrandPage lang={lang} />}
+        {page === 'changelog' && <ChangelogPage lang={lang} source={CHANGES[lang]} install={<InstallCmd lang={lang} cmd={UPDATE} />} check={<UpdateCheck lang={lang} current={pkg.version} />} footer={<Footer lang={lang} />} />}
         {isCmp(page) && (
           <div className="cmp">
             <div className="cmp-bar">
@@ -199,6 +207,7 @@ export function Site() {
           </div>
         )}
         {view}
+        {lang === 'hy' && <TranslationNote lang={lang} />}
       </div>
       {splash && <Splash onLeave={() => setRevealed(true)} onDone={() => setSplash(false)} />}
     </LangCtx.Provider>
@@ -218,10 +227,10 @@ function Skeleton({ route }: { route: Route }) {
           <div className="sk-stage">{b('sk-seg')}{b('sk-device')}</div>
         </div>
       )}
-      {cmp && route.view === 'docs' && (
+      {((cmp && route.view === 'docs') || route.page === 'changelog') && (
         <div className="sk-doc">{b('sk-h1')}{[0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => b(i === 4 ? 'sk-block' : 'sk-line', i))}</div>
       )}
-      {!cmp && (
+      {!cmp && route.page !== 'changelog' && (
         <div className="sk-grid-wrap">
           {route.page === 'home' && <div className="sk-hero">{b('sk-logo')}{b('sk-h1')}{b('sk-line sk-c')}</div>}
           {route.page !== 'home' && <div className="sk-head">{b('sk-h1')}{b('sk-line')}</div>}
@@ -347,28 +356,61 @@ function ComponentCard({ e, lang, go, i }: { e: Entry; lang: Lang; go: Go; i: nu
   );
 }
 
+const CHANGES: Record<Lang, string> = { en: changesEn, ru: changesRu, hy: changesHy };
+/* ---------- плашка: армянский перевод сделан ИИ, возможны неточности. Сворачивается в кружок, но не исчезает ---------- */
+const NOTE_KEY = 'pz-hy-note';
+function TranslationNote({ lang }: { lang: Lang }) {
+  const t = (k: string) => tr(lang, k);
+  const [open, setOpen] = useState(() => { try { return localStorage.getItem(NOTE_KEY) !== 'min'; } catch { return true; } });
+  const toggle = (v: boolean) => { setOpen(v); try { localStorage.setItem(NOTE_KEY, v ? 'open' : 'min'); } catch { /* нет хранилища */ } };
+  return (
+    <aside className={`pz-note${open ? ' is-open' : ''}`} role="note" aria-label={t('О переводе')}>
+      <button className="pz-note-dot" onClick={() => toggle(true)} aria-label={t('О переводе')} aria-expanded={open} tabIndex={open ? -1 : 0}>
+        <span className="material-symbols-rounded" aria-hidden="true">translate</span>
+      </button>
+      <div className="pz-note-body" aria-hidden={!open}>
+        <span className="pz-note-ic" aria-hidden="true"><span className="material-symbols-rounded">translate</span></span>
+        <div>
+          <b>{t('О переводе')}</b>
+          <p>{t('Армянская версия документации может содержать ошибки перевода — некоторые термины не имеют точного перевода.')}</p>
+          <p className="pz-note-ai"><span className="material-symbols-rounded" aria-hidden="true">auto_awesome</span>{t('Перевод сгенерирован с помощью CarPark AI NEO')}</p>
+        </div>
+        <button className="pz-note-x" onClick={() => toggle(false)} aria-label={t('Свернуть')} tabIndex={open ? 0 : -1}>
+          <span className="material-symbols-rounded" aria-hidden="true">close</span>
+        </button>
+      </div>
+    </aside>
+  );
+}
+
 function Footer({ lang }: { lang: Lang }) {
-  return <footer className="pz-foot"><span>Parz UI</span><span>{tr(lang, 'Сделано командой')} CarPark Team &amp; Dev.CarPark · © 2026</span></footer>;
+  return (
+    <footer className="pz-foot">
+      <span>Parz UI <a className="pz-foot-v" href="#/changelog">v{pkg.version}</a></span>
+      <span><a href="#/changelog">{tr(lang, 'Что нового')}</a> · {tr(lang, 'Сделано командой')} CarPark Team &amp; Dev.CarPark · © 2026</span>
+    </footer>
+  );
 }
 
 const INSTALL = 'npm install @carparkteam/parz-ui';
-function InstallCmd({ lang }: { lang: Lang }) {
+const UPDATE = 'npm update @carparkteam/parz-ui';
+function InstallCmd({ lang, cmd = INSTALL }: { lang: Lang; cmd?: string }) {
   const [copied, setCopied] = useState(false);
   const t = useRef(0);
   const copy = async () => {
     // сначала мгновенное копирование прямо в момент клика, если не вышло — через Clipboard API
     const ta = document.createElement('textarea');
-    ta.value = INSTALL; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;opacity:0';
+    ta.value = cmd; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;opacity:0';
     document.body.appendChild(ta); ta.select();
     let ok = false;
     try { ok = document.execCommand('copy'); } catch { /* нет поддержки */ }
     ta.remove();
-    if (!ok) { try { await navigator.clipboard.writeText(INSTALL); } catch { return; /* буфер недоступен */ } }
+    if (!ok) { try { await navigator.clipboard.writeText(cmd); } catch { return; /* буфер недоступен */ } }
     setCopied(true); window.clearTimeout(t.current); t.current = window.setTimeout(() => setCopied(false), 1600);
   };
   return (
     <div className="hero-cmd">
-      <code><span aria-hidden="true">$</span> {INSTALL}</code>
+      <code><span aria-hidden="true">$</span> {cmd}</code>
       <button onClick={copy} className={copied ? 'is-done' : ''} aria-label={tr(lang, 'Скопировать')}>
         <span className="material-symbols-rounded" aria-hidden="true">{copied ? 'check' : 'content_copy'}</span>
         <span className="hero-cmd-l">{copied ? tr(lang, 'Скопировано') : tr(lang, 'Скопировать')}</span>
@@ -388,6 +430,9 @@ function Home({ lang, go, revealed = true }: { lang: Lang; go: Go; revealed?: bo
         <p>{t('Живые, упругие и плавные детали интерфейса. Каждый компонент настраивается в редакторе и сразу даёт готовый код.')}</p>
         <p className="hero-by">Crafted by <b>CarPark Team</b> &amp; <b>Dev.CarPark</b></p>
         <InstallCmd lang={lang} />
+        <button className="hero-ver" onClick={() => go('changelog')}>
+          <span className="hero-ver-n">v{pkg.version}</span>{t('Что нового')}<span className="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
+        </button>
         <div className="hero-a"><button className="pri" onClick={() => go('components')}>{t('Все компоненты')}</button><button onClick={() => go('brand')}>{t('Логотипы')}</button></div>
       </section>
 

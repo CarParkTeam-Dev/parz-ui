@@ -299,6 +299,31 @@ const D: Record<string, [string, string]> = {
   'Метки на каждом шаге': ['Marks at every step', 'Նշաններ ամեն քայլին'],
   'Тяните бегунок или нажмите на дорожку. Стрелки, PageUp/PageDown, Home и End тоже работают.': ['Drag the thumb or tap the track. Arrows, PageUp/PageDown, Home and End work too.', 'Քաշեք սահնակը կամ սեղմեք ուղուն։ Սլաքները, PageUp/PageDown, Home և End նույնպես աշխատում են։'],
   'Каждый бегунок двигается сам по себе и не перепрыгивает соседей. Нажмите на дорожку — подъедет ближайший.': ['Each thumb moves on its own and never jumps over its neighbours. Tap the track and the nearest one slides over.', 'Յուրաքանչյուր սահնակ շարժվում է ինքնուրույն և չի անցնում հարևաններից։ Սեղմեք ուղուն՝ մոտական կմոտենա։'],
+  // Что нового
+  'Что нового': ['What’s new', 'Ինչ նոր կա'],
+  'В следующем обновлении': ['Coming in the next update', 'Հաջորդ թարմացման մեջ'],
+  // Changelog и плашка о переводе
+  'Изменения': ['Changelog', 'Փոփոխություններ'],
+  'Текущая версия': ['Current version', 'Ընթացիկ տարբերակ'],
+  'Выпусков': ['Releases', 'Թողարկումներ'],
+  'Изменений': ['Changes', 'Փոփոխություններ'],
+  'В работе': ['In progress', 'Ընթացքում'],
+  'Последняя': ['Latest', 'Վերջինը'],
+  'Первый выпуск': ['First release', 'Առաջին թողարկում'],
+  'Крупное обновление': ['Major update', 'Խոշոր թարմացում'],
+  'Новые возможности': ['New features', 'Նոր հնարավորություններ'],
+  'Исправления': ['Fixes', 'Ուղղումներ'],
+  'О переводе': ['About the translation', 'Թարգմանության մասին'],
+  'Армянская версия документации может содержать ошибки перевода — некоторые термины не имеют точного перевода.': ['The Armenian version of the documentation may contain translation errors — some terms have no exact translation.', 'Փաստաթղթերի հայերեն տարբերակը կարող է պարունակել թարգմանության սխալներ, քանի որ որոշ տերմիններ ճշգրիտ թարգմանություն չունեն։'],
+  'Перевод сгенерирован с помощью CarPark AI NEO': ['Translated with CarPark AI NEO', 'Թարգմանությունը ստեղծվել է CarPark AI NEO-ի օգնությամբ'],
+  'Свернуть': ['Minimize', 'Ծալել'],
+  // проверка обновлений
+  'Проверяем обновления…': ['Checking for updates…', 'Ստուգում ենք թարմացումները…'],
+  'Вышла версия {v}': ['Version {v} is out', 'Թողարկվել է {v} տարբերակը'],
+  'у вас v{v}': ['you have v{v}', 'ձեզ մոտ v{v} է'],
+  'У вас последняя версия': ['You have the latest version', 'Ձեզ մոտ վերջին տարբերակն է'],
+  'Предварительная версия v{v} — новее опубликованной': ['Preview v{v} — newer than the published one', 'Նախնական v{v} տարբերակ՝ հրապարակվածից նոր'],
+  'Проверить ещё раз': ['Check again', 'Կրկին ստուգել'],
 };
 
 export function tr(lang: Lang, key: string, vars?: Record<string, string | number>) {
