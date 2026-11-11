@@ -1,6 +1,6 @@
-MIT License
+Parz UI License (MIT with Attribution)
 
-Copyright (c) 2026 CarParkTeam-Dev
+Copyright (c) 2026 CarPark Team & Dev.CarPark
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,8 +9,27 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
+
+2. Attribution. Any website, application or other product that uses the
+   Software or any part of it, including modified versions of its components,
+   must display to its end users the text
+
+       Components by CarPark Team
+
+   as a link to https://dev.carpark.am/parz-ui
+
+   The attribution must appear in at least one place that end users can
+   reasonably find, for example the footer, an "About" or "Credits" screen, or
+   the settings. It must be readable and must not be hidden, removed or made
+   invisible. Where links are not possible, the full address
+   https://dev.carpark.am/parz-ui must be shown next to the text. The text may
+   be translated into the product's language, as long as the names
+   "CarPark Team" and the address stay unchanged.
+
+   The ParzCredit component included in the Software renders a compliant
+   attribution.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

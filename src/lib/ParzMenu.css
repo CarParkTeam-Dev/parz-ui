@@ -1,0 +1,248 @@
+/* Liquid TabBar — все цвета и размеры через CSS-переменные --ltb-*.
+   Их можно задать пропом theme или переопределить в своём CSS: .my-bar { --ltb-accent: #f60; } */
+.ltb{
+  --ltb-accent:#6ee7a0;--ltb-text:#8b8b93;--ltb-text-active:#fff;
+  --ltb-surface-top:rgba(38,38,42,.82);--ltb-surface-bottom:rgba(20,20,23,.88);--ltb-border:rgba(255,255,255,.06);
+  --ltb-hl-top:rgba(255,255,255,.13);--ltb-hl-bottom:rgba(255,255,255,.05);
+  --ltb-action-bg:rgba(255,255,255,.07);--ltb-action-active-bg:#fff;--ltb-action-active-text:#000;
+  --ltb-action-accent-bg:#6ee7a0;--ltb-action-accent-text:#04130a;
+  --ltb-bevel-top:rgba(255,255,255,.14);--ltb-bevel-bottom:rgba(0,0,0,.4);--ltb-hl-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.25);
+  --ltb-badge-bg:#ff4d5e;--ltb-badge-text:#fff;--ltb-badge-ring:#1d1d21;
+  --ltb-avatar-from:#6ee7a0;--ltb-avatar-to:#2d6a4f;--ltb-avatar-text:#04130a;
+  --ltb-font:inherit;--ltb-radius:999px;--ltb-pad:6px;--ltb-gap:10px;--ltb-item-py:8px;--ltb-icon:22px;--ltb-font-size:11px;
+  --ltb-action:50px;--ltb-blur:20px;--ltb-item-min:84px;--ltb-shift:.55s;
+  --ltb-header-top:rgba(9,9,11,.96);--ltb-header-mid:rgba(9,9,11,.82);--ltb-header-blur:14px;--ltb-search-bg:rgba(255,255,255,.06);--ltb-search-border:rgba(255,255,255,.08);--ltb-max-width:540px;--ltb-offset:12px;--ltb-shadow:0 18px 40px -12px rgba(0,0,0,.8);
+  /* центр всегда: при появлении группы капсула плавно уезжает из центра влево, а не прыгает к краю в первый кадр */
+  display:flex;justify-content:center;gap:var(--ltb-gap);font-family:var(--ltb-font);box-sizing:border-box;-webkit-tap-highlight-color:transparent;z-index:50
+}
+.ltb *,.ltb *::before,.ltb *::after{box-sizing:border-box}
+.ltb button{font-family:var(--ltb-font)} /* у кнопок свой шрифт по умолчанию — берём шрифт меню */
+.ltb--bottom,.ltb--top{position:fixed;left:max(var(--ltb-offset),calc(50% - var(--ltb-max-width) / 2));right:max(var(--ltb-offset),calc(50% - var(--ltb-max-width) / 2))}
+.ltb--bottom{bottom:max(var(--ltb-offset),calc(env(safe-area-inset-bottom) - var(--ltb-offset)))}
+.ltb--top{top:max(var(--ltb-offset),env(safe-area-inset-top))}
+.ltb--static{position:relative;width:100%;max-width:var(--ltb-max-width);z-index:1} /* меню в потоке страницы не должно перекрывать прилипшие меню и шапки */
+
+/* стеклянные капсулы */
+.ltb-main,.ltb-side,.ltb-pill{
+  background:linear-gradient(180deg,var(--ltb-surface-top),var(--ltb-surface-bottom));
+  -webkit-backdrop-filter:blur(var(--ltb-blur)) saturate(1.3);backdrop-filter:blur(var(--ltb-blur)) saturate(1.3);
+  border-radius:var(--ltb-radius);
+  box-shadow:inset 0 1px 0 var(--ltb-bevel-top),inset 0 -1px 0 var(--ltb-bevel-bottom),0 0 0 1px var(--ltb-border),var(--ltb-shadow)
+}
+.ltb-main{flex:1 1 0px;display:flex;position:relative;padding:var(--ltb-pad);min-width:0;
+  transition:flex-grow var(--ltb-shift) cubic-bezier(.22,1,.36,1),flex-basis var(--ltb-shift) cubic-bezier(.22,1,.36,1)}
+/* группа справа: всегда в разметке, при скрытии сворачивается (ширина → 0, прозрачность, масштаб) — капсула слева плавно переезжает */
+/* searchAt: 'end' — поиск последним в группе; меняется только порядок отрисовки, замеры и анимации те же */
+.ltb-side--search-end>.ltb-expand,.ltb-side--search-end>.ltb-search-btn{order:1}
+.ltb-side{display:flex;align-items:center;gap:var(--ltb-pad);padding:var(--ltb-pad);flex:none;overflow:hidden;
+  max-width:calc(var(--ltb-na, 2) * (var(--ltb-action) + var(--ltb-pad)) + var(--ltb-pad) + var(--ltb-side-extra, 0px));
+  transition:max-width var(--ltb-shift) cubic-bezier(.22,1,.36,1),padding var(--ltb-shift) cubic-bezier(.22,1,.36,1),margin var(--ltb-shift) cubic-bezier(.22,1,.36,1),
+    opacity calc(var(--ltb-shift) * .6) ease,transform var(--ltb-shift) cubic-bezier(.22,1,.36,1),visibility 0s}
+.ltb-side.is-hidden{max-width:0;padding-left:0;padding-right:0;margin-left:calc(-1 * var(--ltb-gap));opacity:0;transform:scale(.7);visibility:hidden;pointer-events:none;
+  transition:max-width var(--ltb-shift) cubic-bezier(.22,1,.36,1),padding var(--ltb-shift) cubic-bezier(.22,1,.36,1),margin var(--ltb-shift) cubic-bezier(.22,1,.36,1),
+    opacity calc(var(--ltb-shift) * .5) ease,transform var(--ltb-shift) cubic-bezier(.22,1,.36,1),visibility 0s var(--ltb-shift)}
+.ltb-side>*{flex:none}
+/* без кнопок справа: капсула по центру, ширина = пункты × --ltb-item-min (не шире экрана).
+   Пункты одинаковой ширины, как в Meridian; если не влезают — делят ширину поровну, подписи обрезаются */
+.ltb--solo .ltb-main{flex:0 1 calc(var(--ltb-n, 3) * var(--ltb-item-min) + 2 * var(--ltb-pad));max-width:100%}
+.ltb--solo .ltb-item{flex:1 1 0;min-width:0}
+.ltb--solo.ltb--inline .ltb-main{flex-basis:calc(var(--ltb-n, 3) * (var(--ltb-item-min) + 40px) + 2 * var(--ltb-pad))}
+
+/* капля-подсветка; left/right и их разная скорость задаются из JS */
+.ltb-hl{position:absolute;top:var(--ltb-pad);bottom:var(--ltb-pad);left:var(--ltb-pad);border-radius:var(--ltb-radius);pointer-events:none;
+  background:linear-gradient(180deg,var(--ltb-hl-top),var(--ltb-hl-bottom));
+  box-shadow:var(--ltb-hl-shadow)}
+
+/* пункты */
+.ltb-item{flex:1;min-width:0;border:0;background:none;margin:0;color:var(--ltb-text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  padding:var(--ltb-item-py) 4px;font-family:var(--ltb-font);font-weight:600;font-size:var(--ltb-font-size);line-height:1.2;cursor:pointer;position:relative;z-index:1;transition:color .35s;border-radius:var(--ltb-radius)}
+.ltb-item:disabled{opacity:.35;cursor:default}
+.ltb-item.is-active{color:var(--ltb-text-active)}
+.ltb--inline .ltb-item{flex-direction:row;gap:8px;padding:calc(var(--ltb-item-py) + 2px) 14px;font-size:calc(var(--ltb-font-size) + 3px)}
+.ltb--icons .ltb-item{padding:calc(var(--ltb-item-py) + 4px) 6px}
+.ltb-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+/* в строку подпись центрируется по высоте заглавных, а не по строке шрифта — ровно по иконке при любом шрифте;
+   обрезанные хвосты букв (g, y, р) дорисовываются за краем через overflow-clip-margin */
+@supports (text-box:trim-both cap alphabetic){
+  .ltb--inline .ltb-item>.ltb-label,.ltb--desktop .ltb-item>.ltb-label{text-box:trim-both cap alphabetic;overflow:clip;overflow-clip-margin:.3em}
+}
+@media (hover:hover){.ltb-item:not(:disabled):not(.is-active):hover{color:var(--ltb-text-active)}}
+
+/* иконки */
+.ltb-ico{position:relative;display:grid;place-items:center;width:var(--ltb-icon);height:var(--ltb-icon);flex:none}
+.ltb-icon{display:grid;place-items:center;width:100%;height:100%;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+.is-active .ltb-icon{transform:translateY(-1px) scale(1.06)}
+.ltb-svg{width:100%;height:100%;display:block}
+.ltb-s,.is-active .ltb-o{display:none}
+.is-active .ltb-s{display:block}
+.ltb-icon--pair>span{display:grid;place-items:center;width:100%;height:100%}
+.ltb-on,.is-active .ltb-off{display:none!important}
+.is-active .ltb-on{display:grid!important}
+.ltb-ms,.ltb-mi{font-size:var(--ltb-icon);line-height:1;width:1em;height:1em;overflow:hidden;user-select:none}
+.ltb-ms{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;transition:font-variation-settings .45s cubic-bezier(.22,1,.36,1)}
+.is-active .ltb-ms{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+.ltb-ico>img,.ltb-ico>svg{width:100%;height:100%}
+.ltb-missing{font-size:12px;opacity:.6}
+
+/* круглые кнопки справа */
+.ltb-action{width:var(--ltb-action);height:var(--ltb-action);border-radius:50%;border:0;margin:0;padding:0;background:var(--ltb-action-bg);color:var(--ltb-text-active);
+  display:grid;place-items:center;cursor:pointer;position:relative;
+  transition:background .3s,color .3s,box-shadow .3s,width var(--ltb-shift) cubic-bezier(.22,1,.36,1),margin var(--ltb-shift) cubic-bezier(.22,1,.36,1),opacity .25s ease,transform var(--ltb-shift) cubic-bezier(.22,1,.36,1)}
+/* уходящие пункт и кнопка: плавно схлопываются, соседи сдвигаются на их место */
+.ltb-action.is-leaving{width:0;margin-left:calc(-1 * var(--ltb-pad));opacity:0;transform:scale(.3);pointer-events:none}
+.ltb-item{transition:color .35s,flex-grow var(--ltb-shift) cubic-bezier(.22,1,.36,1),padding var(--ltb-shift) cubic-bezier(.22,1,.36,1),opacity .25s ease,transform var(--ltb-shift) cubic-bezier(.22,1,.36,1)}
+.ltb-main>.ltb-item.is-leaving{flex-grow:0;flex-basis:0;padding-left:0;padding-right:0;opacity:0;transform:scale(.55);pointer-events:none;overflow:hidden}
+.ltb-action:active{transform:scale(.9)}
+.ltb-action.is-active{background:var(--ltb-action-active-bg);color:var(--ltb-action-active-text)}
+.ltb-action>.ltb-ico{width:calc(var(--ltb-icon) * 1);height:calc(var(--ltb-icon) * 1)}
+/* акцентная кнопка — главное действие («+»): залита цветом, иконка чуть жирнее */
+.ltb-action--accent,.ltb-action--accent.is-active{background:var(--ltb-action-accent-bg);color:var(--ltb-action-accent-text);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,0,.12),0 8px 18px -8px color-mix(in srgb,var(--ltb-action-accent-bg) 75%,transparent)}
+.ltb-action--accent .ltb-svg{stroke-width:1.6}
+.ltb-action--accent.is-active{box-shadow:inset 0 0 0 2px rgba(255,255,255,.7),0 0 0 3px color-mix(in srgb,var(--ltb-action-accent-bg) 35%,transparent)}
+.ltb-action--avatar{background:linear-gradient(135deg,var(--ltb-avatar-from),var(--ltb-avatar-to));color:var(--ltb-avatar-text);box-shadow:inset 0 0 0 2px rgba(255,255,255,.25);overflow:visible}
+.ltb-action--avatar.is-active{background:linear-gradient(135deg,var(--ltb-avatar-from),var(--ltb-avatar-to));color:var(--ltb-avatar-text);box-shadow:inset 0 0 0 2px #fff,0 0 0 3px color-mix(in srgb,var(--ltb-accent) 35%,transparent)}
+.ltb-action--avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.ltb-avatar-text{font-family:var(--ltb-font);font-weight:700;font-size:calc(var(--ltb-action) * .34);line-height:1}
+
+/* бейджи */
+.ltb-badge{position:absolute;pointer-events:none;animation:ltbPop .45s cubic-bezier(.34,1.56,.64,1)}
+.ltb-badge--dot{top:-1px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--ltb-accent);box-shadow:0 0 0 2px var(--ltb-badge-ring)}
+.ltb-badge--count{top:-6px;left:calc(100% - 9px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--ltb-badge-bg);color:var(--ltb-badge-text);
+  font-family:var(--ltb-font);font-weight:700;font-size:10.5px;line-height:1;text-align:center;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--ltb-badge-ring);white-space:nowrap;
+  display:inline-flex;align-items:center;justify-content:center}
+/* цифры точно по центру круга: число — отдельный блок, его строка обрезана ровно по высоте цифр
+   (от линии заглавных до базовой), и flex центрирует уже этот блок, а не всю строку шрифта с запасом сверху и снизу */
+.ltb-badge-n{display:block;line-height:1;text-box:trim-both cap alphabetic}
+/* где text-box не поддерживается — сдвиг вниз компенсирует запас строки над цифрами */
+@supports not (text-box:trim-both cap alphabetic){.ltb-badge-n{transform:translateY(.06em)}}
+.ltb-action>.ltb-badge--dot{top:12%;right:14%}
+/* бейдж кнопки справа — внутри капсулы (у неё overflow:hidden), вместе с кольцом, на любом отступе */
+.ltb-action>.ltb-badge--count{top:0;left:auto;right:0;transform-origin:100% 0}
+@keyframes ltbPop{from{transform:scale(0)}}
+
+/* кнопка «Меню» и всплывающий список спрятанных пунктов */
+.ltb-more.is-open:not(.is-active){color:var(--ltb-text-active)}
+.ltb-more .ltb-icon{transition:transform .45s cubic-bezier(.3,1.35,.5,1)}
+.ltb-more.is-open .ltb-icon{transform:rotate(90deg) scale(1.06)}
+.ltb-menu{position:absolute;right:var(--ltb-menu-right,0px);bottom:calc(100% + 10px);min-width:210px;max-width:min(300px,100%);max-height:min(60vh,420px);overflow:auto;
+  display:flex;flex-direction:column;gap:2px;padding:var(--ltb-pad);border-radius:min(var(--ltb-radius),22px);
+  background:linear-gradient(180deg,var(--ltb-surface-top),var(--ltb-surface-bottom));
+  -webkit-backdrop-filter:blur(var(--ltb-blur)) saturate(1.3);backdrop-filter:blur(var(--ltb-blur)) saturate(1.3);
+  box-shadow:inset 0 1px 0 var(--ltb-bevel-top),inset 0 -1px 0 var(--ltb-bevel-bottom),0 0 0 1px var(--ltb-border),var(--ltb-shadow);
+  transform-origin:calc(100% - 40px) 100%;opacity:0;visibility:hidden;transform:translateY(10px) scale(.86,.7);
+  transition:transform .5s cubic-bezier(.3,1.35,.5,1),opacity .2s ease,visibility 0s .5s}
+.ltb-menu.is-open{opacity:1;visibility:visible;transform:none;transition:transform .5s cubic-bezier(.3,1.35,.5,1),opacity .2s ease,visibility 0s}
+.ltb--top .ltb-menu{bottom:auto;top:calc(100% + 10px);transform-origin:calc(100% - 40px) 0;transform:translateY(-10px) scale(.86,.7)}
+.ltb--top .ltb-menu.is-open{transform:none}
+.ltb-row{display:flex;align-items:center;gap:12px;width:100%;border:0;margin:0;background:none;color:var(--ltb-text);text-align:left;cursor:pointer;
+  padding:12px 14px;border-radius:calc(min(var(--ltb-radius),22px) - var(--ltb-pad));font-family:var(--ltb-font);font-weight:600;font-size:calc(var(--ltb-font-size) + 3px);line-height:1.2;transition:color .3s,background .3s}
+.ltb-row:disabled{opacity:.35;cursor:default}
+.ltb-row.is-active{color:var(--ltb-text-active);background:linear-gradient(180deg,var(--ltb-hl-top),var(--ltb-hl-bottom));box-shadow:var(--ltb-hl-shadow)}
+@media (hover:hover){.ltb-row:not(:disabled):not(.is-active):hover{color:var(--ltb-text-active)}}
+.ltb-row:focus-visible{outline:2px solid var(--ltb-accent);outline-offset:-2px}
+.ltb-row-label{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* иконки в списке: чуть меньше, чем в меню, ровно по строке и без «приподнятости» активного пункта */
+.ltb-row .ltb-ico{width:20px;height:20px}
+.ltb-row .ltb-ms,.ltb-row .ltb-mi{font-size:20px}
+.ltb-row .ltb-icon,.ltb-row.is-active .ltb-icon{transform:none}
+.ltb-menu.is-open .ltb-row{animation:ltbRow .45s cubic-bezier(.22,1,.36,1) backwards;animation-delay:calc(var(--i) * 35ms + 60ms)}
+@keyframes ltbRow{from{opacity:0;transform:translateY(8px)}}
+.ltb-badge--inline{position:static;flex:none;animation:none}
+.ltb-badge--inline.ltb-badge--dot{margin-right:4px}
+.ltb-item>.ltb-badge--inline{margin-left:-2px;align-self:center} /* бейдж после подписи в раскладке «в строку» */
+
+.ltb-item:focus-visible,.ltb-action:focus-visible{outline:2px solid var(--ltb-accent);outline-offset:2px}
+/* ===== шапка для больших экранов (beta) ===== */
+.ltb.ltb--desktop{position:fixed;top:0;left:0;right:0;bottom:auto;max-width:none;height:var(--ltb-header-h,80px);align-items:center;justify-content:flex-start;gap:22px;
+  padding:0 max(32px,calc((100% - var(--ltb-header-max,1360px)) / 2 + 32px))}
+/* затенение с размытием под шапкой: сверху плотно, книзу растворяется */
+.ltb--desktop::before{content:'';position:absolute;inset:0 0 -26px;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,var(--ltb-header-top),var(--ltb-header-mid) 60%,transparent);
+  -webkit-backdrop-filter:blur(var(--ltb-header-blur));backdrop-filter:blur(var(--ltb-header-blur));
+  -webkit-mask-image:linear-gradient(#000 62%,transparent);mask-image:linear-gradient(#000 62%,transparent)}
+.ltb.ltb--desktop .ltb-main{flex:0 1 auto}
+/* невидимый ряд, в котором меряем настоящую ширину пунктов шапки */
+.ltb.ltb--desktop .ltb-measure{position:absolute;left:0;top:0;visibility:hidden;pointer-events:none;flex:none;width:max-content;background:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;transition:none}
+.ltb-measure>.ltb-item{flex:0 0 auto}
+.ltb.ltb--desktop .ltb-main>.ltb-item{flex:0 0 auto}
+.ltb.ltb--desktop.ltb--inline .ltb-item{padding:10px 22px;font-size:14px}
+.ltb--desktop .ltb-side.is-hidden{margin-left:calc(-1 * 22px)}
+.ltb--desktop .ltb-menu{bottom:auto;top:calc(100% - 4px);transform-origin:calc(100% - 40px) 0;transform:translateY(-10px) scale(.86,.7)}
+.ltb--desktop .ltb-menu.is-open{transform:none}
+/* логотип: пустой — схлопывается, новый — проявляется */
+.ltb-logo{flex:none;display:flex;align-items:center;min-width:0;margin-right:4px;max-width:420px;overflow:hidden;
+  transition:max-width var(--ltb-shift) cubic-bezier(.22,1,.36,1),margin var(--ltb-shift) cubic-bezier(.22,1,.36,1),opacity .3s}
+.ltb-logo.is-empty{max-width:0;margin-right:-22px;opacity:0}
+.ltb-logo-in{display:flex;align-items:center;animation:ltbLogoIn .5s cubic-bezier(.22,1,.36,1)}
+@keyframes ltbLogoIn{from{opacity:0;transform:translateY(6px);filter:blur(4px)}}
+.ltb-wordmark{font-family:var(--ltb-font);font-weight:700;font-size:17px;letter-spacing:.34em;padding-left:.34em;color:var(--ltb-text-active);white-space:nowrap}
+/* распорка между пунктами и группой справа: растёт — группа у края; схлопнута — группа сразу за пунктами (переход плавный) */
+.ltb-search-slot{flex:1 1 0;min-width:0;display:flex;justify-content:center;transition:flex-grow var(--ltb-shift) cubic-bezier(.22,1,.36,1),margin var(--ltb-shift) cubic-bezier(.22,1,.36,1)}
+.ltb-search-slot.is-collapsed{flex-grow:0;margin-left:-22px}
+.ltb-search-slot+.ltb-side{margin-left:0}
+/* строка поиска */
+.ltb-search{display:flex;align-items:center;gap:10px;height:50px;padding:0 16px;width:100%;max-width:var(--ltb-search-w,420px);min-width:200px;overflow:hidden;
+  border-radius:var(--ltb-radius);background:var(--ltb-search-bg);box-shadow:inset 0 0 0 1px var(--ltb-search-border);color:var(--ltb-text);cursor:text;
+  transition:background .3s,box-shadow .3s,max-width var(--ltb-shift) cubic-bezier(.3,1.15,.5,1),min-width var(--ltb-shift) cubic-bezier(.3,1.15,.5,1),padding var(--ltb-shift) ease,opacity .3s ease,transform var(--ltb-shift) cubic-bezier(.22,1,.36,1),visibility 0s}
+/* строка поиска уходит (выбран другой вид): плавно сжимается к центру */
+.ltb-search.is-hidden{max-width:0;min-width:0;padding:0;opacity:0;transform:scale(.9);visibility:hidden;pointer-events:none;
+  transition:max-width var(--ltb-shift) cubic-bezier(.22,1,.36,1),min-width var(--ltb-shift) cubic-bezier(.22,1,.36,1),padding var(--ltb-shift) ease,opacity .25s ease,transform var(--ltb-shift) ease,visibility 0s var(--ltb-shift)}
+.ltb-search:focus-within{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ltb-accent) 55%,transparent)}
+.ltb-search .ltb-ico,.ltb-expand>.ltb-action .ltb-ico{width:18px;height:18px}
+.ltb-search input,.ltb-expand input{flex:1;min-width:0;background:none;border:0;outline:0;margin:0;color:var(--ltb-text-active);font-family:var(--ltb-font);font-weight:500;font-size:14px}
+.ltb-search input::placeholder,.ltb-expand input::placeholder{color:var(--ltb-text);opacity:.85}
+.ltb-search input::-webkit-search-cancel-button,.ltb-expand input::-webkit-search-cancel-button{-webkit-appearance:none}
+.ltb-search kbd,.ltb-expand-kbd{flex:none;font-family:var(--ltb-font);font-weight:600;font-size:11px;line-height:1;border:1px solid var(--ltb-search-border);border-radius:6px;padding:3px 7px;color:var(--ltb-text)}
+/* капсула-кнопка поиска и кнопка, раскрывающаяся в строку */
+/* поиск внутри группы справа: круг раскрывается в строку, группа растёт вместе с ним */
+.ltb-expand{display:flex;align-items:center;flex:none;width:var(--ltb-action);height:var(--ltb-action);border-radius:calc(var(--ltb-action) / 2);
+  background:var(--ltb-action-bg);overflow:hidden;transition:width var(--ltb-shift) cubic-bezier(.3,1.2,.5,1),background .3s,box-shadow .3s,opacity .25s,transform var(--ltb-shift) cubic-bezier(.22,1,.36,1),margin var(--ltb-shift) cubic-bezier(.22,1,.36,1)}
+.ltb-expand.is-leaving{width:0;margin-left:calc(-1 * var(--ltb-pad));opacity:0;transform:scale(.3);pointer-events:none;
+  transition:width var(--ltb-shift) cubic-bezier(.22,1,.36,1),margin var(--ltb-shift) cubic-bezier(.22,1,.36,1),opacity .25s,transform var(--ltb-shift) cubic-bezier(.22,1,.36,1)}
+.ltb-expand.is-open{width:var(--ltb-search-in,320px);background:var(--ltb-search-bg);box-shadow:inset 0 0 0 1px var(--ltb-search-border)}
+.ltb-expand>.ltb-action{flex:none;background:transparent}
+.ltb-expand input{opacity:0;padding:0 16px 0 2px;transition:opacity .2s}
+.ltb-expand.is-open input{opacity:1;transition:opacity .25s ease calc(var(--ltb-shift) * .35)}
+
+/* ===== поиск на узком экране, как в iOS ===== */
+/* пункты уходят: капсула схлопывается влево, группа справа растекается на всю ширину */
+.ltb--searching .ltb-main{flex:0 0 0px;min-width:0;padding-left:0;padding-right:0;margin-right:calc(-1 * var(--ltb-gap));opacity:0;transform:scale(.85);pointer-events:none;
+  transition:flex-grow var(--ltb-shift) cubic-bezier(.22,1,.36,1),flex-basis var(--ltb-shift) cubic-bezier(.22,1,.36,1),padding var(--ltb-shift) ease,margin var(--ltb-shift) cubic-bezier(.22,1,.36,1),opacity .25s ease,transform var(--ltb-shift) cubic-bezier(.22,1,.36,1)}
+.ltb-main{transition:flex-grow var(--ltb-shift) cubic-bezier(.22,1,.36,1),flex-basis var(--ltb-shift) cubic-bezier(.22,1,.36,1),padding var(--ltb-shift) ease,margin var(--ltb-shift) cubic-bezier(.22,1,.36,1),opacity .35s ease,transform var(--ltb-shift) cubic-bezier(.22,1,.36,1)}
+/* группа с поиском занимает всё, кроме отдельной кнопки «→» справа */
+.ltb--searching .ltb-side{max-width:calc(var(--ltb-full-w) - var(--ltb-row-h) - var(--ltb-gap));flex:1 1 auto}
+/* остальные кнопки группы прячутся, пока идёт поиск */
+.ltb--searching .ltb-side>.ltb-action{width:0;margin-left:calc(-1 * var(--ltb-pad));opacity:0;transform:scale(.3);pointer-events:none}
+.ltb-expand--full{width:var(--ltb-action)}
+.ltb-expand--full.is-open{width:calc(var(--ltb-full-w) - var(--ltb-row-h) - var(--ltb-gap) - 2 * var(--ltb-pad));flex:1 1 auto}
+.ltb-expand--full input{padding:0 14px 0 8px}
+/* «✕» в раскрытой строке — меньше лупы, по центру высоты */
+.ltb-expand--full>.ltb-swap{transition:width var(--ltb-shift) cubic-bezier(.3,1.25,.5,1),height var(--ltb-shift) cubic-bezier(.3,1.25,.5,1),margin var(--ltb-shift) cubic-bezier(.3,1.25,.5,1),background .3s}
+.ltb-expand--full>.ltb-swap.is-open{width:calc(var(--ltb-action) * .7);height:calc(var(--ltb-action) * .7);margin-left:calc(var(--ltb-action) * .15)}
+.ltb-expand--full>.ltb-swap.is-open .ltb-ico{width:calc(var(--ltb-icon) * .8);height:calc(var(--ltb-icon) * .8)}
+.ltb-expand--full>.ltb-swap .ltb-ico{transition:width .3s,height .3s}
+/* лупа ↔ «✕»: одна кнопка, иконки меняются с поворотом */
+.ltb-swap .ltb-ico{position:relative}
+.ltb-swap-a,.ltb-swap-b{position:absolute;inset:0;display:grid;place-items:center;transition:opacity .25s ease,transform .45s cubic-bezier(.3,1.35,.5,1)}
+.ltb-swap-b{opacity:0;transform:rotate(-90deg) scale(.5)}
+.ltb-swap.is-open .ltb-swap-a{opacity:0;transform:rotate(90deg) scale(.5)}
+.ltb-swap.is-open .ltb-swap-b{opacity:1;transform:none}
+.ltb-expand--full>.ltb-swap.is-open{background:var(--ltb-action-bg)}
+/* «→» справа: появляется при раскрытии, загорается акцентом, когда есть текст */
+/* «→» — своя стеклянная капсула справа: закрыта — схлопнута в ноль за группой, открыта — выкатывается с пружинкой */
+.ltb-go-pill{overflow:hidden;width:0;padding-left:0;padding-right:0;margin-left:calc(-1 * var(--ltb-gap));opacity:0;transform:scale(.4);transform-origin:0 50%;pointer-events:none;
+  transition:width var(--ltb-shift) cubic-bezier(.3,1.25,.5,1),padding var(--ltb-shift) cubic-bezier(.3,1.25,.5,1),margin var(--ltb-shift) cubic-bezier(.3,1.25,.5,1),opacity .25s ease,transform var(--ltb-shift) cubic-bezier(.3,1.35,.5,1)}
+.ltb-go-pill.is-open{width:calc(var(--ltb-action) + 2 * var(--ltb-pad));padding-left:var(--ltb-pad);padding-right:var(--ltb-pad);margin-left:0;opacity:1;transform:none;pointer-events:auto;
+  transition-delay:calc(var(--ltb-shift) * .2)}
+/* капсула «→» — круг высотой с соседние капсулы (они тянутся по высоте ряда), кнопка ровно по центру */
+.ltb-go-pill{box-sizing:border-box;align-self:stretch;display:flex;align-items:center;justify-content:center;padding-top:0;padding-bottom:0;border-radius:999px}
+.ltb-go-pill.is-open{width:var(--ltb-row-h,calc(var(--ltb-action) + 2 * var(--ltb-pad)))}
+.ltb-go{flex:none;transition:background .3s,color .3s,opacity .3s,transform .45s cubic-bezier(.3,1.35,.5,1)}
+/* пустое поле: стрелка приглушена, но читается; появился текст — загорается акцентом */
+.ltb-go:disabled{cursor:default;color:var(--ltb-text-active);opacity:.42}
+.ltb-go:disabled .ltb-icon{transform:translateX(-2px)}
+.ltb-go.is-ready .ltb-icon{transform:none}
+.ltb-go.is-ready{background:var(--ltb-action-accent-bg);color:var(--ltb-action-accent-text)}
+
+@media (prefers-reduced-motion:reduce){.ltb-icon,.ltb-ms,.ltb-badge,.ltb-menu,.ltb-row{transition:none;animation:none}.ltb{--ltb-shift:0s}}

@@ -1,0 +1,47 @@
+/* Parz UI · AnimoLogo — логотип-надпись. Буквы к центру ярче; появление → блик; наведение → волна;
+   удержание → буквы сходятся и гаснут, линия заполняется; отпускание → плавно расходятся и светлеют. */
+.pz-wm{
+  --pz-dim:#7d7d87;--pz-bright:#fafafa;--pz-hover:#ffffff;--pz-accent:#6ee7a0;--pz-gap:.34em;
+  position:relative;display:inline-flex;align-items:center;gap:var(--pz-gap);padding:4px 0 6px;
+  font-family:inherit;font-weight:700;font-size:var(--pz-size,13px);line-height:1;letter-spacing:0;white-space:nowrap;
+  cursor:default;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;touch-action:manipulation
+}
+.pz-wm.is-btn{cursor:pointer}
+.pz-wm:focus-visible{outline:2px solid var(--pz-accent);outline-offset:4px;border-radius:4px}
+.pz-wm>span{
+  display:inline-block;
+  color:color-mix(in srgb,var(--pz-bright) calc(var(--b,.5) * 100%),var(--pz-dim));
+  animation:pzIdle 6s ease-in-out infinite;animation-delay:calc(4s + var(--i) * 110ms);
+  transition:color .5s,text-shadow .5s,transform .8s cubic-bezier(.22,1,.36,1);
+  transition-delay:calc(var(--i) * 30ms),calc(var(--i) * 30ms),0s
+}
+.pz-wm.no-idle>span{animation:none}
+@media (hover:hover){.pz-wm:hover>span{color:var(--pz-hover)}}
+/* линия удержания */
+.pz-wm::after{content:'';position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;background:var(--pz-accent);
+  transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.22,1,.36,1)}
+
+@keyframes pzIdle{0%,26%,100%{filter:none}11%{filter:brightness(1.8) drop-shadow(0 0 7px rgba(255,255,255,.55))}}
+@keyframes pzIn{from{opacity:0;transform:translateY(.7em);filter:blur(5px)}}
+@keyframes pzSweep{35%{color:#fff;text-shadow:0 0 16px rgba(255,255,255,.7)}}
+@keyframes pzWave{35%{color:var(--pz-accent);transform:translateY(-.23em);text-shadow:0 0 14px color-mix(in srgb,var(--pz-accent) 60%,transparent)}}
+
+.pz-wm.is-intro>span{
+  animation:pzIn .7s cubic-bezier(.22,1,.36,1) backwards,pzSweep .9s ease-out backwards,pzIdle 6s ease-in-out infinite;
+  animation-delay:calc(var(--pz-intro) + var(--i) * 60ms),calc(var(--pz-intro) + 850ms + var(--i) * 70ms),calc(4s + var(--i) * 110ms)
+}
+.pz-wm.is-intro.no-idle>span{animation:pzIn .7s cubic-bezier(.22,1,.36,1) backwards,pzSweep .9s ease-out backwards;
+  animation-delay:calc(var(--pz-intro) + var(--i) * 60ms),calc(var(--pz-intro) + 850ms + var(--i) * 70ms)}
+.pz-wm.is-wave>span{animation:pzWave .7s cubic-bezier(.22,1,.36,1),pzIdle 6s ease-in-out infinite;animation-delay:calc(var(--i) * 55ms),calc(4s + var(--i) * 110ms)}
+.pz-wm.is-wave.no-idle>span{animation:pzWave .7s cubic-bezier(.22,1,.36,1);animation-delay:calc(var(--i) * 55ms)}
+
+/* удержание: сходятся к центру и гаснут, линия едет за время удержания */
+.pz-wm.is-hold>span{color:color-mix(in srgb,var(--pz-dim) 80%,#000);transform:translateX(calc(var(--c) * .18em));
+  transition:color .7s,text-shadow .7s,transform 1s cubic-bezier(.4,0,.2,1);transition-delay:0s}
+.pz-wm.is-hold::after{transform:scaleX(1);transition:transform var(--pz-hold) linear}
+.pz-wm.is-full>span{color:var(--pz-accent);text-shadow:0 0 16px color-mix(in srgb,var(--pz-accent) 70%,transparent);
+  transition:color .6s,text-shadow .6s,transform 1s cubic-bezier(.4,0,.2,1)}
+/* отпускание — без резких вспышек: расходятся и ненадолго светлеют */
+.pz-wm.is-pop>span{color:#fff;text-shadow:0 0 10px rgba(255,255,255,.4)}
+
+@media (prefers-reduced-motion:reduce){.pz-wm>span{animation:none!important;transition:color .2s}.pz-wm::after{transition:none}}

@@ -1,0 +1,67 @@
+{
+  "name": "@parz/ui",
+  "version": "1.0.0",
+  "description": "Parz UI — React components with liquid motion, crafted by CarPark Team & Dev.CarPark: Parz Menu, Parz Toggle, Parz Checkbox, Parz Slider, Parz Range, AnimoLogo.",
+  "keywords": [
+    "react",
+    "react-component",
+    "ui",
+    "ui-kit",
+    "components",
+    "animation",
+    "liquid",
+    "tabbar",
+    "navigation",
+    "toggle",
+    "switch",
+    "checkbox",
+    "slider",
+    "range-slider",
+    "parz"
+  ],
+  "author": "CarPark Team & Dev.CarPark",
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://github.com/CarParkTeam-Dev/parz-ui#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CarParkTeam-Dev/parz-ui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CarParkTeam-Dev/parz-ui/issues"
+  },
+  "type": "module",
+  "main": "./dist/parz-ui.js",
+  "module": "./dist/parz-ui.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/types/index.d.ts", "import": "./dist/parz-ui.js" },
+    "./style.css": "./dist/parz-ui.css",
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "docs", "README.md", "README.ru.md", "README.hy.md", "LICENSE"],
+  "sideEffects": ["*.css"],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json",
+    "prepare": "npm run build:lib",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "preview": "vite preview"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,72 @@
+/* Parz UI · Parz Toggle */
+.pz-tg{--pz-tg-accent:#6ee7a0;--pz-tg-track:#2a2a30;--pz-tg-knob:#fff;--pz-tg-reject:#ff5c5c;
+  display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;vertical-align:middle}
+.pz-tg--start{flex-direction:row-reverse}
+.pz-tg.is-disabled{cursor:default;opacity:.45}
+.pz-tg-track{position:relative;flex:none;display:block;width:var(--pz-tg-w);height:var(--pz-tg-h);border-radius:999px;
+  background:var(--pz-tg-track);transition:background-color .32s cubic-bezier(.4,0,.2,1),box-shadow .25s;touch-action:pan-y;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+.pz-tg.is-on .pz-tg-track{background:var(--pz-tg-accent)}
+/* настоящий чекбокс лежит поверх дорожки: фокус, Пробел и экранные дикторы работают как обычно */
+.pz-tg-in{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:inherit;z-index:1}
+.pz-tg-in:focus-visible{outline:0}
+.pz-tg-ring{position:absolute;inset:-4px;border-radius:999px;border:2px solid var(--pz-tg-accent);opacity:0;transform:scale(.92);transition:opacity .2s,transform .3s cubic-bezier(.3,1.4,.5,1);pointer-events:none}
+.pz-tg-in:focus-visible~.pz-tg-ring{opacity:1;transform:none}
+
+.pz-tg-thumb{position:absolute;top:var(--pz-tg-pad);left:var(--pz-tg-pad);width:var(--pz-tg-thumb);height:var(--pz-tg-thumb);
+  transform:translateX(var(--pz-tg-x));transition:transform .52s cubic-bezier(.34,1.48,.5,1);pointer-events:none}
+[dir=rtl] .pz-tg-thumb{left:auto;right:var(--pz-tg-pad);transform:translateX(calc(var(--pz-tg-x)*-1))}
+.pz-tg.is-drag .pz-tg-thumb{transition:transform .06s linear}
+/* нажали — бегунок мягко вытягивается к центру, как капля */
+.pz-tg-blob{display:block;width:100%;height:100%;transform-origin:left center;transition:transform .34s cubic-bezier(.3,1.4,.5,1)}
+.pz-tg.is-on .pz-tg-blob{transform-origin:right center}
+.pz-tg:not(.is-disabled):active .pz-tg-blob,.pz-tg.is-drag .pz-tg-blob{transform:scaleX(1.2)}
+.pz-tg-core{display:block;width:100%;height:100%;border-radius:999px;background:var(--pz-tg-knob);
+  box-shadow:0 1px 3px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.06)}
+/* у каждого состояния своя анимация — смена состояния сама перезапускает «тянется → сплющивается → успокаивается» */
+.pz-tg.is-moved .pz-tg-core{animation:pzTgOff .56s cubic-bezier(.3,.7,.4,1)}
+.pz-tg.is-moved.is-on .pz-tg-core{animation-name:pzTgOn}
+.pz-tg.is-drag .pz-tg-core{animation:none}
+@keyframes pzTgOn{
+  0%{transform:scale(1,1)}
+  28%{transform:scale(1.42,.8) translateX(-12%)}
+  55%{transform:scale(.86,1.1)}
+  76%{transform:scale(1.05,.97)}
+  100%{transform:scale(1,1)}}
+@keyframes pzTgOff{
+  0%{transform:scale(1,1)}
+  28%{transform:scale(1.42,.8) translateX(12%)}
+  55%{transform:scale(.86,1.1)}
+  76%{transform:scale(1.05,.97)}
+  100%{transform:scale(1,1)}}
+.pz-tg-label{min-width:0}
+
+/* отказ: слишком частая попытка — дорожка мягко краснеет на секунду, бегунок вздрагивает и остаётся на месте */
+.pz-tg-track::after{content:'';position:absolute;inset:0;border-radius:inherit;background:var(--pz-tg-reject);opacity:0;transition:opacity .45s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.pz-tg.is-reject .pz-tg-track::after{opacity:.92;transition-duration:.18s}
+.pz-tg.is-reject .pz-tg-ring{border-color:var(--pz-tg-reject)}
+.pz-tg.is-reject-a .pz-tg-core{animation:pzTgNoA .62s cubic-bezier(.3,.7,.4,1)}
+.pz-tg.is-reject-b .pz-tg-core{animation:pzTgNoB .62s cubic-bezier(.3,.7,.4,1)}
+.pz-tg-thumb{z-index:1}
+@keyframes pzTgNoA{
+  0%{transform:none}
+  18%{transform:translateX(var(--pz-tg-nudge,22%)) scale(1.18,.86)}
+  40%{transform:translateX(-10%) scale(.94,1.06)}
+  60%{transform:translateX(6%) scale(1.03,.98)}
+  80%{transform:translateX(-2%)}
+  100%{transform:none}}
+@keyframes pzTgNoB{
+  0%{transform:none}
+  18%{transform:translateX(var(--pz-tg-nudge,22%)) scale(1.18,.86)}
+  40%{transform:translateX(-10%) scale(.94,1.06)}
+  60%{transform:translateX(6%) scale(1.03,.98)}
+  80%{transform:translateX(-2%)}
+  100%{transform:none}}
+.pz-tg.is-on{--pz-tg-nudge:-22%}
+
+@media (prefers-reduced-motion:reduce){
+  .pz-tg-thumb{transition:transform .15s ease}
+  .pz-tg-blob{transition:none}
+  .pz-tg:active .pz-tg-blob,.pz-tg.is-drag .pz-tg-blob{transform:none}
+  .pz-tg.is-moved .pz-tg-core,.pz-tg.is-moved.is-on .pz-tg-core,.pz-tg.is-reject .pz-tg-core{animation:none}
+}

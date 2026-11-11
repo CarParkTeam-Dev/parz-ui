@@ -1,0 +1,5 @@
+/* Parz UI · ParzCredit */
+.pz-credit{display:inline-flex;align-items:baseline;gap:.3em;font-size:12px;line-height:1.4;color:inherit;opacity:.6;text-decoration:none;
+  transition:opacity .25s cubic-bezier(.4,0,.2,1)}
+.pz-credit b{font-weight:600}
+.pz-credit:hover,.pz-credit:focus-visible{opacity:1;text-decoration:underline;text-underline-offset:3px}
