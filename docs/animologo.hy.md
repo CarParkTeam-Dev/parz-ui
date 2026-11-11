@@ -9,7 +9,7 @@
 - **հանգիստ** — հազվադեպ մեղմ առկայծում։
 
 ```tsx
-import { ParzMenu, AnimoLogo } from '@parz/ui';
+import { ParzMenu, AnimoLogo } from '@carparkteam/parz-ui';
 
 <ParzMenu items={items} desktop={{ logo: <AnimoLogo text="CARPARK" /> }} />
 

@@ -15,20 +15,20 @@ The CarPark bottom navigation, packaged as a React component. The active-item hi
 ## Installation
 
 ```bash
-npm install @parz/ui
+npm install @carparkteam/parz-ui
 ```
 
 ```tsx
-import { ParzMenu } from '@parz/ui';
-import '@parz/ui/style.css';
+import { ParzMenu } from '@carparkteam/parz-ui';
+import '@carparkteam/parz-ui/style.css';
 ```
 
 ## Quick start
 
 ```tsx
 import { useState } from 'react';
-import { ParzMenu } from '@parz/ui';
-import '@parz/ui/style.css';
+import { ParzMenu } from '@carparkteam/parz-ui';
+import '@carparkteam/parz-ui/style.css';
 
 export function AppNav() {
   const [tab, setTab] = useState('garage');

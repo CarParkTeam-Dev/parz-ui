@@ -24,7 +24,7 @@ function codeFor(o: O) {
   if (o.thumb !== O0.thumb) a.push(`thumbColor=${q(o.thumb)}`);
   if (o.cooldown > 0) { a.push(`cooldown={${o.cooldown}}`); a.push(`onReject={() => toast('Not so fast')}`); }
   if (o.reject !== O0.reject) a.push(`rejectColor=${q(o.reject)}`);
-  return [`import { useState } from 'react';`, `import { ParzToggle } from '@parz/ui';`, `import '@parz/ui/style.css';`, ``,
+  return [`import { useState } from 'react';`, `import { ParzToggle } from '@carparkteam/parz-ui';`, `import '@carparkteam/parz-ui/style.css';`, ``,
     `const [on, setOn] = useState(true);`, ``, `<ParzToggle`, ...a.map(x => `  ${x}`), `/>`].join('\n');
 }
 

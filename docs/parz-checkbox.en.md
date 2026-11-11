@@ -13,8 +13,8 @@ Under the hood it is a real `<input type="checkbox">`, so forms, `name` / `value
 
 ```tsx
 import { useState } from 'react';
-import { ParzCheckbox } from '@parz/ui';
-import '@parz/ui/style.css';
+import { ParzCheckbox } from '@carparkteam/parz-ui';
+import '@carparkteam/parz-ui/style.css';
 
 const [on, setOn] = useState(false);
 

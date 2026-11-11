@@ -16,7 +16,7 @@ React-компоненты с жидкой анимацией — упругие
 ## Установка
 
 ```bash
-npm install @parz/ui
+npm install @carparkteam/parz-ui
 ```
 
 Или прямо с GitHub:
@@ -33,8 +33,8 @@ npm install github:CarParkTeam-Dev/parz-ui
 
 ```tsx
 import { useState } from 'react';
-import { ParzMenu, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, AnimoLogo } from '@parz/ui';
-import '@parz/ui/style.css';
+import { ParzMenu, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, AnimoLogo } from '@carparkteam/parz-ui';
+import '@carparkteam/parz-ui/style.css';
 
 export function Settings() {
   const [wifi, setWifi] = useState(true);
@@ -86,7 +86,7 @@ Parz UI можно использовать бесплатно, в том чис
 Проще всего — готовым компонентом `ParzCredit`:
 
 ```tsx
-import { ParzCredit } from '@parz/ui';
+import { ParzCredit } from '@carparkteam/parz-ui';
 
 <footer>
   © 2026 Моё приложение · <ParzCredit />

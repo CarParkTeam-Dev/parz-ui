@@ -24,7 +24,7 @@ function codeFor(o: O) {
   if (o.accent !== O0.accent) a.push(`accent=${q(o.accent)}`);
   if (o.border !== O0.border) a.push(`borderColor=${q(o.border)}`);
   if (o.check !== O0.check) a.push(`checkColor=${q(o.check)}`);
-  return [`import { useState } from 'react';`, `import { ParzCheckbox } from '@parz/ui';`, `import '@parz/ui/style.css';`, ``,
+  return [`import { useState } from 'react';`, `import { ParzCheckbox } from '@carparkteam/parz-ui';`, `import '@carparkteam/parz-ui/style.css';`, ``,
     `const [on, setOn] = useState(false);`, ``, `<ParzCheckbox`, ...a.map(x => `  ${x}`), `/>`].join('\n');
 }
 

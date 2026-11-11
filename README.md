@@ -16,7 +16,7 @@ React components with liquid motion — springy, smooth, nothing abrupt. Crafted
 ## Installation
 
 ```bash
-npm install @parz/ui
+npm install @carparkteam/parz-ui
 ```
 
 Or straight from GitHub:
@@ -33,8 +33,8 @@ Import the styles once (for example, in your app entry), then use any component:
 
 ```tsx
 import { useState } from 'react';
-import { ParzMenu, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, AnimoLogo } from '@parz/ui';
-import '@parz/ui/style.css';
+import { ParzMenu, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, AnimoLogo } from '@carparkteam/parz-ui';
+import '@carparkteam/parz-ui/style.css';
 
 export function Settings() {
   const [wifi, setWifi] = useState(true);
@@ -86,7 +86,7 @@ Parz UI is free to use, including in commercial projects, under the [Parz UI Lic
 The easiest way is the ready-made `ParzCredit` component:
 
 ```tsx
-import { ParzCredit } from '@parz/ui';
+import { ParzCredit } from '@carparkteam/parz-ui';
 
 <footer>
   © 2026 My App · <ParzCredit />

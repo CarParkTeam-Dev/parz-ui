@@ -95,7 +95,7 @@ function codeFor(o: { lang: Lang; mSearch: boolean; desk: Desk; more: boolean; m
     const b = toBadge(it);
     return b === undefined ? '' : `, badge: ${typeof b === 'number' ? b : q(String(b))}`;
   };
-  L.push(`import { useState } from 'react';`, `import { ParzMenu${o.desk.on && o.desk.anim && o.desk.logo ? ', AnimoLogo' : ''} } from '@parz/ui';`, `import '@parz/ui/style.css';`, ``);
+  L.push(`import { useState } from 'react';`, `import { ParzMenu${o.desk.on && o.desk.anim && o.desk.logo ? ', AnimoLogo' : ''} } from '@carparkteam/parz-ui';`, `import '@carparkteam/parz-ui/style.css';`, ``);
   L.push(`export function AppNav() {`, `  const [tab, setTab] = useState(${q(o.items[0]?.id ?? '')});`);
   const on = o.slots.filter(s => s.on), side = o.group && on.length > 0, panels = on.some(s => s.opens);
   if (side && panels) L.push(`  const [panel, setPanel] = useState<string | null>(null);`);

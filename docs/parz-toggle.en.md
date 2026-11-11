@@ -12,8 +12,8 @@ Under the hood it is a real `<input type="checkbox" role="switch">`, so forms, `
 
 ```tsx
 import { useState } from 'react';
-import { ParzToggle } from '@parz/ui';
-import '@parz/ui/style.css';
+import { ParzToggle } from '@carparkteam/parz-ui';
+import '@carparkteam/parz-ui/style.css';
 
 const [on, setOn] = useState(true);
 

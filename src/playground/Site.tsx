@@ -351,7 +351,7 @@ function Footer({ lang }: { lang: Lang }) {
   return <footer className="pz-foot"><span>Parz UI</span><span>{tr(lang, 'Сделано командой')} CarPark Team &amp; Dev.CarPark · © 2026</span></footer>;
 }
 
-const INSTALL = 'npm install @parz/ui';
+const INSTALL = 'npm install @carparkteam/parz-ui';
 function InstallCmd({ lang }: { lang: Lang }) {
   const [copied, setCopied] = useState(false);
   const t = useRef(0);

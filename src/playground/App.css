@@ -376,4 +376,4 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .hero-cmd button .material-symbols-rounded{font-size:16px;transition:transform .35s cubic-bezier(.3,1.5,.5,1)}
 .hero-cmd button.is-done{background:rgba(110,231,160,.16);color:var(--acc)}
 .hero-cmd button.is-done .material-symbols-rounded{transform:scale(1.15)}
-@media (max-width:420px){.hero-cmd-l{display:none}}
+@media (max-width:420px){.hero-cmd-l{display:none}.hero-cmd{padding-left:12px;gap:4px}.hero-cmd code{font-size:12.5px}}

@@ -37,7 +37,7 @@ function codeFor(kind: Kind, o: O, label: string) {
   if (o.accent !== O0.accent) a.push(`accent=${q(o.accent)}`);
   if (o.track !== O0.track) a.push(`trackColor=${q(o.track)}`);
   if (o.thumb !== O0.thumb) a.push(`thumbColor=${q(o.thumb)}`);
-  return [`import { useState } from 'react';`, `import { ${name} } from '@parz/ui';`, `import '@parz/ui/style.css';`, ``,
+  return [`import { useState } from 'react';`, `import { ${name} } from '@carparkteam/parz-ui';`, `import '@carparkteam/parz-ui/style.css';`, ``,
     `const [value, setValue] = useState(${init});`, ``, `<${name}`, ...a.map(x => `  ${x}`), `/>`].join('\n');
 }
 

@@ -17,8 +17,8 @@ Parz UI-ի երկու սահիչ՝ ընդհանուր հեղուկ միջուկ�
 
 ```tsx
 import { useState } from 'react';
-import { ParzSlider, ParzRange } from '@parz/ui';
-import '@parz/ui/style.css';
+import { ParzSlider, ParzRange } from '@carparkteam/parz-ui';
+import '@carparkteam/parz-ui/style.css';
 
 const [volume, setVolume] = useState(60);
 <ParzSlider value={volume} onChange={setVolume} label="Ձայն" formatValue={v => `${v}%`} />

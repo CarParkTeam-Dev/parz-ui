@@ -16,7 +16,7 @@ React կոմպոնենտներ հեղուկ անիմացիայով՝ առաձգ�
 ## Տեղադրում
 
 ```bash
-npm install @parz/ui
+npm install @carparkteam/parz-ui
 ```
 
 Կամ անմիջապես GitHub-ից՝
@@ -33,8 +33,8 @@ npm install github:CarParkTeam-Dev/parz-ui
 
 ```tsx
 import { useState } from 'react';
-import { ParzMenu, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, AnimoLogo } from '@parz/ui';
-import '@parz/ui/style.css';
+import { ParzMenu, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, AnimoLogo } from '@carparkteam/parz-ui';
+import '@carparkteam/parz-ui/style.css';
 
 export function Settings() {
   const [wifi, setWifi] = useState(true);
@@ -86,7 +86,7 @@ Parz UI-ն կարելի է օգտագործել անվճար, այդ թվում�
 Ամենահեշտը պատրաստի `ParzCredit` կոմպոնենտն է՝
 
 ```tsx
-import { ParzCredit } from '@parz/ui';
+import { ParzCredit } from '@carparkteam/parz-ui';
 
 <footer>
   © 2026 Իմ հավելվածը · <ParzCredit />

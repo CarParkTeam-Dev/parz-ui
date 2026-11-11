@@ -27,7 +27,7 @@ function codeFor(o: L) {
   if (o.accent !== L0.accent) a.push(`accent=${q(o.accent)}`);
   if (o.clickable) a.push(`onClick={() => navigate('/')}`);
   if (o.holdEffect) a.push(`onHoldComplete={() => { /* … */ }}`);
-  return [`import { AnimoLogo } from '@parz/ui';`, `import '@parz/ui/style.css';`, ``, `<AnimoLogo`, ...a.map(x => `  ${x}`), `/>`].join('\n');
+  return [`import { AnimoLogo } from '@carparkteam/parz-ui';`, `import '@carparkteam/parz-ui/style.css';`, ``, `<AnimoLogo`, ...a.map(x => `  ${x}`), `/>`].join('\n');
 }
 
 export function LogoEditor() {
