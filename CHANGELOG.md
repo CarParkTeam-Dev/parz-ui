@@ -12,6 +12,8 @@ npm update @carparkteam/parz-ui
 
 ## Unreleased
 
+## 1.0.1 — 2026-11-11
+
 ### Added
 - “What’s new” page on the site with this changelog in three languages.
 - The current version is shown next to the install command on the home page.
