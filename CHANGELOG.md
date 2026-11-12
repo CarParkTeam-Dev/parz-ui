@@ -12,6 +12,8 @@ npm update @carparkteam/parz-ui
 
 ## Unreleased
 
+## 1.0.2 — 2026-11-12
+
 ### Added
 - Test versions: new features can be tried before the release with `npm install @carparkteam/parz-ui@next`. A regular install keeps the stable version.
 
