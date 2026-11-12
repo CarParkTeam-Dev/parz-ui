@@ -324,6 +324,7 @@ const D: Record<string, [string, string]> = {
   'У вас последняя версия': ['You have the latest version', 'Ձեզ մոտ վերջին տարբերակն է'],
   'Предварительная версия v{v} — новее опубликованной': ['Preview v{v} — newer than the published one', 'Նախնական v{v} տարբերակ՝ հրապարակվածից նոր'],
   'Проверить ещё раз': ['Check again', 'Կրկին ստուգել'],
+  'Последняя версия': ['Latest version', 'Վերջին տարբերակ'],
 };
 
 export function tr(lang: Lang, key: string, vars?: Record<string, string | number>) {

@@ -12,14 +12,20 @@ npm update @carparkteam/parz-ui
 
 ## Unreleased
 
-## 1.0.1 — 2026-11-11
+### Added
+- Test versions: new features can be tried before the release with `npm install @carparkteam/parz-ui@next`. A regular install keeps the stable version.
+
+### Changed
+- The playground in this repository now focuses on the library: components with live editors and docs, plus the changelog (`npm run dev`).
+- The update check on the “What’s new” page now speaks up only when a newer version is out.
+
+## 1.0.1 — 2026-11-12
 
 ### Added
 - “What’s new” page on the site with this changelog in three languages.
 - The current version is shown next to the install command on the home page.
 - `CHANGELOG.md` is now shipped with the package.
-- The “What’s new” page checks for updates: it compares the site version with the latest release (from `latest.json` on our server, or npm if the server is unavailable). Without internet the check simply stays hidden.
-- `npm run build` now also writes `latest.json` (version and date) next to the site.
+- The “What’s new” page tells you when a newer version of Parz UI is out.
 
 ### Fixed
 - **Parz Menu:** tapping the search field on iPhone (Safari) and some Android browsers no longer zooms the page — on touch screens the field text is now 16 px.

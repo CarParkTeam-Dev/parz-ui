@@ -22,15 +22,12 @@ async function getJson(url: string, ms: number) {
 const isVer = (v: unknown): v is string => typeof v === 'string' && /^\d+\.\d+\.\d+/.test(v);
 
 export async function fetchLatest(): Promise<Latest | null> {
-  try {
-    const j = await getJson(LATEST_URL, 4000);
-    if (isVer(j?.version)) return { version: j.version, date: j.date, notes: j.notes, from: 'server' };
-  } catch { /* наш сервер не ответил — пробуем npm */ }
-  try {
-    const j = await getJson(NPM_URL, 5000);
-    if (isVer(j?.version)) return { version: j.version, from: 'npm' };
-  } catch { /* нет сети */ }
-  return null;
+  // спрашиваем оба источника сразу и берём бо́льшую версию: файл на сервере могли забыть обновить после выпуска
+  const [srv, npm] = await Promise.allSettled([getJson(LATEST_URL, 4000), getJson(NPM_URL, 5000)]);
+  const a: Latest | null = srv.status === 'fulfilled' && isVer(srv.value?.version) ? { version: srv.value.version, date: srv.value.date, notes: srv.value.notes, from: 'server' } : null;
+  const b: Latest | null = npm.status === 'fulfilled' && isVer(npm.value?.version) ? { version: npm.value.version, from: 'npm' } : null;
+  if (!a || !b) return a ?? b;
+  return cmpVer(b.version, a.version) > 0 ? b : a; // при равных версиях — данные сервера (там есть дата)
 }
 
 /** −1, 0, 1 — как обычное сравнение версий x.y.z */
@@ -42,7 +39,12 @@ export function cmpVer(a: string, b: string) {
 
 
 /** Плашка на странице «Что нового»: сверяет версию сайта с последней опубликованной. Без сети — молча прячется. */
+/** Плашка проверки обновлений — для площадки у пользователей (полный сайт её отключает через extras.updateCheck). */
 export function UpdateCheck({ lang, current }: { lang: Lang; current: string }) {
+  return <Check lang={lang} current={current} />;
+}
+
+function Check({ lang, current }: { lang: Lang; current: string }) {
   const t = (k: string, v?: Record<string, string | number>) => tr(lang, k, v);
   const [st, setSt] = useState<State>({ s: 'checking' });
   const [run, setRun] = useState(0);
@@ -54,12 +56,10 @@ export function UpdateCheck({ lang, current }: { lang: Lang; current: string }) 
     return () => { alive = false; };
   }, [run]);
 
-  if (st.s === 'hidden') return null;
-  if (st.s === 'checking') {
-    return <div className="up up--checking" role="status"><span className="up-spin" aria-hidden="true" />{t('Проверяем обновления…')}</div>;
-  }
+  if (st.s !== 'done') return null; // пока проверяем или нет сети — ничего не показываем
   const { latest } = st;
   const c = cmpVer(latest.version, current);
+  if (c === 0) return null; // версия та же — сообщать не о чем
   if (c > 0) {
     return (
       <div className="up up--new" role="status">

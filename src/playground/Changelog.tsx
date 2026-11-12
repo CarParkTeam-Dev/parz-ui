@@ -56,7 +56,7 @@ function bumpOf(v: string, prev?: string): 'first' | 'major' | 'minor' | 'patch'
 const BUMP_LABEL = { first: 'Первый выпуск', major: 'Крупное обновление', minor: 'Новые возможности', patch: 'Исправления' };
 
 
-export function ChangelogPage({ lang, source, install, check, footer }: { lang: Lang; source: string; install: ReactNode; check?: ReactNode; footer: ReactNode }) {
+export function ChangelogPage({ lang, source, install, check, footer, official = false }: { lang: Lang; source: string; install: ReactNode; check?: ReactNode; footer: ReactNode; official?: boolean }) {
   const t = (k: string, v?: Record<string, string | number>) => tr(lang, k, v);
   const { title, intro, releases } = parseChangelog(source);
   const shipped = releases.filter(r => !r.next);
@@ -71,7 +71,7 @@ export function ChangelogPage({ lang, source, install, check, footer }: { lang: 
         <h1>{title}</h1>
         {intro && <p>{inline(intro)}</p>}
         <div className="cl-stats">
-          {latest && <div><b>v{latest.version}</b><span>{t('Текущая версия')}</span></div>}
+          {latest && <div><b>v{latest.version}</b><span>{t(official ? 'Последняя версия' : 'Текущая версия')}</span></div>}
           <div><b>{shipped.length}</b><span>{t('Выпусков')}</span></div>
           <div><b>{count}</b><span>{t('Изменений')}</span></div>
         </div>

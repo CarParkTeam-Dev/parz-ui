@@ -57,10 +57,13 @@
   ],
   "scripts": {
     "dev": "vite",
+    "dev:site": "vite --config private-site/vite.config.ts",
     "build": "vite build",
+    "build:site": "vite build --config private-site/vite.config.ts",
     "build:lib": "vite build --config vite.lib.config.ts && tsc -p tsconfig.lib.json",
     "prepare": "npm run build:lib",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:site": "tsc --noEmit -p private-site/tsconfig.json",
     "release": "node scripts/release.mjs",
     "preview": "vite preview"
   },

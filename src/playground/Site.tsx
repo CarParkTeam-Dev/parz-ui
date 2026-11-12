@@ -8,7 +8,7 @@ import { SliderEditor } from './SliderEditor';
 import { Markdown } from './Markdown';
 import { ChangelogPage } from './Changelog';
 import { UpdateCheck } from './UpdateCheck';
-import { ParzBrand, ParzLogo, Splash } from './Brand';
+import { ParzBrand, Splash } from './Brand';
 import { LANGS, LangCtx, tr, type Lang } from './i18n';
 import menuEn from '../../docs/parz-menu.en.md?raw';
 import menuRu from '../../docs/parz-menu.ru.md?raw';
@@ -36,7 +36,8 @@ const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', 
 const isCmp = (p: Page): p is Cmp => p in CMP_TITLE;
 type View = 'editor' | 'docs';
 type Route = { page: Page; view: View };
-type Go = (p: Page, v?: View) => void;
+export type Go = (p: Page, v?: View) => void;
+export type { Page, Lang };
 const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', slider: 'parz-slider', range: 'parz-range', brand: 'brand', changelog: 'changelog' };
 const DOCS: Record<Cmp, Record<Lang, string>> = {
   menu: { en: menuEn, ru: menuRu, hy: menuHy },
@@ -67,10 +68,10 @@ const INDEX: Omit<Hit, 'sub'>[] = [
   { page: 'changelog', view: 'editor', title: 'Changelog', icon: 'history', words: 'changelog what is new whats new release releases update version history что нового изменения обновление версия выпуск история ինչ նոր կա փոփոխություններ թարմացում տարբերակ' },
   { page: 'brand', view: 'editor', title: 'Parz UI', icon: 'palette', words: 'parz logos brand svg zip pack логотипы бренд логопак լոգոներ' }
 ];
-function searchHits(q: string, lang: Lang): Hit[] {
+function searchHits(q: string, lang: Lang, has: (p: Page) => boolean): Hit[] {
   const w = q.trim().toLowerCase();
   if (!w) return [];
-  return INDEX.filter(h => (h.title + ' ' + h.words).toLowerCase().includes(w))
+  return INDEX.filter(h => has(h.page) && (h.title + ' ' + h.words).toLowerCase().includes(w))
     .map(h => ({ ...h, sub: tr(lang, h.page === 'brand' ? 'Логотипы' : h.page === 'changelog' ? 'Что нового' : h.page === 'components' ? 'Все компоненты' : h.view === 'docs' ? 'Документация' : 'Редактор') }));
 }
 
@@ -81,16 +82,6 @@ function parseHash(): Route {
   return { page, view: v === 'docs' ? 'docs' : 'editor' };
 }
 const rkey = (r: Route) => (isCmp(r.page) ? `${r.page}/${r.view}` : r.page);
-
-/* логотипы из PARZ-UI-Logo-Pack: что показать и на каком фоне */
-const VARIANTS: { file: string; name: string; bg: 'light' | 'dark' | 'split' }[] = [
-  { file: 'parz-ui-light.svg', name: 'Light', bg: 'dark' },
-  { file: 'parz-ui-dark.svg', name: 'Dark', bg: 'light' },
-  { file: 'parz-ui-adaptive.svg', name: 'Adaptive', bg: 'split' },
-  { file: 'parz-ui-animated.svg', name: 'Animated', bg: 'split' },
-  { file: 'parz-ui.svg', name: 'Default', bg: 'split' },
-  { file: 'parz-ui-icon.svg', name: 'Icon', bg: 'split' }
-];
 
 /* ---------- переход между страницами: старая уходит → скелетон → новая проявляется ---------- */
 const OUT_MS = 190, LOAD_MS = 420;
@@ -118,7 +109,19 @@ function useTransition(route: Route) {
   return { shown, phase };
 }
 
-export function Site() {
+/** Дополнительные страницы полного сайта (главная, логотипы). В публичной площадке их нет:
+ *  корень открывает список компонентов, в меню — «Компоненты» и «Изменения». */
+export type SiteCtx = { lang: Lang; go: Go; revealed: boolean };
+export type SiteExtras = {
+  home?: (c: SiteCtx) => ReactNode;
+  brand?: (c: SiteCtx) => ReactNode;
+  /** Проверка обновлений на странице «Что нового». Нужна в площадке у пользователей; на нашем сайте выключаем — он всегда свежий. */
+  updateCheck?: boolean;
+};
+
+export function Site({ extras = {} }: { extras?: SiteExtras }) {
+  const has = (p: Page) => (p === 'home' ? !!extras.home : p === 'brand' ? !!extras.brand : true);
+  const norm = (r: Route): Route => (has(r.page) ? r : { page: 'components', view: 'editor' });
   const [lang, setLang] = useState<Lang>(() => {
     try { const v = localStorage.getItem(LANG_KEY); if (v === 'en' || v === 'ru' || v === 'hy') return v; } catch { /* нет хранилища */ }
     return 'en';
@@ -126,13 +129,14 @@ export function Site() {
   useEffect(() => { document.documentElement.lang = lang; try { localStorage.setItem(LANG_KEY, lang); } catch { /* нет хранилища */ } }, [lang]);
   const t = (k: string, v?: Record<string, string | number>) => tr(lang, k, v);
 
-  const [route, setRoute] = useState(parseHash);
+  const [route, setRoute] = useState(() => norm(parseHash()));
   useEffect(() => {
-    const on = () => setRoute(parseHash());
+    const on = () => setRoute(norm(parseHash()));
     addEventListener('hashchange', on);
     return () => removeEventListener('hashchange', on);
   }, []);
-  const go: Go = (p, v = 'editor') => {
+  const go: Go = (p0, v = 'editor') => {
+    const p = has(p0) ? p0 : 'components';
     const h = SLUG[p] ? `#/${SLUG[p]}${v === 'docs' ? '/docs' : ''}` : '#/';
     if (location.hash !== h) location.hash = h; else setRoute({ page: p, view: v });
   };
@@ -142,7 +146,7 @@ export function Site() {
   const [revealed, setRevealed] = useState(!splash); // загрузчик ушёл — главная проигрывает свою анимацию заново, уже на виду
 
   const [query, setQuery] = useState('');
-  const hits = searchHits(query, lang);
+  const hits = searchHits(query, lang, has);
   const pick = (h: Hit) => { setQuery(''); go(h.page, h.view); };
   const search = {
     searchPlaceholder: t('Поиск компонентов'), searchValue: query, onSearchChange: setQuery,
@@ -150,7 +154,7 @@ export function Site() {
   };
   const nextLang = () => setLang(l => LANGS[(LANGS.findIndex(x => x[0] === l) + 1) % LANGS.length][0]);
   const items: TabItem[] = [
-    { id: 'home', label: t('Главная'), icon: 'ms:home' },
+    ...(extras.home ? [{ id: 'home', label: t('Главная'), icon: 'ms:home' }] : []),
     { id: 'components', label: t('Компоненты'), icon: 'ms:grid_view', badge: CATALOG.length },
     { id: 'changelog', label: t('Изменения'), icon: 'ms:history' }
   ];
@@ -163,10 +167,10 @@ export function Site() {
     const { page, view: v } = shown;
     view = (
       <div key={rkey(shown)} className={`pz-view${phase === 'out' ? ' is-out' : ' is-in'}`}>
-        {page === 'home' && <Home lang={lang} go={go} revealed={revealed} />}
+        {page === 'home' && extras.home?.({ lang, go, revealed })}
         {page === 'components' && <ComponentsPage lang={lang} go={go} />}
-        {page === 'brand' && <BrandPage lang={lang} />}
-        {page === 'changelog' && <ChangelogPage lang={lang} source={CHANGES[lang]} install={<InstallCmd lang={lang} cmd={UPDATE} />} check={<UpdateCheck lang={lang} current={pkg.version} />} footer={<Footer lang={lang} />} />}
+        {page === 'brand' && extras.brand?.({ lang, go, revealed })}
+        {page === 'changelog' && <ChangelogPage lang={lang} source={CHANGES[lang]} install={<InstallCmd lang={lang} cmd={UPDATE} />} check={extras.updateCheck === false ? undefined : <UpdateCheck lang={lang} current={pkg.version} />} footer={<Footer lang={lang} />} official={extras.updateCheck === false} />}
         {isCmp(page) && (
           <div className="cmp">
             <div className="cmp-bar">
@@ -192,7 +196,7 @@ export function Site() {
           items={items} value={navValue} onChange={id => go(id as Page)} locale={lang}
           actions={[{ id: 'lang', ariaLabel: `${t('Язык')}: ${lang.toUpperCase()}`, icon: 'ms:translate', badge: lang.toUpperCase() }]}
           onAction={nextLang}
-          desktop={{ breakpoint: 900, logo: <ParzBrand onClick={() => go('home')} />, search: 'expand', searchWidth: 300, searchShortcut: '/', actionsAlign: 'end', ...search }}
+          desktop={{ breakpoint: 900, logo: <ParzBrand onClick={() => go(extras.home ? 'home' : 'components')} />, search: 'expand', searchWidth: 300, searchShortcut: '/', actionsAlign: 'end', ...search }}
           mobileSearch={search}
         />
 
@@ -309,7 +313,7 @@ function RangeDemo({ lang }: { lang: Lang }) {
     </div>
   );
 }
-const CATALOG: Entry[] = [
+export const CATALOG: Entry[] = [
   {
     id: 'menu', title: 'Parz Menu', tags: ['Navigation', 'Header', 'Search'],
     desc: 'Навигация, где подсветка перетекает каплей, кнопки пружинят, а на компьютере меню становится шапкой с поиском.',
@@ -341,7 +345,7 @@ const CATALOG: Entry[] = [
     demo: lang => <RangeDemo lang={lang} />
   }
 ];
-function ComponentCard({ e, lang, go, i }: { e: Entry; lang: Lang; go: Go; i: number }) {
+export function ComponentCard({ e, lang, go, i }: { e: Entry; lang: Lang; go: Go; i: number }) {
   const t = (k: string) => tr(lang, k);
   return (
     <article className="card-c" style={{ '--i': i } as React.CSSProperties}>
@@ -356,6 +360,7 @@ function ComponentCard({ e, lang, go, i }: { e: Entry; lang: Lang; go: Go; i: nu
   );
 }
 
+export const VERSION = pkg.version;
 const CHANGES: Record<Lang, string> = { en: changesEn, ru: changesRu, hy: changesHy };
 /* ---------- плашка: армянский перевод сделан ИИ, возможны неточности. Сворачивается в кружок, но не исчезает ---------- */
 const NOTE_KEY = 'pz-hy-note';
@@ -383,7 +388,7 @@ function TranslationNote({ lang }: { lang: Lang }) {
   );
 }
 
-function Footer({ lang }: { lang: Lang }) {
+export function Footer({ lang }: { lang: Lang }) {
   return (
     <footer className="pz-foot">
       <span>Parz UI <a className="pz-foot-v" href="#/changelog">v{pkg.version}</a></span>
@@ -394,7 +399,7 @@ function Footer({ lang }: { lang: Lang }) {
 
 const INSTALL = 'npm install @carparkteam/parz-ui';
 const UPDATE = 'npm update @carparkteam/parz-ui';
-function InstallCmd({ lang, cmd = INSTALL }: { lang: Lang; cmd?: string }) {
+export function InstallCmd({ lang, cmd = INSTALL }: { lang: Lang; cmd?: string }) {
   const [copied, setCopied] = useState(false);
   const t = useRef(0);
   const copy = async () => {
@@ -419,37 +424,6 @@ function InstallCmd({ lang, cmd = INSTALL }: { lang: Lang; cmd?: string }) {
   );
 }
 
-function Home({ lang, go, revealed = true }: { lang: Lang; go: Go; revealed?: boolean }) {
-  const t = (k: string) => tr(lang, k);
-  const [replay, setReplay] = useState(0);
-  return (
-    <main className="page home">
-      <section className="hero">
-        <button className="hero-logo" onClick={() => setReplay(r => r + 1)} aria-label={t('Повторить появление')}><ParzLogo replay={replay * 2 + (revealed ? 1 : 0)} /></button>
-        <h1>{t('React-компоненты с жидкой анимацией')}</h1>
-        <p>{t('Живые, упругие и плавные детали интерфейса. Каждый компонент настраивается в редакторе и сразу даёт готовый код.')}</p>
-        <p className="hero-by">Crafted by <b>CarPark Team</b> &amp; <b>Dev.CarPark</b></p>
-        <InstallCmd lang={lang} />
-        <button className="hero-ver" onClick={() => go('changelog')}>
-          <span className="hero-ver-n">v{pkg.version}</span>{t('Что нового')}<span className="material-symbols-rounded" aria-hidden="true">arrow_forward</span>
-        </button>
-        <div className="hero-a"><button className="pri" onClick={() => go('components')}>{t('Все компоненты')}</button><button onClick={() => go('brand')}>{t('Логотипы')}</button></div>
-      </section>
-
-      <section className="sec-h"><h2>{t('Компоненты')}</h2><button onClick={() => go('components')}>{t('Смотреть все')} <span className="material-symbols-rounded" aria-hidden="true">arrow_forward</span></button></section>
-      <section className="cards" aria-label={t('Компоненты')}>
-        {CATALOG.map((e, i) => <ComponentCard key={e.id} e={e} lang={lang} go={go} i={i} />)}
-      </section>
-
-      <section className="teaser">
-        <div><h2>{t('Логотипы Parz UI')}</h2><p>{t('Светлый, тёмный, адаптивный, анимированный и иконка — в SVG.')}</p></div>
-        <button onClick={() => go('brand')}>{t('Открыть логопак')}</button>
-      </section>
-      <Footer lang={lang} />
-    </main>
-  );
-}
-
 function ComponentsPage({ lang, go }: { lang: Lang; go: Go }) {
   const t = (k: string, v?: Record<string, string | number>) => tr(lang, k, v);
   return (
@@ -467,33 +441,6 @@ function ComponentsPage({ lang, go }: { lang: Lang; go: Go }) {
           <p>{t('Мы собираем следующие детали интерфейса — они появятся здесь.')}</p>
         </article>
       </section>
-      <Footer lang={lang} />
-    </main>
-  );
-}
-
-function BrandPage({ lang }: { lang: Lang }) {
-  const t = (k: string) => tr(lang, k);
-  const [replay, setReplay] = useState(0);
-  return (
-    <main className="page brand-p">
-      <section className="brand-h">
-        <h1>{t('Логотипы Parz UI')}</h1>
-        <p>{t('Все варианты из PARZ-UI-Logo-Pack. Адаптивный сам меняет цвет под светлую и тёмную тему.')}</p>
-        <a className="dl" href="./brand/PARZ-UI-Logo-Pack.zip" download>{t('Скачать весь пакет (ZIP)')}</a>
-      </section>
-      <div className="variants">
-        {VARIANTS.map((v, i) => (
-          <figure key={v.file} className={`var var--${v.bg}${v.name === 'Icon' ? ' var--icon' : ''}`} style={{ '--i': i } as React.CSSProperties}>
-            <div className="var-img">
-              {v.name === 'Animated'
-                ? <button className="var-replay" onClick={() => setReplay(r => r + 1)} aria-label={t('Повторить появление')}><img key={replay} src={`./brand/${v.file}`} alt="PARZ UI animated" /></button>
-                : <img src={`./brand/${v.file}`} alt={`PARZ UI ${v.name}`} />}
-            </div>
-            <figcaption><span><b>{v.name}</b><small>{v.file}</small></span><a href={`./brand/${v.file}`} download>SVG</a></figcaption>
-          </figure>
-        ))}
-      </div>
       <Footer lang={lang} />
     </main>
   );

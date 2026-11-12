@@ -66,7 +66,7 @@ npm install
 npm run dev
 ```
 
-It opens at `http://localhost:5280`. `npm run build` builds the site into `site/` for any static hosting.
+It opens at `http://localhost:5280`. The live site is at [dev.carpark.am/parz-ui](https://dev.carpark.am/parz-ui). `npm run build` builds this playground into `build/` for any static hosting.
 
 ## Development
 
@@ -74,8 +74,9 @@ It opens at `http://localhost:5280`. `npm run build` builds the site into `site/
 |---|---|
 | `npm run dev` | Playground with hot reload |
 | `npm run build:lib` | Builds the package into `dist/` (JS, CSS, types) |
-| `npm run build` | Builds the playground site into `site/` |
+| `npm run build` | Builds the playground into `build/` |
 | `npm run typecheck` | Type check |
+| `npm run release -- patch` | Release a new version (add `--beta` for a pre-release, `--dry-run` to preview) |
 
 ## License
 

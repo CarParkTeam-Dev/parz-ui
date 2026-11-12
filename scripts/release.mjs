@@ -2,14 +2,25 @@
 /**
  * Выпуск новой версии Parz UI одной командой.
  *
- *   npm run release -- patch            исправления          1.0.0 → 1.0.1
+ *   npm run release -- patch            исправления          1.0.1 → 1.0.2
  *   npm run release -- minor            новые возможности    1.0.1 → 1.1.0
  *   npm run release -- major            ломающие изменения   1.1.0 → 2.0.0
+ *
+ * Сначала пробная версия (pre-release), потом настоящая:
+ *   npm run release -- minor --beta     пробная              1.0.1 → 1.1.0-beta.0
+ *   npm run release -- minor --beta     ещё одна пробная     1.1.0-beta.0 → 1.1.0-beta.1
+ *   npm run release -- minor            настоящий выпуск     1.1.0-beta.1 → 1.1.0
+ *
  *   добавьте --dry-run, чтобы только посмотреть, что будет, ничего не меняя
  *
- * Что делает: берёт раздел «## Unreleased» из CHANGELOG*.md и превращает его в раздел новой версии с датой,
- * поднимает версию в package.json, проверяет типы и собирает пакет, делает коммит и тег vX.Y.Z,
- * публикует в npm, отправляет коммит и тег на GitHub и открывает в браузере готовый черновик GitHub Release.
+ * Обычный выпуск: раздел «## Unreleased» в CHANGELOG*.md становится разделом новой версии с датой,
+ * версия поднимается, пакет проверяется и собирается, делаются коммит и тег, публикация в npm (метка latest),
+ * отправка на GitHub и черновик GitHub Release в браузере.
+ *
+ * Пробный выпуск (--beta): CHANGELOG не трогается — «Unreleased» копится до настоящего выпуска.
+ * В npm он уходит с меткой next: `npm install` его НЕ ставит, попробовать можно так:
+ *   npm install @carparkteam/parz-ui@next
+ * На GitHub черновик открывается сразу с отметкой Pre-release. Сайт для пробных версий не перезаливаем.
  */
 import { execSync, spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -17,14 +28,16 @@ import { readFileSync, writeFileSync } from 'node:fs';
 const LANGS = [['en', 'CHANGELOG.md'], ['ru', 'CHANGELOG.ru.md'], ['hy', 'CHANGELOG.hy.md']];
 const args = process.argv.slice(2);
 const bump = args.find(a => ['patch', 'minor', 'major'].includes(a));
+const beta = args.includes('--beta');
 const dry = args.includes('--dry-run');
 
 const say = m => console.log(`\x1b[32m›\x1b[0m ${m}`);
+const warn = m => console.warn(`\x1b[33m! ${m}\x1b[0m`);
 const fail = m => { console.error(`\x1b[31m✖ ${m}\x1b[0m`); process.exit(1); };
 const sh = c => execSync(c, { encoding: 'utf8' }).trim();
 const run = (c, why) => { say(why); if (spawnSync(c, { stdio: 'inherit', shell: true }).status !== 0) fail(`Не получилось: ${c}`); };
 
-if (!bump) fail('Укажите тип выпуска: npm run release -- patch | minor | major  (и --dry-run для пробы)');
+if (!bump) fail('Укажите тип выпуска: npm run release -- patch | minor | major  (+ --beta для пробной версии, --dry-run для пробы)');
 
 // 1. Git: ветка main, всё закоммичено
 const branch = sh('git rev-parse --abbrev-ref HEAD');
@@ -34,13 +47,24 @@ if (dirty && !dry) fail(`Есть незакоммиченные изменен�
 
 // 2. Новая версия
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
-const [ma, mi, pa] = pkg.version.split('.').map(Number);
-const next = bump === 'major' ? `${ma + 1}.0.0` : bump === 'minor' ? `${ma}.${mi + 1}.0` : `${ma}.${mi}.${pa + 1}`;
+const [core, pre] = pkg.version.split('-');
+const [ma, mi, pa] = core.split('.').map(Number);
+const preN = pre?.startsWith('beta.') ? Number(pre.slice(5)) : null; // текущая пробная: 1.1.0-beta.N
+const target = bump === 'major' ? `${ma + 1}.0.0` : bump === 'minor' ? `${ma}.${mi + 1}.0` : `${ma}.${mi}.${pa + 1}`;
+let next;
+if (preN !== null) {
+  // сейчас пробная версия: тип уже выбран при первой пробной — её основа и есть следующий выпуск
+  next = beta ? `${core}-beta.${preN + 1}` : core;
+  if (target !== core && bump) say(`Сейчас пробная ${pkg.version} — продолжаю её линию (${core}), тип «${bump}» учтён при первой пробной.`);
+} else {
+  next = beta ? `${target}-beta.0` : target;
+}
 const tag = `v${next}`;
 if (sh(`git tag --list ${tag}`)) fail(`Тег ${tag} уже есть`);
-const date = new Date().toISOString().slice(0, 10);
+const now = new Date(); // дата по местному времени, а не UTC
+const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-// 3. CHANGELOG: раздел Unreleased → раздел версии
+// 3. CHANGELOG: раздел Unreleased → раздел версии (у пробной версии CHANGELOG не меняется)
 const UNRELEASED = /^## Unreleased[ \t]*\r?\n([\s\S]*?)(?=^## |(?![\s\S]))/m;
 const notes = {};
 const updated = {};
@@ -51,17 +75,19 @@ for (const [lang, file] of LANGS) {
   const body = m[1].trim();
   notes[lang] = body;
   if (lang === 'en' && !body.replace(/^###.*$/gm, '').trim()) fail('В CHANGELOG.md раздел «## Unreleased» пуст — опишите, что изменилось');
-  if (!body) console.warn(`\x1b[33m! В ${file} раздел Unreleased пуст — перевод не обновлён\x1b[0m`);
-  updated[file] = src.replace(UNRELEASED, `## Unreleased\n\n## ${next} — ${date}\n\n${body ? body + '\n\n' : ''}`);
+  if (!body) warn(`В ${file} раздел Unreleased пуст — перевод не обновлён`);
+  if (!beta) updated[file] = src.replace(UNRELEASED, `## Unreleased\n\n## ${next} — ${date}\n\n${body ? body + '\n\n' : ''}`);
 }
 
-say(`Выпуск ${pkg.name}: ${pkg.version} → ${next} (${bump})`);
+say(`${beta ? 'Пробный выпуск' : 'Выпуск'} ${pkg.name}: ${pkg.version} → ${next}`);
 console.log(`\n${notes.en}\n`);
 
 if (dry) {
   say('Пробный запуск (--dry-run): файлы не менялись, ничего не опубликовано.');
-  say(`Будет: CHANGELOG → «## ${next} — ${date}», package.json → ${next}, проверка и сборка, коммит и тег ${tag}, npm publish, git push, черновик GitHub Release.`);
-  if (dirty) console.warn('\x1b[33m! Сейчас есть незакоммиченные изменения — настоящий выпуск попросит сначала их закоммитить.\x1b[0m');
+  say(beta
+    ? `Будет: package.json → ${next}, проверка и сборка, коммит и тег ${tag}, npm publish --tag next, git push, черновик Pre-release на GitHub. CHANGELOG не меняется.`
+    : `Будет: CHANGELOG → «## ${next} — ${date}», package.json → ${next}, проверка и сборка, коммит и тег ${tag}, npm publish, git push, черновик GitHub Release.`);
+  if (dirty) warn('Сейчас есть незакоммиченные изменения — настоящий выпуск попросит сначала их закоммитить.');
   process.exit(0);
 }
 
@@ -74,10 +100,10 @@ run('npm run build:lib', 'Собираю пакет');
 // 5. Коммит и тег
 run(`git add -A && git commit -m "Release ${tag}" && git tag -a ${tag} -m "Parz UI ${tag}"`, `Коммит и тег ${tag}`);
 
-// 6. npm
-const pub = spawnSync('npm publish', { stdio: 'inherit', shell: true });
+// 6. npm: пробная — с меткой next, чтобы обычный npm install её не ставил
+const pub = spawnSync(beta ? 'npm publish --tag next' : 'npm publish', { stdio: 'inherit', shell: true });
 if (pub.status !== 0) {
-  fail(`npm publish не прошёл. Коммит и тег ${tag} уже есть локально.\n  Исправьте причину и выполните: npm publish  затем  git push --follow-tags`);
+  fail(`npm publish не прошёл. Коммит и тег ${tag} уже есть локально.\n  Исправьте причину и выполните: npm publish${beta ? ' --tag next' : ''}  затем  git push --follow-tags`);
 }
 
 // 7. GitHub
@@ -86,10 +112,16 @@ run('git push --follow-tags', 'Отправляю коммит и тег на Gi
 // 8. Черновик GitHub Release — откроется в браузере, останется нажать «Publish release»
 const repo = (pkg.repository?.url || '').replace(/^git\+/, '').replace(/\.git$/, '');
 if (repo.startsWith('https://github.com/')) {
-  const url = `${repo}/releases/new?tag=${tag}&title=${encodeURIComponent(`Parz UI ${tag}`)}&body=${encodeURIComponent(
-    `${notes.en}\n\n\`\`\`bash\nnpm install ${pkg.name}@${next}\n\`\`\``)}`;
-  const open = process.platform === 'win32' ? `start "" "${url}"` : process.platform === 'darwin' ? `open "${url}"` : `xdg-open "${url}"`;
-  spawnSync(open, { shell: true });
-  say(`Черновик GitHub Release открыт в браузере — проверьте и нажмите «Publish release».\n  ${repo}/releases`);
+  const install = beta ? `npm install ${pkg.name}@next` : `npm update ${pkg.name}`;
+  const q = new URLSearchParams({ tag, title: `Parz UI ${tag}`, body: `${notes.en}\n\n\`\`\`bash\n${install}\n\`\`\`` });
+  if (beta) q.set('prerelease', '1');
+  const url = `${repo}/releases/new?${q}`;
+  // без командной строки: в Windows cmd обрезает адрес на символе &, и до GitHub доходил только тег
+  const opener = process.platform === 'win32' ? ['rundll32', ['url.dll,FileProtocolHandler', url]]
+    : process.platform === 'darwin' ? ['open', [url]] : ['xdg-open', [url]];
+  spawnSync(opener[0], opener[1], { stdio: 'ignore' });
+  say(`Черновик GitHub ${beta ? 'Pre-release' : 'Release'} открыт в браузере — проверьте и нажмите «Publish release».\n  Если не открылся: ${repo}/releases/new?tag=${tag}`);
 }
-say(`Готово: ${pkg.name}@${next} в npm и на GitHub.`);
+say(beta
+  ? `Готово: ${pkg.name}@${next} в npm с меткой next. Попробовать: npm install ${pkg.name}@next`
+  : `Готово: ${pkg.name}@${next} в npm и на GitHub. Не забудьте собрать и залить сайт: npm run build:site`);

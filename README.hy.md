@@ -66,7 +66,7 @@ npm install
 npm run dev
 ```
 
-Կբացվի `http://localhost:5280`։ `npm run build`-ը կայքը հավաքում է `site/`-ում ցանկացած ստատիկ հոսթինգի համար։
+Կբացվի `http://localhost:5280`։ Ամբողջական կայքը՝ [dev.carpark.am/parz-ui](https://dev.carpark.am/parz-ui)։ `npm run build`-ը այս կոնֆիգուրատորը հավաքում է `build/`-ում ցանկացած ստատիկ հոսթինգի համար։
 
 ## Մշակում
 
@@ -74,8 +74,9 @@ npm run dev
 |---|---|
 | `npm run dev` | Կոնֆիգուրատոր՝ տաք վերաբեռնմամբ |
 | `npm run build:lib` | Հավաքում է փաթեթը `dist/`-ում (JS, CSS, տիպեր) |
-| `npm run build` | Հավաքում է կայքը `site/`-ում |
+| `npm run build` | Հավաքում է կոնֆիգուրատորը `build/`-ում |
 | `npm run typecheck` | Տիպերի ստուգում |
+| `npm run release -- patch` | Նոր տարբերակի թողարկում (`--beta`՝ փորձնական, `--dry-run`՝ դիտել առանց փոփոխությունների) |
 
 ## Լիցենզիա
 

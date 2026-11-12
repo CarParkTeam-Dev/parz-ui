@@ -66,7 +66,7 @@ npm install
 npm run dev
 ```
 
-Откроется `http://localhost:5280`. `npm run build` собирает сайт в `site/` для любого статического хостинга.
+Откроется `http://localhost:5280`. Сайт целиком — на [dev.carpark.am/parz-ui](https://dev.carpark.am/parz-ui). `npm run build` собирает эту площадку в `build/` для любого статического хостинга.
 
 ## Разработка
 
@@ -74,8 +74,9 @@ npm run dev
 |---|---|
 | `npm run dev` | Площадка с горячей перезагрузкой |
 | `npm run build:lib` | Сборка пакета в `dist/` (JS, CSS, типы) |
-| `npm run build` | Сборка сайта-площадки в `site/` |
+| `npm run build` | Сборка площадки в `build/` |
 | `npm run typecheck` | Проверка типов |
+| `npm run release -- patch` | Выпуск новой версии (`--beta` — пробная, `--dry-run` — посмотреть без изменений) |
 
 ## Лицензия
 
