@@ -45,6 +45,11 @@ if (branch !== 'main') fail(`Выпускать можно только из в�
 const dirty = sh('git status --porcelain');
 if (dirty && !dry) fail(`Есть незакоммиченные изменения — сначала git add и git commit:\n${dirty}`);
 
+// Вход в npm проверяем заранее: без него публикация падает с 404, когда коммит и тег уже созданы
+if (!dry && spawnSync('npm whoami', { shell: true, stdio: 'ignore' }).status !== 0) {
+  fail('Вы не вошли в npm (вход истёк). Выполните: npm login  — и запустите выпуск снова.');
+}
+
 // 2. Новая версия
 const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 const [core, pre] = pkg.version.split('-');
