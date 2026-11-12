@@ -1,6 +1,9 @@
-# Parz UI
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/banner-dark.svg">
+  <img alt="Parz UI — React components with liquid motion" src=".github/banner-light.svg" width="100%">
+</picture>
 
-**English** · [Հայերեն](README.hy.md) · [Русский](README.ru.md)
+<p align="center"><b>English</b> · <a href="README.hy.md">Հայերեն</a> · <a href="README.ru.md">Русский</a></p>
 
 React components with liquid motion — springy, smooth, nothing abrupt. Crafted by **CarPark Team** & **Dev.CarPark**.
 

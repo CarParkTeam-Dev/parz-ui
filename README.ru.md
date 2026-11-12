@@ -1,6 +1,9 @@
-# Parz UI
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/banner-dark.svg">
+  <img alt="Parz UI — React-компоненты с жидкой анимацией" src=".github/banner-light.svg" width="100%">
+</picture>
 
-[English](README.md) · [Հայերեն](README.hy.md) · **Русский**
+<p align="center"><a href="README.md">English</a> · <a href="README.hy.md">Հայերեն</a> · <b>Русский</b></p>
 
 React-компоненты с жидкой анимацией — упругие, плавные, ничего резкого. Сделано командой **CarPark Team** и **Dev.CarPark**.
 

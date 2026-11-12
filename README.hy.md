@@ -1,6 +1,9 @@
-# Parz UI
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/banner-dark.svg">
+  <img alt="Parz UI — React կոմպոնենտներ հեղուկ անիմացիայով" src=".github/banner-light.svg" width="100%">
+</picture>
 
-[English](README.md) · **Հայերեն** · [Русский](README.ru.md)
+<p align="center"><a href="README.md">English</a> · <b>Հայերեն</b> · <a href="README.ru.md">Русский</a></p>
 
 React կոմպոնենտներ հեղուկ անիմացիայով՝ առաձգական, սահուն, ոչինչ կտրուկ։ Պատրաստել են **CarPark Team**-ը և **Dev.CarPark**-ը։
 
