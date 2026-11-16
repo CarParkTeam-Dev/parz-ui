@@ -12,6 +12,8 @@ npm update @carparkteam/parz-ui
 
 ## Unreleased
 
+## 1.1.0 — 2026-11-16
+
 ### Added
 - **Parz Button** (`ParzButton`) — button that gently squeezes when pressed while a drop spreads from the touch point; five looks (`solid`, `soft`, `outline`, `ghost`, `glass`), icons, links and smooth loading.
 - **Parz Progress** (`ParzProgress`) — progress bar or ring where the fill flows to each new value; unknown-duration mode, states (`success`, `warning`, `error`, `paused`), a soft glow at 100% and a beta `successMorph`: on success the bar turns into a circle with a check.
