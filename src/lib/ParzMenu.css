@@ -108,12 +108,16 @@
 /* бейджи */
 .ltb-badge{position:absolute;pointer-events:none;animation:ltbPop .45s cubic-bezier(.34,1.56,.64,1)}
 .ltb-badge--dot{top:-1px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--ltb-accent);box-shadow:0 0 0 2px var(--ltb-badge-ring)}
-.ltb-badge--count{top:-6px;left:calc(100% - 9px);min-width:17px;height:17px;padding:0 5px;border-radius:9px;background:var(--ltb-badge-bg);color:var(--ltb-badge-text);
-  font-family:var(--ltb-font);font-weight:700;font-size:10.5px;line-height:1;text-align:center;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--ltb-badge-ring);white-space:nowrap;
+/* размеры подобраны так, чтобы центр цифр ложился на целый пиксель: высота цифр Inter 11px ≈ 8px, бейдж 18px → ровно по 5px
+   сверху и снизу. При 17px и 10,5px центр приходился на полпикселя и на разных экранах округлялся то вверх, то вниз */
+.ltb-badge--count{top:-6px;left:calc(100% - 9px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--ltb-badge-bg);color:var(--ltb-badge-text);
+  font-family:var(--ltb-font);font-weight:700;font-size:11px;line-height:1;text-align:center;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--ltb-badge-ring);white-space:nowrap;
   display:inline-flex;align-items:center;justify-content:center}
 /* цифры точно по центру круга: число — отдельный блок, его строка обрезана ровно по высоте цифр
    (от линии заглавных до базовой), и flex центрирует уже этот блок, а не всю строку шрифта с запасом сверху и снизу */
-.ltb-badge-n{display:block;line-height:1;text-box:trim-both cap alphabetic}
+.ltb-badge-n{display:block;line-height:1;text-box:trim-both cap alphabetic;
+  /* разрядка добавляется и после последнего знака — убираем этот хвост, иначе текст съезжает влево */
+  margin-right:calc(-1 * var(--ltb-badge-ls,0px));letter-spacing:var(--ltb-badge-ls,normal)}
 /* где text-box не поддерживается — сдвиг вниз компенсирует запас строки над цифрами */
 @supports not (text-box:trim-both cap alphabetic){.ltb-badge-n{transform:translateY(.06em)}}
 .ltb-action>.ltb-badge--dot{top:12%;right:14%}

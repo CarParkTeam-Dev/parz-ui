@@ -533,3 +533,52 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .up-cmd .hero-cmd{margin:2px 0 0;width:100%;justify-content:space-between}
 @media (max-width:480px){.up--new{grid-template-columns:auto 1fr}.up-a{grid-column:1/-1;justify-content:center}}
 @media (prefers-reduced-motion:reduce){.up,.up-ic,.up-spin{animation:none}}
+
+/* Parz Button */
+.bt-stage{align-items:stretch}
+.bt-main{display:flex;justify-content:flex-start;min-width:0}
+.bt-main .pz-btn{max-width:100%}
+.bt-main .pz-btn-stack{overflow:hidden}
+.bt-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.card-demo--button{background:radial-gradient(90% 80% at 25% 20%,#163a2a 0%,transparent 60%),radial-gradient(80% 80% at 85% 85%,#3b1d4d 0%,transparent 60%),#0b0b0e}
+.card-demo--button .bt-row{justify-content:center}
+.tg-stage--light .pz-btn{--pz-btn-shade:45%}
+
+/* Parz Progress */
+.pg-stage{align-items:stretch;gap:22px}
+.pg-bars{display:flex;flex-direction:column;gap:18px;width:100%}
+.pg-rings{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.pg-demo{display:flex;flex-direction:column;align-items:flex-start;gap:12px;width:100%}
+.tg-stage--light .pz-pg{--pz-pg-track:rgba(22,22,27,.1)}
+.card-demo--progress{background:radial-gradient(90% 80% at 20% 20%,#163a2a 0%,transparent 60%),radial-gradient(80% 80% at 85% 85%,#1d2a4d 0%,transparent 60%),#0b0b0e}
+.pg-card{width:min(300px,100%);display:flex;flex-direction:column;gap:18px}
+.pg-card-rings{display:flex;gap:16px;justify-content:center}
+.pg-states{display:flex;flex-direction:column;gap:12px;width:100%;padding-top:14px;border-top:1px solid var(--line)}
+.tg-stage--light .pg-states{border-top-color:#e2e3ea}
+
+/* бейдж beta слева от настройки, на одном уровне с переключателем */
+.pg-beta{display:flex;align-items:center;gap:8px;--ltb-badge-bg:#ff4d5e;--ltb-badge-text:#fff}
+.pg-beta .ltb-badge{text-transform:uppercase;--ltb-badge-ls:.04em}
+
+/* Parz Badge */
+.bd-stage{gap:22px}
+.bd-main{min-height:48px;display:flex;align-items:center;padding:6px}
+.bd-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.tg-stage--dark .pz-bd{--pz-bd-ring:#0f1512}
+.tg-stage--light .pz-bd{--pz-bd-ring:#f3f4f7}
+.card-demo--badge{background:radial-gradient(90% 80% at 75% 20%,#3a1622 0%,transparent 60%),radial-gradient(80% 80% at 15% 85%,#1d2a4d 0%,transparent 60%),#0b0b0e}
+.card-demo--badge .pz-bd{--pz-bd-ring:#0b0b0e}
+.bd-card{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center}
+
+/* Parz Video */
+.vd-stages{grid-template-columns:1fr}
+.vd-stage{align-items:stretch;min-height:0}
+.vd-box{width:100%;min-width:0}
+.vd-box--tall{width:min(300px,100%);align-self:center}
+.card-demo--video{background:radial-gradient(90% 80% at 20% 20%,#163a2a 0%,transparent 60%),radial-gradient(80% 80% at 85% 85%,#3b1d4d 0%,transparent 60%),#0b0b0e}
+.vd-card{width:min(320px,100%)}
+
+/* кнопки-варианты: подсвечен выбранный (а не первый, как у обычных .btns), смена плавная */
+.btns--pick button{transition:background-color .35s cubic-bezier(.33,0,.15,1),border-color .35s cubic-bezier(.33,0,.15,1),color .35s cubic-bezier(.33,0,.15,1)}
+.btns.btns--pick button:first-child{background:none;border-color:#2a2a2f;color:inherit}
+.btns.btns--pick button.on{background:var(--acc);border-color:var(--acc);color:#04130a}

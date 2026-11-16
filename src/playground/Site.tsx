@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ParzMenu, AnimoLogo, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, type TabItem } from '../lib';
+import { ParzMenu, AnimoLogo, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, ParzButton, ParzProgress, ParzBadge, ParzVideo, type TabItem } from '../lib';
 import { MenuEditor, Seg } from './App';
 import { LogoEditor } from './LogoEditor';
 import { ToggleEditor } from './ToggleEditor';
 import { CheckboxEditor } from './CheckboxEditor';
+import { ButtonEditor } from './ButtonEditor';
+import { ProgressEditor } from './ProgressEditor';
+import { BadgeEditor } from './BadgeEditor';
 import { SliderEditor } from './SliderEditor';
+import { VideoEditor, DEMO_CLIP, useVideoLabels, usePoster } from './VideoEditor';
 import { Markdown } from './Markdown';
 import { ChangelogPage } from './Changelog';
 import { UpdateCheck } from './UpdateCheck';
@@ -22,6 +26,18 @@ import toggleHy from '../../docs/parz-toggle.hy.md?raw';
 import checkEn from '../../docs/parz-checkbox.en.md?raw';
 import checkRu from '../../docs/parz-checkbox.ru.md?raw';
 import checkHy from '../../docs/parz-checkbox.hy.md?raw';
+import buttonEn from '../../docs/parz-button.en.md?raw';
+import buttonRu from '../../docs/parz-button.ru.md?raw';
+import buttonHy from '../../docs/parz-button.hy.md?raw';
+import progressEn from '../../docs/parz-progress.en.md?raw';
+import progressRu from '../../docs/parz-progress.ru.md?raw';
+import progressHy from '../../docs/parz-progress.hy.md?raw';
+import badgeEn from '../../docs/parz-badge.en.md?raw';
+import badgeRu from '../../docs/parz-badge.ru.md?raw';
+import badgeHy from '../../docs/parz-badge.hy.md?raw';
+import videoEn from '../../docs/parz-video.en.md?raw';
+import videoRu from '../../docs/parz-video.ru.md?raw';
+import videoHy from '../../docs/parz-video.hy.md?raw';
 import sliderEn from '../../docs/parz-slider.en.md?raw';
 import sliderRu from '../../docs/parz-slider.ru.md?raw';
 import sliderHy from '../../docs/parz-slider.hy.md?raw';
@@ -30,20 +46,24 @@ import changesRu from '../../CHANGELOG.ru.md?raw';
 import changesHy from '../../CHANGELOG.hy.md?raw';
 import pkg from '../../package.json';
 
-type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'slider' | 'range' | 'brand' | 'changelog';
-type Cmp = 'menu' | 'animo' | 'toggle' | 'check' | 'slider' | 'range';
-const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', toggle: 'Parz Toggle', check: 'Parz Checkbox', slider: 'Parz Slider', range: 'Parz Range' };
+type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'brand' | 'changelog';
+type Cmp = 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range';
+const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', toggle: 'Parz Toggle', check: 'Parz Checkbox', button: 'Parz Button', progress: 'Parz Progress', badge: 'Parz Badge', video: 'Parz Video', slider: 'Parz Slider', range: 'Parz Range' };
 const isCmp = (p: Page): p is Cmp => p in CMP_TITLE;
 type View = 'editor' | 'docs';
 type Route = { page: Page; view: View };
 export type Go = (p: Page, v?: View) => void;
 export type { Page, Lang };
-const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', slider: 'parz-slider', range: 'parz-range', brand: 'brand', changelog: 'changelog' };
+const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', button: 'parz-button', progress: 'parz-progress', badge: 'parz-badge', video: 'parz-video', slider: 'parz-slider', range: 'parz-range', brand: 'brand', changelog: 'changelog' };
 const DOCS: Record<Cmp, Record<Lang, string>> = {
   menu: { en: menuEn, ru: menuRu, hy: menuHy },
   animo: { en: logoEn, ru: logoRu, hy: logoHy },
   toggle: { en: toggleEn, ru: toggleRu, hy: toggleHy },
   check: { en: checkEn, ru: checkRu, hy: checkHy },
+  button: { en: buttonEn, ru: buttonRu, hy: buttonHy },
+  progress: { en: progressEn, ru: progressRu, hy: progressHy },
+  badge: { en: badgeEn, ru: badgeRu, hy: badgeHy },
+  video: { en: videoEn, ru: videoRu, hy: videoHy },
   slider: { en: sliderEn, ru: sliderRu, hy: sliderHy },
   range: { en: sliderEn, ru: sliderRu, hy: sliderHy }
 };
@@ -61,6 +81,14 @@ const INDEX: Omit<Hit, 'sub'>[] = [
   { page: 'toggle', view: 'docs', title: 'Parz Toggle', icon: 'description', words: 'parz toggle switch docs props api документация пропсы переключатель փաստաթղթեր' },
   { page: 'check', view: 'editor', title: 'Parz Checkbox', icon: 'check_box', words: 'parz checkbox check tick select all indeterminate form agree чекбокс флажок галочка выбрать все согласие форма նշիչ նշել ընտրել բոլորը' },
   { page: 'check', view: 'docs', title: 'Parz Checkbox', icon: 'description', words: 'parz checkbox docs props api документация пропсы чекбокс флажок փաստաթղթեր' },
+  { page: 'button', view: 'editor', title: 'Parz Button', icon: 'smart_button', words: 'parz button btn cta submit action click loading ripple icon кнопка нажать отправить загрузка капля иконка կոճակ սեղմել ուղարկել բեռնում' },
+  { page: 'button', view: 'docs', title: 'Parz Button', icon: 'description', words: 'parz button docs props api документация пропсы кнопка կոճակ փաստաթղթեր' },
+  { page: 'progress', view: 'editor', title: 'Parz Progress', icon: 'progress_activity', words: 'parz progress bar ring loader loading upload percent spinner прогресс полоса кольцо загрузка процент индикатор спиннер առաջընթաց բեռնում տոկոս ցուցիչ' },
+  { page: 'progress', view: 'docs', title: 'Parz Progress', icon: 'description', words: 'parz progress docs props api документация пропсы прогресс առաջընթաց փաստաթղթեր' },
+  { page: 'badge', view: 'editor', title: 'Parz Badge', icon: 'new_releases', words: 'parz badge tag label chip counter count notification dot new beta status бейдж метка счётчик уведомления точка новое статус пометка պիտակ նշան հաշվիչ ծանուցում կետ նոր' },
+  { page: 'badge', view: 'docs', title: 'Parz Badge', icon: 'description', words: 'parz badge docs props api документация пропсы бейдж метка պիտակ փաստաթղթեր' },
+  { page: 'video', view: 'editor', title: 'Parz Video', icon: 'smart_display', words: 'parz video player media movie film play pause seek fullscreen volume speed видео плеер фильм ролик смотреть пауза перемотка громкость скорость полный экран տեսանյութ նվագարկիչ ֆիլմ դիտել դադար ոլորում ձայն' },
+  { page: 'video', view: 'docs', title: 'Parz Video', icon: 'description', words: 'parz video player docs props api документация пропсы видео плеер տեսանյութ փաստաթղթեր' },
   { page: 'slider', view: 'editor', title: 'Parz Slider', icon: 'linear_scale', words: 'parz slider range input volume value drag ползунок слайдер громкость значение սահիչ ձայն արժեք' },
   { page: 'slider', view: 'docs', title: 'Parz Slider', icon: 'description', words: 'parz slider docs props api документация пропсы ползунок փաստաթղթեր' },
   { page: 'range', view: 'editor', title: 'Parz Range', icon: 'tune', words: 'parz range interval between price filter multi thumbs промежуток диапазон интервал цена фильтр от до несколько միջակայք գին ֆիլտր' },
@@ -181,7 +209,7 @@ export function Site({ extras = {} }: { extras?: SiteExtras }) {
               <Seg label={t('Раздел')} value={v} options={[['editor', t('Редактор')], ['docs', t('Документация')]]} onChange={nv => go(page, nv)} />
             </div>
             {v === 'editor'
-              ? (page === 'menu' ? <MenuEditor lang={lang} /> : page === 'animo' ? <LogoEditor /> : page === 'toggle' ? <ToggleEditor /> : page === 'check' ? <CheckboxEditor /> : <SliderEditor key={page} kind={page} />)
+              ? (page === 'menu' ? <MenuEditor lang={lang} /> : page === 'animo' ? <LogoEditor /> : page === 'toggle' ? <ToggleEditor /> : page === 'check' ? <CheckboxEditor /> : page === 'button' ? <ButtonEditor /> : page === 'progress' ? <ProgressEditor /> : page === 'badge' ? <BadgeEditor /> : page === 'video' ? <VideoEditor /> : <SliderEditor key={page} kind={page} />)
               : <main className="docs page"><Markdown key={lang + page} source={DOCS[page][lang]} /></main>}
           </div>
         )}
@@ -295,6 +323,59 @@ function CheckDemo({ lang }: { lang: Lang }) {
     </div>
   );
 }
+function ButtonDemo({ lang }: { lang: Lang }) {
+  const t = (k: string) => tr(lang, k);
+  const [busy, setBusy] = useState(false);
+  const tm = useRef(0);
+  useEffect(() => () => window.clearTimeout(tm.current), []);
+  const go = () => { setBusy(true); tm.current = window.setTimeout(() => setBusy(false), 1500); };
+  return (
+    <div className="card-demo card-demo--button">
+      <div className="bt-row">
+        <ParzButton loading={busy} onClick={go} iconEnd="ms:arrow_forward">{t('Отправить')}</ParzButton>
+        <ParzButton variant="glass" icon="ms:favorite" iconOnly ariaLabel={t('В избранное')} />
+      </div>
+      <small>{t('Нажмите')}</small>
+    </div>
+  );
+}
+function ProgressDemo({ lang }: { lang: Lang }) {
+  const [v, setV] = useState(35);
+  useEffect(() => {
+    const id = window.setInterval(() => setV(x => (x >= 100 ? 12 : Math.min(100, x + 9 + Math.round(Math.random() * 18)))), 1100);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <div className="card-demo card-demo--progress">
+      <div className="pg-card">
+        <ParzProgress value={v} label={tr(lang, 'Загрузка файла')} />
+        <div className="pg-card-rings"><ParzProgress variant="ring" value={v} accent="#7aa7ff" /><ParzProgress variant="ring" indeterminate ariaLabel={tr(lang, 'Подождите…')} /></div>
+      </div>
+    </div>
+  );
+}
+function BadgeDemo({ lang }: { lang: Lang }) {
+  const [n, setN] = useState(3);
+  useEffect(() => {
+    const id = window.setInterval(() => setN(x => (x >= 12 ? 0 : x + 1 + Math.round(Math.random() * 3))), 1300);
+    return () => window.clearInterval(id);
+  }, []);
+  return (
+    <div className="card-demo card-demo--badge">
+      <div className="bd-card">
+        <ParzBadge count={n} ariaLabel={tr(lang, 'Уведомления')}><ParzButton variant="glass" icon="ms:notifications" iconOnly ariaLabel={tr(lang, 'Уведомления')} /></ParzBadge>
+        <ParzBadge label={tr(lang, 'Новое')} />
+        <ParzBadge label="Beta" variant="soft" color="#7aa7ff" />
+        <ParzBadge dot pulse color="#38c172" ariaLabel={tr(lang, 'В сети')} />
+      </div>
+    </div>
+  );
+}
+function VideoDemo() {
+  const labels = useVideoLabels();
+  const poster = usePoster();
+  return <div className="card-demo card-demo--video"><div className="vd-card"><ParzVideo src={DEMO_CLIP} poster={poster} muted loop radius={14} showSkip={false} previews={false} labels={labels} /></div></div>;
+}
 function SliderDemo({ lang }: { lang: Lang }) {
   const [v, setV] = useState(64);
   return (
@@ -333,6 +414,26 @@ export const CATALOG: Entry[] = [
     id: 'check', title: 'Parz Checkbox', tags: ['Forms', 'Checkbox', 'Motion'],
     desc: 'Флажок, в котором цвет растекается каплей, а галочка дорисовывается штрихом. Есть «частично выбрано» и состояние ошибки.',
     demo: lang => <CheckDemo lang={lang} />
+  },
+  {
+    id: 'button', title: 'Parz Button', tags: ['Forms', 'Button', 'Motion'],
+    desc: 'Кнопка, которая мягко поджимается при нажатии, а из точки касания растекается капля. Пять видов, иконки и плавная загрузка.',
+    demo: lang => <ButtonDemo lang={lang} />
+  },
+  {
+    id: 'progress', title: 'Parz Progress', tags: ['Feedback', 'Loading', 'Motion'],
+    desc: 'Прогресс, который перетекает к новому значению, а не прыгает: полоса или кольцо, режим «неизвестно сколько» и мягкая вспышка на 100%.',
+    demo: lang => <ProgressDemo lang={lang} />
+  },
+  {
+    id: 'badge', title: 'Parz Badge', tags: ['Status', 'Counter', 'Motion'],
+    desc: 'Метка или счётчик: появляется каплей, цифры перекатываются, а ширина перетекает. Можно поставить отдельно или в угол кнопки, есть точка с пульсом.',
+    demo: lang => <BadgeDemo lang={lang} />
+  },
+  {
+    id: 'video', title: 'Parz Video', tags: ['Media', 'Player', 'Motion'],
+    desc: 'Видеоплеер, где панель — жидкое стекло: полоса перемотки течёт плавно, значки перетекают друг в друга, а панель мягко прячется, пока вы смотрите.',
+    demo: () => <VideoDemo />
   },
   {
     id: 'slider', title: 'Parz Slider', tags: ['Forms', 'Slider', 'Motion'],

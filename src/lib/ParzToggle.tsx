@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
 import './ParzToggle.css';
 
 export type ParzToggleSize = 'sm' | 'md' | 'lg' | number;
@@ -64,8 +64,10 @@ export function ParzToggle({
   const h = typeof size === 'number' ? size : SIZES[size];
   const pad = Math.max(2, Math.round(h / 10));
   const thumb = h - pad * 2;
-  const w = Math.round(h * 1.7);
-  const travel = w - thumb - pad * 2;
+  // бегунок — капсула, как в iOS: шире, чем выше; дорожка длиннее, чтобы ходу хватало
+  const thumbW = Math.round(thumb * 1.55);
+  const w = Math.round(h * 2.25);
+  const travel = w - thumbW - pad * 2;
 
   const set = (v: boolean) => {
     if (disabled || v === on) return;
@@ -79,12 +81,45 @@ export function ParzToggle({
     }
     last.current = now;
     setMoved(true);
+    setByDrag(false);
     if (checked === undefined) setInner(v);
     onChange?.(v);
   };
 
+  // нажатие — свой флаг вместо :active: на телефонах :active «залипает» после касания, и бегунок оставался раздутым
+  const [press, setPress] = useState(false);
+  // переключили перетаскиванием — анимацию переезда не повторяем: бегунок уже на месте и просто сдувается из стекла
+  const [byDrag, setByDrag] = useState(false);
+  const dragNow = useRef<number | null>(null);
+  dragNow.current = drag;
+  const live = useRef({ on, travel, set: (_: boolean) => {} });
+  // потеря фокуса посреди нажатия или перетаскивания (сменили вкладку, всплыло окно, касание прервано):
+  // ничего не застревает — бегунок спокойно доезжает к ближайшей стороне и сдувается
+  const settle = () => {
+    const s = d.current, x = dragNow.current;
+    d.current = null;
+    setPress(false);
+    if (s && s.moved && x !== null) {
+      skipClick.current = true;
+      setTimeout(() => { skipClick.current = false; }, 0);
+      setDrag(null);
+      const next = x > live.current.travel / 2;
+      if (next !== live.current.on) live.current.set(next);
+      setByDrag(true);
+    }
+  };
+  useEffect(() => {
+    const vis = () => { if (document.visibilityState === 'hidden') settle(); };
+    window.addEventListener('blur', settle);
+    document.addEventListener('visibilitychange', vis);
+    return () => { window.removeEventListener('blur', settle); document.removeEventListener('visibilitychange', vis); };
+  }, []);
   const down = (e: PointerEvent) => {
-    if (disabled || !draggable || e.button !== 0) return;
+    if (disabled || e.button !== 0) return;
+    setPress(true);
+    const off = () => { setPress(false); window.removeEventListener('pointerup', off); window.removeEventListener('pointercancel', off); };
+    window.addEventListener('pointerup', off); window.addEventListener('pointercancel', off);
+    if (!draggable) return;
     d.current = { x0: e.clientX, start: on ? travel : 0, pid: e.pointerId, moved: false };
   };
   const move = (e: PointerEvent) => {
@@ -104,7 +139,10 @@ export function ParzToggle({
     setTimeout(() => { skipClick.current = false; }, 0);
     const x = drag ?? s.start;
     setDrag(null);
-    if (e.type !== 'pointercancel') set(x > travel / 2);
+    // и при отмене касания (например, страницу начали прокручивать) — к ближайшей стороне, а не рывком назад
+    const next = x > travel / 2;
+    if (e.type !== 'pointercancel' || next !== on) set(next);
+    setByDrag(true);
   };
   const click = (e: MouseEvent) => { if (skipClick.current) { e.preventDefault(); skipClick.current = false; } };
   const key = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -112,7 +150,7 @@ export function ParzToggle({
   };
 
   const vars = {
-    '--pz-tg-h': `${h}px`, '--pz-tg-w': `${w}px`, '--pz-tg-pad': `${pad}px`, '--pz-tg-thumb': `${thumb}px`,
+    '--pz-tg-h': `${h}px`, '--pz-tg-w': `${w}px`, '--pz-tg-pad': `${pad}px`, '--pz-tg-thumb': `${thumb}px`, '--pz-tg-tw': `${thumbW}px`,
     '--pz-tg-x': `${drag ?? (on ? travel : 0)}px`,
     ...(accent && { '--pz-tg-accent': accent }),
     ...(trackColor && { '--pz-tg-track': trackColor }),
@@ -121,11 +159,14 @@ export function ParzToggle({
     ...style
   } as CSSProperties;
 
-  const cls = ['pz-tg', on && 'is-on', disabled && 'is-disabled', drag !== null && 'is-drag', moved && 'is-moved', rejecting && 'is-reject', rejecting && (reject % 2 ? 'is-reject-a' : 'is-reject-b'), labelPosition === 'start' && 'pz-tg--start', className]
+  live.current = { on, travel, set };
+  // дорожка меняет цвет сразу, как бегунок перетащили за середину, — не дожидаясь отпускания
+  const lit = drag !== null ? drag > travel / 2 : on;
+  const cls = ['pz-tg', on && 'is-on', lit && 'is-lit', disabled && 'is-disabled', drag !== null && 'is-drag', press && 'is-press', byDrag && 'is-by-drag', moved && 'is-moved', rejecting && 'is-reject', rejecting && (reject % 2 ? 'is-reject-a' : 'is-reject-b'), labelPosition === 'start' && 'pz-tg--start', className]
     .filter(Boolean).join(' ');
 
   return (
-    <label className={cls} style={vars} onClick={click} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+    <label className={cls} style={vars} onClick={click} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onLostPointerCapture={() => { if (d.current?.moved) settle(); }}>
       <span className="pz-tg-track" ref={track}>
         <input type="checkbox" role="switch" className="pz-tg-in" checked={on} aria-checked={on} disabled={disabled} aria-label={ariaLabel}
           name={name} id={id} onChange={e => set(e.target.checked)} onKeyDown={key} />

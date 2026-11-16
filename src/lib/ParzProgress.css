@@ -1,0 +1,119 @@
+/* Parz UI · Parz Progress */
+.pz-pg{--pz-pg-accent:#6ee7a0;--pz-pg-success:#6ee7a0;--pz-pg-warning:#f5b94a;--pz-pg-error:#ff5c5c;--pz-pg-paused:#8b8b96;--_c:var(--pz-pg-accent);--pz-pg-track:rgba(127,127,140,.22);--pz-pg-h:8px;--_ease:cubic-bezier(.33,0,.15,1);
+  display:block;width:100%;min-width:0;font-size:14px}
+.pz-pg--sm{--pz-pg-h:4px}
+.pz-pg--lg{--pz-pg-h:12px}
+.pz-pg-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+/* смена подписи — новая мягко проявляется, а не появляется рывком */
+.pz-pg-label{min-width:0;overflow-wrap:anywhere;animation:pzPgLabel .45s var(--_ease) both}
+@keyframes pzPgLabel{from{opacity:0;filter:blur(3px);transform:translateY(3px)}to{opacity:1;filter:none;transform:none}}
+.pz-pg-val{font-variant-numeric:tabular-nums;opacity:.7;white-space:nowrap}
+
+/* ---- полоса ---- */
+.pz-pg-track{position:relative;height:var(--pz-pg-h);border-radius:999px;background:var(--pz-pg-track);overflow:hidden;isolation:isolate}
+/* ширину задаёт пружина в ParzProgress.tsx через --pz-pg-p (0…1); у пустой заливки скругление не превращается в точку */
+.pz-pg-fill{position:absolute;inset:0 auto 0 0;width:calc(var(--pz-pg-p,0) * 100%);border-radius:inherit;background:var(--_c);
+  opacity:clamp(0,calc(var(--pz-pg-p,0) * 80),1);overflow:hidden;transition:background-color .55s var(--_ease)}
+/* мягкий блик медленно течёт по заливке — полоса «живая», но спокойная */
+.pz-pg-sheen{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.28) 50%,transparent 100%);
+  background-size:60% 100%;background-repeat:no-repeat;animation:pzPgSheen 2.6s var(--_ease) infinite}
+@keyframes pzPgSheen{from{background-position:-120% 0}to{background-position:260% 0}}
+.pz-pg.is-full .pz-pg-sheen{animation:none;opacity:0}
+
+/* неизвестно сколько: по дорожке течёт капля — вытягивается в разгоне и собирается к концу */
+.pz-pg-drop{position:absolute;top:0;bottom:0;left:0;width:38%;border-radius:999px;background:var(--_c);opacity:0;transform:translateX(-110%);transition:background-color .55s var(--_ease)}
+.pz-pg.is-indet .pz-pg-fill{opacity:0}
+.pz-pg.is-indet .pz-pg-drop{opacity:1;animation:pzPgFlow 1.9s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes pzPgFlow{
+  0%{transform:translateX(-110%) scaleX(.5)}
+  50%{transform:translateX(80%) scaleX(1.25)}
+  100%{transform:translateX(270%) scaleX(.5)}}
+
+/* дошли до конца — дорожка мягко светится и гаснет (две одинаковые анимации, чтобы каждый раз перезапускалась) */
+.pz-pg.is-done-a .pz-pg-track,.pz-pg.is-done-a .pz-pg-ringbox{animation:pzPgDoneA 1.2s var(--_ease)}
+.pz-pg.is-done-b .pz-pg-track,.pz-pg.is-done-b .pz-pg-ringbox{animation:pzPgDoneB 1.2s var(--_ease)}
+@keyframes pzPgDoneA{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--_c) 0%,transparent)}35%{box-shadow:0 0 14px 2px color-mix(in srgb,var(--_c) 55%,transparent)}100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--_c) 0%,transparent)}}
+@keyframes pzPgDoneB{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--_c) 0%,transparent)}35%{box-shadow:0 0 14px 2px color-mix(in srgb,var(--_c) 55%,transparent)}100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--_c) 0%,transparent)}}
+
+/* ---- кольцо ---- */
+/* кольцо: подпись справа (по умолчанию), слева или снизу. Кольцо всегда прижато к своему краю —
+   длина подписи (короче или длиннее) никогда его не сдвигает */
+.pz-pg--ring{display:inline-flex;flex-direction:row;align-items:center;gap:12px;width:auto;max-width:100%;vertical-align:middle}
+.pz-pg--lp-start{flex-direction:row-reverse}
+.pz-pg--lp-bottom{flex-direction:column;align-items:flex-start;gap:8px}
+.pz-pg-ringbox{position:relative;display:grid;place-items:center;border-radius:50%;flex:none}
+.pz-pg-svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}
+.pz-pg-rtrack{fill:none;stroke:var(--pz-pg-track)}
+.pz-pg-rfill{fill:none;stroke:var(--_c);stroke-linecap:round;transition:stroke .55s var(--_ease)}
+/* текст в центре: размер от диаметра кольца, ширина ограничена внутренним кругом — длинное значение ужимается (см. fit в tsx) */
+.pz-pg-center{position:relative;display:flex;justify-content:center;width:var(--pz-pg-room);font-size:var(--pz-pg-fs);font-weight:650;line-height:1;letter-spacing:-.02em}
+.pz-pg-center .pz-pg-val{display:inline-block;transform-origin:50% 50%;transition:transform .3s var(--_ease)}
+.pz-pg-center .pz-pg-val{opacity:.9}
+/* кольцо «неизвестно сколько»: дуга вращается неравномерно — разгоняется и мягко притормаживает, как капля по кругу.
+   Одно свойство transform, без пересчёта длины дуги, — плавно в любом браузере */
+.pz-pg--ring.is-indet .pz-pg-svg{animation:pzPgSpin 1.25s cubic-bezier(.45,.05,.55,.95) infinite}
+@keyframes pzPgSpin{from{transform:rotate(-90deg)}to{transform:rotate(270deg)}}
+
+/* ---- состояния: цвет перетекает за ~0,5 с ---- */
+.pz-pg.is-success{--_c:var(--pz-pg-success)}
+.pz-pg.is-warning{--_c:var(--pz-pg-warning)}
+.pz-pg.is-error{--_c:var(--pz-pg-error)}
+.pz-pg.is-paused{--_c:var(--pz-pg-paused)}
+.pz-pg[data-status] .pz-pg-val{transition:color .55s var(--_ease)}
+.pz-pg.is-warning .pz-pg-val,.pz-pg.is-error .pz-pg-val,.pz-pg.is-success .pz-pg-val,.pz-pg.is-paused .pz-pg-val{color:var(--_c);opacity:1}
+/* значок состояния вместо числа: рисуется штрихом и мягко проявляется */
+.pz-pg-ico{display:inline-grid;place-items:center;width:1.25em;height:1.25em;animation:pzPgLabel .45s var(--_ease) backwards}
+.pz-pg-ico svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.pz-pg--ring .pz-pg-ico{width:1.5em;height:1.5em}
+/* внимание: заливка спокойно «дышит» яркостью — без рывков и мигания */
+.pz-pg.is-warning .pz-pg-fill,.pz-pg.is-warning .pz-pg-rfill{animation:pzPgBreath 2.2s ease-in-out infinite}
+@keyframes pzPgBreath{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25) saturate(1.15)}}
+/* ошибка: один мягкий вздрог, как отказ у Parz Toggle; блик гаснет */
+.pz-pg.is-error .pz-pg-track,.pz-pg.is-error .pz-pg-ringbox{animation:pzPgErr .62s cubic-bezier(.3,.7,.4,1)}
+@keyframes pzPgErr{0%{transform:none}18%{transform:translateX(5px)}40%{transform:translateX(-4px)}60%{transform:translateX(2.5px)}80%{transform:translateX(-1px)}100%{transform:none}}
+.pz-pg.is-error .pz-pg-sheen,.pz-pg.is-paused .pz-pg-sheen{opacity:0;animation-play-state:paused;transition:opacity .4s}
+/* пауза или задержка: цвет приглушён, капля и дуга замирают там, где были (без скачка — анимация просто
+   останавливается), а сама дорожка медленно «дышит», показывая, что процесс жив, но ждёт */
+.pz-pg.is-paused .pz-pg-drop,.pz-pg--ring.is-paused.is-indet .pz-pg-svg{animation-play-state:paused}
+.pz-pg.is-paused .pz-pg-track,.pz-pg.is-paused .pz-pg-ringbox{animation:pzPgWait 2.6s ease-in-out infinite}
+@keyframes pzPgWait{0%,100%{opacity:1}50%{opacity:.55}}
+.pz-pg.is-paused .pz-pg-fill{opacity:clamp(0,calc(var(--pz-pg-p,0) * 80),.75)}
+
+/* ---- бета: превращение при успехе (successMorph) ----
+   полоса: 1) заливка дотекает до 100% → 2) дорожка стягивается с краёв к центру в каплю → 3) капля пружинисто
+   раздувается в круг → 4) дорисовывается галочка. Назад — в обратном порядке и быстрее. Высота полосы не меняется,
+   поэтому соседние элементы не сдвигаются. */
+.pz-pg-bar{position:relative}
+.pz-pg-track{clip-path:inset(0 0 round 999px);transition:clip-path .5s var(--_ease) .2s,opacity .25s ease .2s}
+.pz-pg.is-morph .pz-pg-track{clip-path:inset(0 calc(50% - var(--pz-pg-h) / 2) round 999px);opacity:0;
+  transition:clip-path .55s cubic-bezier(.6,0,.3,1) .55s,opacity .3s ease .95s}
+.pz-pg-badge,.pz-pg-disc{--pz-pg-on:#06130b;position:absolute;display:grid;place-items:center;border-radius:50%;background:var(--_c);color:var(--pz-pg-on);
+  pointer-events:none;opacity:0;transform:scale(.2);transition:transform .32s var(--_ease),opacity .22s ease}
+.pz-pg-badge{--_b:max(24px,calc(var(--pz-pg-h) * 2.8));left:50%;top:50%;width:var(--_b);height:var(--_b);margin:calc(var(--_b) / -2) 0 0 calc(var(--_b) / -2)}
+.pz-pg-disc{inset:0}
+.pz-pg.is-morph .pz-pg-badge{opacity:1;transform:none;transition:transform .7s cubic-bezier(.34,1.5,.5,1) .95s,opacity .18s ease .95s}
+.pz-pg.is-morph .pz-pg-disc{opacity:1;transform:none;transition:transform .7s cubic-bezier(.34,1.4,.5,1) .6s,opacity .22s ease .6s}
+/* галочка дорисовывается штрихом; длина — настоящая (≈15 в единицах viewBox), без pathLength — ровно и в Safari */
+.pz-pg-check{width:62%;height:62%;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.pz-pg-check path{stroke-dasharray:16 16;stroke-dashoffset:16;opacity:0;transition:stroke-dashoffset .15s ease,opacity 0s linear .15s}
+.pz-pg.is-morph .pz-pg-check path{stroke-dashoffset:0;opacity:1;transition:stroke-dashoffset .42s cubic-bezier(.3,.8,.4,1) 1.25s,opacity 0s linear 1.25s}
+.pz-pg--ring.is-morph .pz-pg-check path{transition-delay:.95s,.95s}
+/* у полосы значок справа от подписи уходит — галочка уже в круге, дубль не нужен */
+.pz-pg-head .pz-pg-val{transition:opacity .3s var(--_ease),transform .35s var(--_ease)}
+.pz-pg--bar.is-morph .pz-pg-head .pz-pg-val{opacity:0;transform:scale(.7)}
+/* у кольца число уходит, пока круг заливается */
+.pz-pg-center{transition:opacity .3s var(--_ease) .3s,transform .4s var(--_ease) .3s}
+.pz-pg--ring.is-morph .pz-pg-center{opacity:0;transform:scale(.7);transition:opacity .25s var(--_ease) .45s,transform .35s var(--_ease) .45s}
+
+@media (prefers-reduced-motion:reduce){
+  .pz-pg-track,.pz-pg.is-morph .pz-pg-track,.pz-pg-badge,.pz-pg-disc,.pz-pg.is-morph .pz-pg-badge,.pz-pg.is-morph .pz-pg-disc,
+  .pz-pg-check path,.pz-pg.is-morph .pz-pg-check path,.pz-pg-center,.pz-pg--ring.is-morph .pz-pg-center{transition-duration:.15s;transition-delay:0s}
+  .pz-pg-label{animation:none}
+  .pz-pg.is-warning .pz-pg-fill,.pz-pg.is-warning .pz-pg-rfill,.pz-pg.is-error .pz-pg-track,.pz-pg.is-error .pz-pg-ringbox,.pz-pg.is-paused .pz-pg-track,.pz-pg.is-paused .pz-pg-ringbox{animation:none}
+  .pz-pg-sheen{animation:none;opacity:0}
+  .pz-pg.is-indet .pz-pg-drop{animation:pzPgCalm 1.6s ease-in-out infinite;transform:none;width:100%}
+  .pz-pg--ring.is-indet .pz-pg-svg{animation:none}
+  .pz-pg--ring.is-indet .pz-pg-rfill{animation:pzPgCalm 1.6s ease-in-out infinite}
+  .pz-pg.is-done-a .pz-pg-track,.pz-pg.is-done-b .pz-pg-track,.pz-pg.is-done-a .pz-pg-ringbox,.pz-pg.is-done-b .pz-pg-ringbox{animation:none}
+}
+@keyframes pzPgCalm{0%,100%{opacity:.35}50%{opacity:.9}}

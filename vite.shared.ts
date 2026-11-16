@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import type { Plugin } from 'vite';
 
+/** Версия Parz UI для кода библиотеки (меню плеера и т. п.): подставляется при сборке вместо __PARZ_VERSION__. */
+export const parzDefine = { __PARZ_VERSION__: JSON.stringify(JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version) };
+
 /** При сборке сайта кладёт рядом latest.json — его читает проверка обновлений на странице «Что нового».
  *  Версия берётся из package.json, дата — из раздела этой версии в CHANGELOG.md. */
 export function latestJson(): Plugin {

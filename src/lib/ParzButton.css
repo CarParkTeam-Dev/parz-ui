@@ -1,0 +1,93 @@
+/* Parz UI · Parz Button */
+.pz-btn{--pz-btn-accent:#6ee7a0;--pz-btn-shade:0%;--_ink:color-mix(in srgb,var(--pz-btn-accent) calc(100% - var(--pz-btn-shade)),#000);--pz-btn-h:42px;--pz-btn-px:20px;--pz-btn-fs:15px;--ltb-icon:18px;--pz-btn-r:999px;
+  --_bg:transparent;--_bgh:transparent;--_fg:var(--pz-btn-accent);--_bd:transparent;
+  position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;
+  height:var(--pz-btn-h);min-width:var(--pz-btn-h);padding:0 var(--pz-btn-px);margin:0;border:0;border-radius:var(--pz-btn-r);
+  font:inherit;font-size:var(--pz-btn-fs);font-weight:600;line-height:1;letter-spacing:.01em;white-space:nowrap;text-decoration:none;
+  color:var(--_fg);background:var(--_bg);box-shadow:inset 0 0 0 1.5px var(--_bd);cursor:pointer;user-select:none;-webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;vertical-align:middle;outline:0;
+  --_ease:cubic-bezier(.33,0,.15,1);
+  transition:background-color .48s var(--_ease),color .48s var(--_ease),box-shadow .48s var(--_ease),opacity .48s var(--_ease),width .52s var(--_ease);will-change:transform}
+.pz-btn.is-resizing{overflow:hidden}
+.pz-btn--sm{--pz-btn-h:34px;--pz-btn-px:14px;--pz-btn-fs:13.5px;--ltb-icon:16px}
+.pz-btn--lg{--pz-btn-h:52px;--pz-btn-px:26px;--pz-btn-fs:16.5px;--ltb-icon:21px}
+.pz-btn--rounded{--pz-btn-r:calc(var(--pz-btn-h)*.3)}
+.pz-btn--square{--pz-btn-r:calc(var(--pz-btn-h)*.16)}
+.pz-btn--icon{padding:0;width:var(--pz-btn-h)}
+.pz-btn--full{display:flex;width:100%}
+
+.pz-btn--solid{--_bg:var(--pz-btn-accent);--_bgh:color-mix(in srgb,var(--pz-btn-accent) 86%,#fff);--_fg:var(--pz-btn-fg,#07140c)}
+.pz-btn--soft{--_bg:color-mix(in srgb,var(--pz-btn-accent) 16%,transparent);--_bgh:color-mix(in srgb,var(--pz-btn-accent) 26%,transparent);--_fg:var(--pz-btn-fg,var(--_ink))}
+.pz-btn--outline{--_bd:color-mix(in srgb,var(--_ink) 70%,transparent);--_bgh:color-mix(in srgb,var(--pz-btn-accent) 10%,transparent);--_fg:var(--pz-btn-fg,var(--_ink))}
+.pz-btn--ghost{--_bgh:color-mix(in srgb,var(--pz-btn-accent) 12%,transparent);--_fg:var(--pz-btn-fg,var(--_ink))}
+.pz-btn--glass{--_bg:rgba(255,255,255,.12);--_bgh:rgba(255,255,255,.2);--_bd:rgba(255,255,255,.22);--_fg:var(--pz-btn-fg,#fff);
+  -webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5)}
+@media (hover:hover){.pz-btn:not(.is-disabled):not(.is-loading):hover{background:var(--_bgh)}}
+
+/* нажатие и отпускание считает пружина в ParzButton.tsx — здесь transform не трогаем */
+
+/* кольцо фокуса */
+.pz-btn::after{content:'';position:absolute;inset:-4px;border-radius:calc(var(--pz-btn-r) + 4px);border:2px solid var(--pz-btn-accent);
+  opacity:0;transform:scale(.96);transition:opacity .36s var(--_ease),transform .5s var(--_ease);pointer-events:none}
+.pz-btn--glass::after{border-color:var(--_fg)}
+.pz-btn:focus-visible::after{opacity:1;transform:none}
+/* своё кольцо фокуса — обводку от стилей страницы не рисуем */
+.pz-btn.pz-btn:focus,.pz-btn.pz-btn:focus-visible{outline:0}
+
+.pz-btn.is-disabled{opacity:.42;cursor:default}
+.pz-btn.is-loading{cursor:progress}
+
+/* капля из точки нажатия */
+.pz-btn-drops{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none;z-index:-1}
+.pz-btn-drop{position:absolute;left:0;top:0;border-radius:50%;transform-origin:50% 50%;will-change:transform,opacity;
+  background:radial-gradient(circle closest-side,currentColor 0%,currentColor 62%,color-mix(in srgb,currentColor 50%,transparent) 82%,transparent 100%)}
+.pz-btn--solid .pz-btn-drop{color:#fff}
+
+/* подпись и загрузка лежат в одной ячейке — ширина кнопки не прыгает */
+.pz-btn-stack{position:relative;display:grid;align-items:center;justify-items:center;min-width:0}
+.pz-btn-body,.pz-btn-load{grid-area:1/1;display:inline-flex;align-items:center;gap:.5em;min-width:0;
+  transition:opacity .46s var(--_ease),transform .6s var(--_ease),filter .46s var(--_ease)}
+.pz-btn-load{opacity:0;transform:scale(.88);filter:blur(4px);pointer-events:none}
+.pz-btn.is-loading .pz-btn-body{opacity:0;transform:scale(.92);filter:blur(4px)}
+.pz-btn.is-loading .pz-btn-load{opacity:1;transform:none;filter:none}
+.pz-btn-label{overflow:hidden;text-overflow:ellipsis}
+.pz-btn-ico{display:grid;place-items:center;width:var(--ltb-icon);height:var(--ltb-icon);flex:none}
+.pz-btn-ico .ltb-s{display:none}
+
+.pz-btn-dots{display:inline-flex;align-items:center;gap:calc(var(--ltb-icon)*.2);height:var(--ltb-icon)}
+.pz-btn-dots i{display:block;width:calc(var(--ltb-icon)*.3);height:calc(var(--ltb-icon)*.3);border-radius:50%;background:currentColor;animation:pzBtnDot 1.2s ease-in-out infinite}
+.pz-btn-dots i:nth-child(2){animation-delay:-1s}
+.pz-btn-dots i:nth-child(3){animation-delay:-.8s}
+/* волна: одна гладкая синусоида, без остановок и ударов */
+@keyframes pzBtnDot{0%,100%{transform:translateY(22%) scale(.82);opacity:.5}50%{transform:translateY(-22%) scale(1);opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  .pz-btn,.pz-btn-body,.pz-btn-load{transition-duration:.01ms!important}
+  .pz-btn-drop{display:none}
+  .pz-btn-dots i{animation:pzBtnDotCalm 1.4s ease-in-out infinite}
+}
+@keyframes pzBtnDotCalm{0%,100%{opacity:.35}50%{opacity:1}}
+/* иконка ровно по центру: шрифт Material не должен навязывать свои 24px */
+.pz-btn-ico .ltb-icon{width:100%;height:100%;display:grid;place-items:center}
+.pz-btn .pz-btn-ico .ltb-ms,.pz-btn .pz-btn-ico .ltb-mi{font-size:var(--ltb-icon);width:1em;height:1em;line-height:1;display:block;overflow:hidden}
+.pz-btn-ico .ltb-svg{width:100%;height:100%}
+
+/* смена содержимого: старое уходит поверх (не влияет на ширину), новое проявляется — одна плавная кривая */
+.pz-btn-body.is-leaving{position:absolute;left:50%;top:50%;translate:-50% -50%;pointer-events:none;animation:pzBtnOut .42s var(--_ease) forwards}
+.pz-btn-body.is-entering{animation:pzBtnIn .52s var(--_ease) both}
+@keyframes pzBtnOut{from{opacity:1;transform:none;filter:none}to{opacity:0;transform:scale(.9);filter:blur(4px)}}
+@keyframes pzBtnIn{from{opacity:0;transform:scale(.9);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
+.pz-btn.is-loading .pz-btn-body.is-entering{animation:none}
+
+/* удержание: под кнопкой медленно течёт градиент; яркость задаёт ParzButton.tsx */
+.pz-btn-hold{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:0;
+  --_g1:color-mix(in srgb,var(--pz-btn-accent) 55%,transparent);--_g2:color-mix(in srgb,var(--pz-btn-accent) 18%,transparent);
+  background:linear-gradient(115deg,var(--_g2),var(--_g1) 30%,var(--_g2) 55%,var(--_g1) 80%,var(--_g2));background-size:260% 100%;
+  animation:pzBtnFlow 3.2s ease-in-out infinite alternate}
+.pz-btn--solid .pz-btn-hold{--_g1:color-mix(in srgb,var(--pz-btn-accent) 60%,#fff);--_g2:color-mix(in srgb,var(--pz-btn-accent) 82%,#000)}
+.pz-btn--glass .pz-btn-hold{--_g1:rgba(255,255,255,.28);--_g2:rgba(255,255,255,.04)}
+@keyframes pzBtnFlow{from{background-position:0% 50%}to{background-position:100% 50%}}
+@media (prefers-reduced-motion:reduce){
+  .pz-btn-body.is-leaving{animation-duration:.01ms}.pz-btn-body.is-entering{animation:none}
+  .pz-btn-hold{animation:none}
+}

@@ -83,8 +83,8 @@ export function ParzCheckbox({
         <span className="pz-cb-ring" aria-hidden="true" />
         <span className="pz-cb-fill" aria-hidden="true" />
         <svg className="pz-cb-mark" viewBox="0 0 20 20" aria-hidden="true">
-          <path className="pz-cb-tick" d="M5 10.4 8.6 14 15.2 6.6" pathLength={1} />
-          <path className="pz-cb-dash" d="M5.5 10h9" pathLength={1} />
+          <path className="pz-cb-tick" d="M5 10.4 8.6 14 15.2 6.6" />
+          <path className="pz-cb-dash" d="M5.5 10h9" />
         </svg>
       </span>
       {(label != null && label !== '') || description ? (

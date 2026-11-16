@@ -6,7 +6,8 @@
 .pz-sl-out{font-variant-numeric:tabular-nums;opacity:.7;white-space:nowrap}
 
 /* рельс по высоте бегунка, чтобы за него было легко ухватиться; по краям — поле в половину бегунка */
-.pz-sl-rail{position:relative;height:var(--pz-sl-d);margin:0 calc(var(--pz-sl-d) / 2);cursor:pointer;touch-action:pan-y}
+/* бегунок — капсула в 1,5 раза шире своей высоты, поэтому поле по краям — три четверти высоты */
+.pz-sl-rail{position:relative;height:var(--pz-sl-d);margin:0 calc(var(--pz-sl-d) * .75);cursor:pointer;touch-action:pan-y}
 .pz-sl.is-disabled .pz-sl-rail{cursor:default}
 .pz-sl.has-labels .pz-sl-rail{margin-bottom:22px}
 .pz-sl-track,.pz-sl-fill{position:absolute;top:50%;height:var(--pz-sl-h);margin-top:calc(var(--pz-sl-h) / -2);border-radius:999px;pointer-events:none}
@@ -23,25 +24,37 @@
 
 .pz-sl-thumb{--pz-sl-sx:1;--pz-sl-sy:1;--pz-sl-grow:1;position:absolute;top:0;width:var(--pz-sl-d);height:var(--pz-sl-d);margin-left:calc(var(--pz-sl-d) / -2);
   border-radius:50%;outline:0;transition:left .55s cubic-bezier(.3,1.35,.5,1);touch-action:none}
-.pz-sl.is-drag .pz-sl-thumb.is-active{transition:left .05s linear}
-.pz-sl.is-drag .pz-sl-fill{transition:left .05s linear,width .05s linear}
-.pz-sl-blob{display:block;width:100%;height:100%;border-radius:50%;background:var(--pz-sl-knob);
-  box-shadow:0 1px 4px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.06);
-  transform:scale(calc(var(--pz-sl-sx) * var(--pz-sl-grow)),calc(var(--pz-sl-sy) * var(--pz-sl-grow)));
-  transition:transform .42s cubic-bezier(.3,1.6,.5,1),box-shadow .25s}
-.pz-sl-thumb.is-active{--pz-sl-grow:1.22}
-.pz-sl-thumb:focus-visible .pz-sl-blob{box-shadow:0 1px 4px rgba(0,0,0,.35),0 0 0 3px var(--pz-sl-ring,rgba(0,0,0,.55)),0 0 0 5px var(--pz-sl-accent)}
+/* тянут — бегунок и заливка ровно под пальцем, без догоняющего перехода */
+/* своё кольцо фокуса у бегунка уже есть — чужие стили страницы (например, :focus-visible{outline}) не должны рисовать поверх */
+.pz-sl .pz-sl-thumb:focus,.pz-sl .pz-sl-thumb:focus-visible{outline:0}
+.pz-sl.is-drag .pz-sl-thumb.is-active{transition:none}
+.pz-sl.is-drag .pz-sl-fill{transition:none}
+.pz-sl-blob{--_sh:0 1px 4px rgba(0,0,0,.35),0 0 0 .5px rgba(0,0,0,.06),inset 0 0 0 0 rgba(255,255,255,0),inset 0 0 0 0 rgba(255,255,255,0);
+  /* стекло как у Parz Toggle: внутри прозрачно, форму держит светлая кромка, теней нет; слоёв столько же — переход плавный */
+  --_shg:0 1px 4px rgba(0,0,0,0),0 0 0 .5px rgba(0,0,0,0),inset 0 0 0 1px rgba(255,255,255,.85),inset 0 1px 5px rgba(255,255,255,.28);
+  display:block;width:150%;height:100%;margin-left:-25%;border-radius:999px;background-color:var(--pz-sl-knob);box-shadow:var(--_sh);
+  -webkit-backdrop-filter:blur(1px) saturate(1.3);backdrop-filter:blur(1px) saturate(1.3);
+  transform:scale(calc(var(--pz-sl-sx) * var(--pz-sl-gx,1)),calc(var(--pz-sl-sy) * var(--pz-sl-gy,1)));
+  transition:transform .6s cubic-bezier(.33,0,.15,1),background-color .55s cubic-bezier(.33,0,.15,1),box-shadow .55s cubic-bezier(.33,0,.15,1)}
+/* нажали или тянут — сначала (за 0,14 с) становится стеклом, следом раздувается за края дорожки */
+/* раздувается больше в ширину, чем в высоту, — остаётся капсулой, а не кругом */
+.pz-sl-thumb.is-active{--pz-sl-gx:1.5;--pz-sl-gy:1.38}
+.pz-sl-thumb.is-active .pz-sl-blob{background-color:color-mix(in srgb,var(--pz-sl-knob) 6%,transparent);box-shadow:var(--_shg);
+  transition:transform .46s cubic-bezier(.33,0,.15,1) .05s,background-color .14s cubic-bezier(.2,.7,.3,1),box-shadow .2s cubic-bezier(.2,.7,.3,1)}
+.pz-sl-thumb:focus-visible:not(.is-active) .pz-sl-blob{box-shadow:0 1px 4px rgba(0,0,0,.35),0 0 0 3px var(--pz-sl-ring,rgba(0,0,0,.55)),0 0 0 5px var(--pz-sl-accent),inset 0 0 0 0 rgba(255,255,255,0)}
 
 /* пузырёк со значением — выпрыгивает над бегунком */
 .pz-sl-tip{position:absolute;bottom:calc(100% + 10px);left:50%;padding:3px 8px;border-radius:8px;background:var(--pz-sl-tip-bg);color:var(--pz-sl-tip-fg);
   font-size:12px;font-weight:600;line-height:1.3;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none;
-  transform:translate(-50%,6px) scale(.6);transform-origin:50% 120%;opacity:0;transition:opacity .2s,transform .4s cubic-bezier(.3,1.5,.5,1)}
+  transform:translate(-50%,6px) scale(.6);transform-origin:50% 120%;opacity:0;transition:opacity .2s,transform .4s cubic-bezier(.3,1.5,.5,1),bottom .46s cubic-bezier(.33,0,.15,1)}
+/* бегунок раздулся — подсказка поднимается над ним, чтобы не наезжать */
+.pz-sl-thumb.is-active .pz-sl-tip{bottom:calc(100% + 10px + var(--pz-sl-d) * .2)}
 .pz-sl-tip::after{content:'';position:absolute;top:100%;left:50%;margin-left:-4px;border:4px solid transparent;border-top-color:var(--pz-sl-tip-bg)}
 .pz-sl--tip-always .pz-sl-tip,.pz-sl--tip-auto .pz-sl-thumb.is-active .pz-sl-tip,.pz-sl--tip-auto .pz-sl-thumb:focus-visible .pz-sl-tip{opacity:1;transform:translate(-50%,0) scale(1)}
 .pz-sl--tip-always .pz-sl-rail{margin-top:34px}
 
 @media (prefers-reduced-motion:reduce){
   .pz-sl-thumb,.pz-sl-fill{transition-duration:.12s;transition-timing-function:ease}
-  .pz-sl-blob{transition:none;transform:none}
+  .pz-sl-blob,.pz-sl-thumb.is-active .pz-sl-blob{transition:background-color .15s,box-shadow .15s;transform:none}
   .pz-sl-tip{transition:opacity .15s}
 }

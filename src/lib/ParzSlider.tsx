@@ -87,6 +87,11 @@ function Core({ multi, vals, setVals, end, minDistance, labels, min = 0, max = 1
   const [drag, setDrag] = useState(false);
   const d = useRef<{ i: number; pid: number; x: number; t: number; moved: boolean } | null>(null);
   const relax = useRef(0);
+  // во время перетаскивания бегунок стоит ровно под пальцем (без шага), к значению доезжает после отпускания
+  const raw = useRef<number | null>(null);
+  const px = useRef(0);
+  const raf = useRef(0);
+  const [, frame] = useState(0);
   const latest = useRef(vals);
   latest.current = vals;
 
@@ -155,12 +160,31 @@ function Core({ multi, vals, setVals, end, minDistance, labels, min = 0, max = 1
     if (!s.moved) { if (Math.abs(e.clientX - s.x) < 2) return; s.moved = true; setDrag(true); }
     stretch(s.i, (e.clientX - s.x) / Math.max(1, now - s.t));
     s.x = e.clientX; s.t = now;
-    place(s.i, fromX(e.clientX));
+    px.current = e.clientX;
+    // не чаще одного раза за кадр: палец двигает бегунок сразу, React перерисовывает только когда меняется значение
+    if (!raf.current) raf.current = requestAnimationFrame(() => {
+      raf.current = 0;
+      const st = d.current;
+      if (!st) return;
+      const cur = latest.current;
+      let v = fromX(px.current);
+      if (multi) {
+        const lo = st.i > 0 ? cur[st.i - 1] + minDistance : min;
+        const hi = st.i < cur.length - 1 ? cur[st.i + 1] - minDistance : max;
+        v = Math.min(hi, Math.max(lo, v));
+      }
+      raw.current = v;
+      place(st.i, v);
+      frame(x => (x + 1) % 1e6);
+    });
   };
   const up = (e: PointerEvent<HTMLDivElement>) => {
     const s = d.current;
     if (!s || s.pid !== e.pointerId) return;
     d.current = null;
+    cancelAnimationFrame(raf.current); raf.current = 0;
+    if (s.moved) place(s.i, raw.current ?? fromX(e.clientX));
+    raw.current = null;
     setDrag(false); setActive(null);
     stretch(s.i, 0);
     end(latest.current);
@@ -185,9 +209,11 @@ function Core({ multi, vals, setVals, end, minDistance, labels, min = 0, max = 1
   const hasMarkLabels = markList.some(m => m.label != null);
 
   const d0 = typeof size === 'number' ? size : SIZES[size];
-  const lo = multi ? vals[0] : min, hi = vals[vals.length - 1];
+  // что рисуем: под пальцем — точная позиция, остальное — значения
+  const shown = vals.map((v, i) => (drag && active === i && raw.current != null ? raw.current : v));
+  const lo = multi ? shown[0] : min, hi = shown[shown.length - 1];
   const segs: [number, number][] = multi && fill === 'pairs'
-    ? vals.reduce<[number, number][]>((a, v, i) => (i % 2 && a.push([vals[i - 1], v]), a), [])
+    ? shown.reduce<[number, number][]>((a, v, i) => (i % 2 && a.push([shown[i - 1], v]), a), [])
     : [[lo, hi]];
   const inFill = (v: number) => segs.some(([a, b]) => v >= a && v <= b);
   const vars = {
@@ -218,7 +244,7 @@ function Core({ multi, vals, setVals, end, minDistance, labels, min = 0, max = 1
           </span>
         ))}
         {vals.map((v, i) => (
-          <div key={i} ref={el => { thumbs.current[i] = el; }} className={`pz-sl-thumb${active === i ? ' is-active' : ''}`} style={{ left: `${pct(v)}%`, zIndex: active === i ? 3 : 2 }}
+          <div key={i} ref={el => { thumbs.current[i] = el; }} className={`pz-sl-thumb${active === i ? ' is-active' : ''}`} style={{ left: `${pct(shown[i])}%`, zIndex: active === i ? 3 : 2 }}
             role="slider" tabIndex={disabled ? -1 : 0} aria-valuemin={min} aria-valuemax={max} aria-valuenow={v} aria-valuetext={fmt(v)}
             aria-label={labels[i]} aria-labelledby={!labels[i] && label != null ? `${uid}l` : undefined} aria-disabled={disabled || undefined}
             aria-orientation="horizontal" onKeyDown={key(i)}>

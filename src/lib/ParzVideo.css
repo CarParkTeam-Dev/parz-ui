@@ -1,0 +1,386 @@
+/* Parz UI · Parz Video */
+.pz-vd{--pz-vd-accent:#6ee7a0;--pz-vd-r:18px;--pz-vd-glass:rgba(24,24,30,.18);--pz-vd-line:rgba(255,255,255,.18);--pz-vd-fg:#fff;--pz-vd-p:0;--pz-vd-b:0;--pz-vd-h:0;
+  /* раскладка: отступ от краёв, высота капсул, зазор между рядами */
+  --_m:14px;--_cap:44px;--_gap:10px;
+  --_depth:0 1px 2px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.16),0 8px 30px rgba(0,0,0,.18);
+  --_glassf:blur(26px) saturate(1.8) brightness(.9);
+  --_ease:cubic-bezier(.33,0,.15,1);--_slow:.55s var(--_ease);
+  position:relative;display:block;width:100%;overflow:hidden;isolation:isolate;border-radius:var(--pz-vd-r);background:#000;color:var(--pz-vd-fg);
+  font-size:13.75px;line-height:1;container-type:size;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;outline:0}
+.pz-vd.pz-vd:focus,.pz-vd.pz-vd:focus-visible{outline:0}
+.pz-vd:focus-visible{box-shadow:0 0 0 2px var(--pz-vd-accent)}
+.pz-vd.is-fs{border-radius:0;--_m:max(20px,env(safe-area-inset-left))}
+.pz-vd.is-hidden{cursor:none}
+.pz-vd.is-narrow{--_m:8px;--_cap:38px;--_gap:8px}
+.pz-vd-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;background:#000}
+.pz-vd-surface{position:absolute;inset:0;z-index:1;cursor:pointer;touch-action:manipulation}
+.pz-vd-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;transition:opacity var(--_slow);
+  background:linear-gradient(to bottom,rgba(0,0,0,.32),transparent 26%,transparent 62%,rgba(0,0,0,.3))}
+.pz-vd.is-hidden .pz-vd-scrim{opacity:0}
+
+/* значки, которые перетекают друг в друга */
+.pz-vd svg{display:block;width:20px;height:20px;overflow:visible}
+.pz-vd svg .f{fill:currentColor}
+.pz-vd svg .s{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* без filter и на постоянном слое: иначе по окончании перехода значок перерисовывается по целым пикселям и чуть сдвигается */
+.pz-vd-sw g{opacity:0;transform:scale(.6);transform-origin:12px 12px;transform-box:view-box;will-change:transform,opacity;transition:opacity .38s var(--_ease),transform .5s cubic-bezier(.3,1.35,.5,1)}
+.pz-vd-sw g.on{opacity:1;transform:scale(1)}
+.pz-vd-skip text{fill:currentColor;stroke:none;font-size:7.5px;font-weight:700;font-family:inherit}
+@keyframes pzVdIn{from{opacity:0;filter:blur(3px);transform:translateY(3px)}to{opacity:1;filter:none;transform:none}}
+
+/* обложка: поверх видео до запуска, потом плавно растворяется */
+/* обложка мягко проявляется, как только картинка загрузилась: прозрачность и лёгкое приближение */
+.pz-vd-poster{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;pointer-events:none;opacity:0;transform:scale(1.04);transition:opacity .9s var(--_ease),transform 1.4s var(--_ease)}
+.pz-vd-poster.is-in{opacity:1;transform:none}
+.pz-vd-poster.is-in.is-off,.pz-vd-poster.is-off{opacity:0;transform:scale(1.03)}
+
+/* ---- всё, что над видео, появляется и прячется вместе ---- */
+.pz-vd-head,.pz-vd-topl,.pz-vd-topr,.pz-vd-tools,.pz-vd-bar{transition:opacity var(--_slow),transform var(--_slow)}
+.pz-vd.is-hidden .pz-vd-head{opacity:0}
+.pz-vd.is-hidden .pz-vd-head,.pz-vd.is-hidden .pz-vd-topl,.pz-vd.is-hidden .pz-vd-topr{transform:translateY(-8px);pointer-events:none}
+.pz-vd.is-hidden .pz-vd-tools,.pz-vd.is-hidden .pz-vd-bar,.pz-vd.is-idle .pz-vd-tools,.pz-vd.is-idle .pz-vd-bar{transform:translateY(8px);pointer-events:none}
+.pz-vd.is-hidden .pz-vd-head *,.pz-vd.is-hidden .pz-vd-topl *,.pz-vd.is-hidden .pz-vd-topr *,.pz-vd.is-hidden .pz-vd-tools *,.pz-vd.is-hidden .pz-vd-bar *{pointer-events:none!important}
+
+/* стеклянная капсула: без рамки, глубину даёт резкая тень снаружи */
+.pz-vd-cap{display:flex;align-items:center;height:var(--_cap);padding:0 calc((var(--_cap) - 36px) / 2);gap:2px;border-radius:99px;box-sizing:border-box;
+  background:var(--pz-vd-glass);box-shadow:var(--_depth);-webkit-backdrop-filter:var(--_glassf);backdrop-filter:var(--_glassf)}
+.pz-vd-btn{position:relative;flex:none;display:grid;place-items:center;width:36px;height:36px;padding:0;margin:0;border:0;border-radius:50%;background:transparent;color:inherit;font:inherit;cursor:pointer;
+  transition:background-color .35s var(--_ease),transform .45s cubic-bezier(.3,1.4,.5,1)}
+.pz-vd-cap .pz-vd-btn{filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
+@media (hover:hover){.pz-vd-btn:hover{background:rgba(255,255,255,.14)}}
+.pz-vd-btn.is-on{background:rgba(255,255,255,.2)}
+.pz-vd-btn:active{transform:scale(.9)}
+.pz-vd.pz-vd .pz-vd-btn:focus-visible{outline:0;box-shadow:inset 0 0 0 2px var(--pz-vd-accent)}
+
+/* верх слева: название, пометка качества, глава */
+.pz-vd-head{position:absolute;z-index:3;top:var(--_m);left:calc(var(--_m) + 4px);right:45%;display:flex;flex-direction:column;gap:0;pointer-events:none;text-shadow:0 1px 4px rgba(0,0,0,.45)}
+.pz-vd-head-t{display:flex;align-items:center;gap:8px;min-width:0;height:var(--_cap)}
+.pz-vd-title{min-width:0;font-size:15.13px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pz-vd-q{flex:none;padding:3px 5px;border-radius:5px;background:var(--pz-vd-accent);color:#07140c;font-size:11px;font-weight:750;letter-spacing:.02em;text-shadow:none;animation:pzVdIn .4s var(--_ease) both}
+.pz-vd-chap{min-width:0;font-size:12.38px;font-weight:550;opacity:.8;white-space:nowrap;overflow:hidden}
+.pz-vd-chap span{display:block;overflow:hidden;text-overflow:ellipsis;animation:pzVdIn .4s var(--_ease) both}
+
+/* узкий: капсула «экран» сверху слева */
+.pz-vd-topl{position:absolute;z-index:3;top:var(--_m);left:var(--_m)}
+
+/* верх справа: формат звука и капсула громкости */
+.pz-vd-topr{position:absolute;z-index:3;top:var(--_m);right:var(--_m);display:flex;align-items:center;gap:var(--_gap)}
+.pz-vd-audio{display:flex;align-items:center;gap:6px;height:30px;padding:0 12px 0 9px;border-radius:99px;box-sizing:border-box;
+  background:var(--pz-vd-glass);box-shadow:var(--_depth);-webkit-backdrop-filter:var(--_glassf);backdrop-filter:var(--_glassf);
+  font-size:11px;font-weight:700;letter-spacing:.04em;white-space:nowrap;pointer-events:none;animation:pzVdIn .5s var(--_ease) backwards}
+.pz-vd .pz-vd-audio svg{width:16px;height:16px;color:var(--pz-vd-accent)}
+.pz-vd-audio span{margin-right:-.04em}
+.pz-vd-audio--atmos{padding:0 13px}
+.pz-vd .pz-vd-audio svg.pz-vd-atmos{width:auto;height:15px;aspect-ratio:20.8/8.6;color:#fff}
+
+/* громкость: дорожка всегда видна, пока тянем — без задержки за пальцем */
+.pz-vd-vol{padding-left:16px}
+.pz-vd-vrail{position:relative;width:110px;height:24px;margin-right:8px;cursor:pointer;touch-action:none;outline:0}
+.pz-vd-vrail i{position:absolute;left:0;right:0;top:50%;height:5px;margin-top:-2.5px;border-radius:99px;background:rgba(255,255,255,.24);overflow:hidden;transition:height .3s var(--_ease),margin .3s var(--_ease)}
+.pz-vd-vrail i::after{content:'';position:absolute;inset:0;background:#fff;transform:scaleX(var(--v));transform-origin:0 50%;transition:transform .25s var(--_ease)}
+.pz-vd-vrail b{position:absolute;top:50%;left:calc(var(--v) * 100%);width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);
+  transform:scale(0);transition:left .25s var(--_ease),transform .4s cubic-bezier(.3,1.4,.5,1)}
+.pz-vd-vrail:hover i,.pz-vd-vol.is-drag .pz-vd-vrail i{height:7px;margin-top:-3.5px}
+.pz-vd-vrail:hover b,.pz-vd-vrail:focus-visible b{transform:scale(1)}
+.pz-vd-vol.is-drag .pz-vd-vrail i::after{transition:none}
+.pz-vd-vol.is-drag .pz-vd-vrail b{transition:transform .4s cubic-bezier(.3,1.4,.5,1);transform:scale(1.15)}
+.pz-vd.pz-vd .pz-vd-vrail:focus-visible{outline:0}
+.pz-vd-vrail:focus-visible b{box-shadow:0 0 0 3px color-mix(in srgb,var(--pz-vd-accent) 60%,transparent)}
+
+/* центр, как в плеере Apple: стеклянный круг «смотреть/пауза», по бокам −10 и +10 */
+.pz-vd-center{position:absolute;z-index:3;left:50%;top:50%;display:flex;align-items:center;gap:30px;transform:translate(-50%,-50%);pointer-events:none;
+  transition:opacity var(--_slow),transform var(--_slow)}
+.pz-vd.is-hidden .pz-vd-center{transform:translate(-50%,-50%) scale(.92)}
+.pz-vd.is-hidden .pz-vd-center *{pointer-events:none!important}
+.pz-vd-cbtn{flex:none;display:grid;place-items:center;padding:0;margin:0;border:0;border-radius:50%;color:#fff;cursor:pointer;pointer-events:auto;
+  background:rgba(255,255,255,.14);box-shadow:var(--_depth);-webkit-backdrop-filter:blur(20px) saturate(1.7);backdrop-filter:blur(20px) saturate(1.7);
+  transition:opacity var(--_slow),transform .55s cubic-bezier(.3,1.3,.5,1),background-color .35s var(--_ease)}
+.pz-vd-cplay{width:76px;height:76px;will-change:transform}
+.pz-vd .pz-vd-cplay svg{width:40px;height:40px}
+.pz-vd-cplay svg .s{stroke-width:2.4}
+.pz-vd-cskip{width:54px;height:54px}
+.pz-vd .pz-vd-cskip svg{width:28px;height:28px}
+.pz-vd .pz-vd-cskip text{font-size:7px}
+@media (hover:hover){.pz-vd-cbtn:hover{background:rgba(255,255,255,.24);transform:scale(1.06)}}
+.pz-vd-cbtn:active{transform:scale(.92)}
+.pz-vd.pz-vd .pz-vd-cbtn:focus-visible{outline:0;box-shadow:0 1px 2px rgba(0,0,0,.28),0 2px 6px rgba(0,0,0,.16),0 0 0 3px var(--pz-vd-accent)}
+.pz-vd.is-idle .pz-vd-cskip{opacity:0;transform:scale(.6);pointer-events:none}
+
+/* подсказка о действии: значок мягко проявляется и растворяется */
+.pz-vd-flash{position:absolute;z-index:3;left:50%;top:50%;display:flex;align-items:center;gap:8px;height:56px;min-width:56px;padding:0 16px;margin:-28px 0 0;
+  border-radius:28px;background:var(--pz-vd-glass);box-shadow:var(--_depth);-webkit-backdrop-filter:var(--_glassf);backdrop-filter:var(--_glassf);
+  justify-content:center;box-sizing:border-box;pointer-events:none;transform:translateX(-50%);animation:pzVdFlash .75s var(--_ease) both}
+.pz-vd-flash svg{width:26px;height:26px}
+.pz-vd-flash b{font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.pz-vd-flash--back{left:22%}
+.pz-vd-flash--fwd{left:78%}
+.pz-vd-flash--info{top:30%}
+@keyframes pzVdFlash{0%{opacity:0;transform:translateX(-50%) scale(.82);filter:blur(4px)}28%{opacity:1;transform:translateX(-50%) scale(1);filter:none}100%{opacity:0;transform:translateX(-50%) scale(1.12);filter:blur(2px)}}
+
+/* ожидание: дуга мягко вращается */
+.pz-vd-spin{position:absolute;z-index:2;left:50%;top:50%;width:44px;height:44px;margin:-22px 0 0 -22px;opacity:0;transform:scale(.8);pointer-events:none;transition:opacity .45s var(--_ease),transform .45s var(--_ease)}
+.pz-vd-spin.on{opacity:1;transform:none;transition-delay:.25s}
+.pz-vd-spin svg{width:100%;height:100%;animation:pzVdSpin 1.25s cubic-bezier(.45,.05,.55,.95) infinite}
+.pz-vd-spin circle{fill:none;stroke:var(--pz-vd-accent);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:30 101}
+@keyframes pzVdSpin{to{transform:rotate(360deg)}}
+
+/* смена качества: последний кадр растворяется в новом */
+.pz-vd-snap{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;pointer-events:none;transition:opacity .6s var(--_ease)}
+.pz-vd-snap.on{opacity:1;transition:none}
+.pz-vd-pv{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+/* субтитры: поднимаются над шкалой и кнопками, когда они видны */
+.pz-vd-cue{position:absolute;z-index:2;left:8%;right:8%;bottom:calc(var(--_m) + 8px);display:flex;justify-content:center;pointer-events:none;transition:transform var(--_slow)}
+.pz-vd.is-shown:not(.is-idle) .pz-vd-cue{transform:translateY(calc((var(--_cap) * 2 + var(--_gap)) * -1))}
+.pz-vd-cue span{padding:6px 12px;border-radius:10px;background:rgba(8,8,12,.62);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  font-size:clamp(13.75px,2.6cqw,22px);line-height:1.35;font-weight:550;text-align:center;white-space:pre-line;animation:pzVdIn .35s var(--_ease) both}
+
+/* над шкалой справа: капсулы кнопок */
+.pz-vd-tools{position:absolute;z-index:4;right:var(--_m);bottom:calc(var(--_m) + var(--_cap) + var(--_gap));display:flex;gap:var(--_gap)}
+
+/* шкала: своя капсула — время, полоса, сколько осталось */
+.pz-vd-bar{position:absolute;z-index:4;left:var(--_m);right:var(--_m);bottom:var(--_m);display:flex;align-items:center;gap:12px;height:var(--_cap);padding:0 18px;border-radius:99px;box-sizing:border-box;
+  background:var(--pz-vd-glass);box-shadow:var(--_depth);-webkit-backdrop-filter:var(--_glassf);backdrop-filter:var(--_glassf)}
+.pz-vd-t{flex:none;min-width:36px;padding:0;margin:0;border:0;background:none;color:inherit;font:inherit;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.01em;
+  white-space:nowrap;opacity:.82;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+.pz-vd-t--r{text-align:right;cursor:pointer;border-radius:6px;transition:opacity .3s var(--_ease)}
+@media (hover:hover){.pz-vd-t--r:hover{opacity:1}}
+.pz-vd.pz-vd .pz-vd-t--r:focus-visible{outline:0;box-shadow:0 0 0 2px var(--pz-vd-accent)}
+
+/* перемотка: отрезки глав, дорожка утолщается при наведении, бегунок проявляется */
+.pz-vd-seek{position:relative;flex:1;min-width:0;height:24px;cursor:pointer;touch-action:none;outline:0}
+.pz-vd-segs{position:absolute;left:0;right:0;top:50%;height:8px;margin-top:-4px;display:flex;gap:3px;align-items:center}
+.pz-vd-rail{position:relative;flex:1 1 0;min-width:2px;height:5px;border-radius:99px;background:rgba(255,255,255,.22);overflow:hidden;transition:height .35s var(--_ease)}
+.pz-vd-buf,.pz-vd-fill,.pz-vd-hov{position:absolute;inset:0;transform-origin:0 50%;border-radius:inherit}
+/* доля отрезка: (позиция − начало) / длина, зажатая в 0…1 */
+.pz-vd-buf{background:rgba(255,255,255,.22);transform:scaleX(clamp(0,calc((var(--pz-vd-b) - var(--s)) / var(--l)),1));transition:transform .6s var(--_ease)}
+.pz-vd-hov{background:rgba(255,255,255,.28);opacity:0;transform:scaleX(clamp(0,calc((var(--pz-vd-h) - var(--s)) / var(--l)),1));transition:opacity .3s var(--_ease)}
+.pz-vd-fill{background:var(--pz-vd-accent);transform:scaleX(clamp(0,calc((var(--pz-vd-p) - var(--s)) / var(--l)),1))}
+.pz-vd-seek:hover .pz-vd-hov{opacity:1}
+.pz-vd-knob{position:absolute;top:50%;left:calc(var(--pz-vd-p) * 100%);width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 6px rgba(0,0,0,.35);transform:scale(0);transition:transform .4s cubic-bezier(.3,1.4,.5,1)}
+.pz-vd-seek:hover .pz-vd-rail,.pz-vd-seek:focus-visible .pz-vd-rail,.pz-vd.is-drag .pz-vd-rail{height:8px}
+.pz-vd-seek:hover .pz-vd-knob,.pz-vd-seek:focus-visible .pz-vd-knob{transform:scale(1)}
+.pz-vd.is-drag .pz-vd-knob{transform:scale(1.2)}
+.pz-vd.pz-vd .pz-vd-seek:focus-visible{outline:0}
+.pz-vd-seek:focus-visible .pz-vd-knob{box-shadow:0 0 0 3px color-mix(in srgb,var(--pz-vd-accent) 60%,transparent)}
+/* подсказка: кадр-превью, глава и время; едет за курсором, не выходит за края */
+.pz-vd-tip{--w:72px;position:absolute;bottom:30px;left:clamp(calc(var(--w) / 2),var(--x),calc(100% - var(--w) / 2));display:flex;flex-direction:column;align-items:center;gap:6px;
+  transform:translateX(-50%) translateY(6px) scale(.96);transform-origin:50% 100%;opacity:0;pointer-events:none;transition:opacity .3s var(--_ease),transform .4s var(--_ease)}
+.pz-vd-tip.has-pv{--w:196px}
+.pz-vd-tip.on{opacity:1;transform:translateX(-50%)}
+.pz-vd-tip-pv{display:none;width:192px;height:108px;border-radius:12px;background:#000;box-shadow:0 0 0 2px rgba(255,255,255,.85),0 10px 28px rgba(0,0,0,.45)}
+.pz-vd-tip.has-pv .pz-vd-tip-pv{display:block}
+.pz-vd-tip-ch{max-width:192px;font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,.8);animation:pzVdIn .35s var(--_ease) both}
+.pz-vd-tip b{padding:5px 8px;border-radius:8px;background:rgba(10,10,14,.82);font-size:11px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media (hover:none){.pz-vd-tip:not(.on){display:none}}
+
+/* меню — над капсулами справа: тёмное стекло с сильным размытием, высота перетекает между страницами.
+   Без filter у предков: размытие предка ломает стекло (backdrop-filter) у тумблера внутри */
+.pz-vd-pop{position:absolute;z-index:5;right:var(--_m);bottom:calc(var(--_m) + (var(--_cap) + var(--_gap)) * 2);width:min(260px,calc(100cqw - var(--_m) * 2));
+  max-height:calc(100cqh - var(--_m) * 2 - (var(--_cap) + var(--_gap)) * 2);overflow:hidden auto;border-radius:22px;box-sizing:border-box;
+  background:rgba(14,14,18,.55);box-shadow:var(--_depth);
+  -webkit-backdrop-filter:blur(28px) saturate(1.8) brightness(.85);backdrop-filter:blur(28px) saturate(1.8) brightness(.85);
+  opacity:0;transform:translateY(10px) scale(.94);transform-origin:90% 100%;pointer-events:none;scrollbar-width:none;
+  transition:opacity .4s var(--_ease),transform .55s cubic-bezier(.3,1.2,.5,1),height .45s var(--_ease)}
+.pz-vd-pop.on{opacity:1;transform:none;pointer-events:auto}
+.pz-vd-pop.is-snap{transition:opacity .4s var(--_ease),transform .55s cubic-bezier(.3,1.2,.5,1)}
+.pz-vd-page{padding:8px}
+.pz-vd-page--in{animation:pzVdPageIn .42s var(--_ease) both}
+.pz-vd-page--back{animation:pzVdPageBack .42s var(--_ease) both}
+@keyframes pzVdPageIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes pzVdPageBack{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
+.pz-vd-mi,.pz-vd-mh,.pz-vd-opt{display:flex;align-items:center;gap:10px;width:100%;height:42px;padding:0 12px;margin:0;border:0;border-radius:12px;box-sizing:border-box;
+  background:transparent;color:inherit;font:inherit;font-size:15.13px;font-weight:550;text-align:left;cursor:pointer;transition:background-color .3s var(--_ease),color .3s var(--_ease)}
+@media (hover:hover){.pz-vd-mi:not(.pz-vd-mi--sw):hover,button.pz-vd-mh:hover,.pz-vd-opt:hover{background:rgba(255,255,255,.09)}}
+.pz-vd.pz-vd .pz-vd-mi:focus-visible,.pz-vd.pz-vd .pz-vd-mh:focus-visible,.pz-vd.pz-vd .pz-vd-opt:focus-visible{outline:0;box-shadow:inset 0 0 0 2px var(--pz-vd-accent)}
+.pz-vd-mi--sw{cursor:default;justify-content:space-between}
+.pz-vd-mi-l{flex:1;min-width:0}
+.pz-vd-mi-i{flex:none;display:grid;place-items:center;width:22px;opacity:.9}
+.pz-vd .pz-vd-mi-i svg{width:20px;height:20px}
+.pz-vd-mi-v{opacity:.55;white-space:nowrap}
+.pz-vd .pz-vd-chev{width:16px;height:16px;opacity:.55}
+/* заголовок — приглушённый, как в плеере Apple */
+.pz-vd-mh{height:34px;font-size:12.38px;font-weight:600;opacity:.6}
+.pz-vd-mh--t .pz-vd-mi-i{width:16px}
+.pz-vd .pz-vd-mh--t .pz-vd-mi-i svg{width:16px;height:16px}
+.pz-vd-mh--t{cursor:default}
+button.pz-vd-mh{padding-left:10px;opacity:.8}
+.pz-vd-mh .pz-vd-chev{opacity:1}
+.pz-vd .pz-vd-tick{width:16px;height:16px;flex:none;opacity:0;transform:scale(.5);transition:opacity .3s var(--_ease),transform .45s cubic-bezier(.3,1.4,.5,1)}
+.pz-vd-opt.is-on .pz-vd-tick{opacity:1;transform:none}
+.pz-vd-opt em{margin-left:8px;padding:2px 5px;border-radius:5px;background:color-mix(in srgb,var(--pz-vd-accent) 22%,transparent);color:var(--pz-vd-accent);font-size:11px;font-style:normal;font-weight:750}
+/* весь тумблер — один слой: меню стоит на дробном пикселе, и без этого дорожка и бегунок округлялись по-разному (бегунок съезжал на пиксель) */
+.pz-vd-mi--sw .pz-tg{flex:none;transform:translateZ(0)}
+
+/* узкий плеер (телефон): капсулы ниже, ±10 в центре меньше, кадр-превью меньше */
+.pz-vd.is-narrow .pz-vd-cap{padding:0 3px}
+.pz-vd.is-narrow .pz-vd-btn{width:32px;height:32px}
+.pz-vd.is-narrow .pz-vd-cap svg{width:19px;height:19px}
+.pz-vd.is-narrow .pz-vd-vol{padding-left:3px;padding-right:3px}
+.pz-vd.is-narrow .pz-vd-bar{padding:0 14px;gap:10px;font-size:12.38px}
+.pz-vd.is-narrow .pz-vd-t{min-width:30px}
+.pz-vd.is-narrow .pz-vd-center{gap:22px}
+.pz-vd.is-narrow .pz-vd-cplay{width:60px;height:60px}
+.pz-vd.is-narrow .pz-vd-cplay svg{width:32px;height:32px}
+.pz-vd.is-narrow .pz-vd-cskip{width:44px;height:44px}
+.pz-vd.is-narrow .pz-vd-cskip svg{width:24px;height:24px}
+.pz-vd.is-narrow .pz-vd-head{top:calc(var(--_m) + var(--_cap) + var(--_gap));right:var(--_m);gap:0}
+.pz-vd.is-narrow.has-topl .pz-vd-head-t{height:auto;min-height:22px}
+/* узкий: громкость и «ещё» — круглые кнопки ровно в высоту капсулы */
+.pz-vd.is-narrow .pz-vd-tools .pz-vd-cap{width:var(--_cap);padding:0;justify-content:center}
+.pz-vd.is-narrow .pz-vd-title{font-size:13.75px}
+.pz-vd.is-narrow .pz-vd-chap{font-size:11px}
+.pz-vd.is-narrow .pz-vd-audio{height:26px;padding:0 9px 0 7px}
+.pz-vd.is-narrow .pz-vd-audio--atmos{padding:0 10px}
+.pz-vd.is-narrow .pz-vd-audio svg.pz-vd-atmos{height:13px}
+.pz-vd.is-narrow .pz-vd-tip.has-pv{--w:132px}
+.pz-vd.is-narrow .pz-vd-tip-pv{width:128px;height:72px}
+.pz-vd.is-narrow .pz-vd-mi,.pz-vd.is-narrow .pz-vd-opt{height:40px;font-size:13.75px}
+@container (max-width:340px){.pz-vd-audio{display:none}}
+
+@media (prefers-reduced-motion:reduce){
+  .pz-vd *,.pz-vd *::after{transition-duration:.01s!important;animation:none!important}
+  .pz-vd-spin.on svg{animation:pzVdSpin 2.4s linear infinite!important}
+}
+
+/* узкий: меню опускается до шкалы и накрывает «…», как в плеере Apple — так ему хватает высоты */
+.pz-vd.is-narrow .pz-vd-pop{bottom:calc(var(--_m) + var(--_cap) + var(--_gap));max-height:calc(100cqh - var(--_m) * 2 - var(--_cap) - var(--_gap))}
+/* низкий плеер: название не помещается между верхним рядом и центром — прячем */
+@container (max-height:250px){.pz-vd.is-narrow.has-topl .pz-vd-head{display:none}}
+
+/* громкость на ПК: в покое — круглая кнопка звука; дорожка плавно раскрывается при наведении, фокусе или перетаскивании */
+.pz-vd-vol{gap:0;padding-left:calc((var(--_cap) - 36px) / 2);transition:padding .5s var(--_ease)}
+.pz-vd-vrail{width:0;margin-right:0;opacity:0;transition:width .5s var(--_ease),margin .5s var(--_ease),opacity .35s var(--_ease)}
+.pz-vd-vol:hover,.pz-vd-vol:focus-within,.pz-vd-vol.is-drag{padding-left:16px}
+.pz-vd-vol:hover .pz-vd-vrail,.pz-vd-vol:focus-within .pz-vd-vrail,.pz-vd-vol.is-drag .pz-vd-vrail{width:110px;margin-right:8px;opacity:1}
+/* узкий без капсулы слева сверху: название поднимается в верхний ряд и не заезжает под кнопку звука */
+.pz-vd.is-narrow:not(.has-topl) .pz-vd-head{top:var(--_m);right:calc(var(--_m) + var(--_cap) + var(--_gap))}
+/* узкий плеер на ПК: дорожка громкости тоже раскрывается при наведении, чуть короче */
+.pz-vd.is-narrow .pz-vd-vol:is(:hover,:focus-within,.is-drag){padding-left:12px}
+.pz-vd.is-narrow .pz-vd-vol:is(:hover,:focus-within,.is-drag) .pz-vd-vrail{width:80px;margin-right:6px}
+
+/* меню правого клика: тёмное стекло у курсора, проявляется мягко */
+.pz-vd-ctx{position:absolute;z-index:6;left:0;top:0;width:220px;padding:8px;border-radius:18px;box-sizing:border-box;
+  background:rgba(14,14,18,.6);box-shadow:var(--_depth);-webkit-backdrop-filter:blur(28px) saturate(1.8) brightness(.85);backdrop-filter:blur(28px) saturate(1.8) brightness(.85);
+  transform-origin:0 0;animation:pzVdCtx .32s cubic-bezier(.3,1.2,.5,1) both;cursor:default}
+@keyframes pzVdCtx{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+.pz-vd-ctx-h{display:flex;align-items:center;gap:10px;padding:6px 6px 8px}
+.pz-vd-ctx-logo{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#fff;color:#171b24}
+.pz-vd .pz-vd-ctx-logo svg{width:22px;height:22px}
+.pz-vd-ctx-t{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pz-vd-ctx-t b{font-size:15.13px;font-weight:700}
+.pz-vd-ctx-t small{font-size:11px;font-weight:550;opacity:.62;white-space:nowrap}
+.pz-vd-ctx-v{padding:0 6px 8px;margin-bottom:4px;font-size:11px;font-weight:550;opacity:.5;font-variant-numeric:tabular-nums;box-shadow:0 1px 0 var(--pz-vd-line)}
+.pz-vd-ctx-a{text-decoration:none;color:inherit}
+
+/* стекло проявляется вместе с размытием: прозрачность и сила блюра меняются одновременно */
+.pz-vd-cap,.pz-vd-audio,.pz-vd-bar,.pz-vd-cbtn{transition:opacity var(--_slow),transform .55s cubic-bezier(.3,1.3,.5,1),background-color .35s var(--_ease),-webkit-backdrop-filter var(--_slow),backdrop-filter var(--_slow)}
+.pz-vd.is-hidden :is(.pz-vd-topl,.pz-vd-topr,.pz-vd-tools) :is(.pz-vd-cap,.pz-vd-audio),
+.pz-vd.is-idle .pz-vd-tools .pz-vd-cap,
+.pz-vd.is-hidden .pz-vd-bar,.pz-vd.is-idle .pz-vd-bar,
+.pz-vd.is-hidden .pz-vd-cbtn{opacity:0;-webkit-backdrop-filter:blur(0px) saturate(1);backdrop-filter:blur(0px) saturate(1)}
+.pz-vd.is-idle .pz-vd-cskip{-webkit-backdrop-filter:blur(0px) saturate(1);backdrop-filter:blur(0px) saturate(1)}
+
+/* до старта, пока набирается буфер: в центре точки, как у кнопки при загрузке, на тёмном размытом стекле */
+.pz-vd-dots{position:absolute;display:flex;align-items:center;gap:6px;opacity:0;transform:scale(.7);transition:opacity .4s var(--_ease),transform .5s cubic-bezier(.3,1.35,.5,1);pointer-events:none}
+.pz-vd-dots i{display:block;width:8px;height:8px;border-radius:50%;background:#fff;animation:pzVdDot 1.2s ease-in-out infinite}
+.pz-vd-dots i:nth-child(2){animation-delay:-1s}
+.pz-vd-dots i:nth-child(3){animation-delay:-.8s}
+@keyframes pzVdDot{0%,100%{transform:translateY(3px) scale(.82);opacity:.5}50%{transform:translateY(-3px) scale(1);opacity:1}}
+.pz-vd-cplay{position:relative}
+.pz-vd-cplay.is-load{background:rgba(10,10,14,.42);cursor:progress}
+.pz-vd-cplay.is-load .pz-vd-sw{opacity:0;transform:scale(.7)}
+.pz-vd-cplay.is-load .pz-vd-dots{opacity:1;transform:none}
+.pz-vd-cplay .pz-vd-sw{transition:opacity .4s var(--_ease),transform .5s cubic-bezier(.3,1.35,.5,1)}
+.pz-vd.is-narrow .pz-vd-dots{gap:5px}
+.pz-vd.is-narrow .pz-vd-dots i{width:7px;height:7px}
+@media (prefers-reduced-motion:reduce){.pz-vd-dots i{animation:pzVdDotCalm 1.4s ease-in-out infinite!important}}
+@keyframes pzVdDotCalm{0%,100%{opacity:.35}50%{opacity:1}}
+
+/* значок звука, когда интерфейс спрятался: плавно отъезжает в угол (на место кнопки звука) и держится ещё 3 с,
+   потом растворяется вместе с размытием; при появлении интерфейса так же плавно возвращается.
+   translateY(8px) гасит общий сдвиг верхнего ряда — значок едет ровно по горизонтали */
+.pz-vd-topr .pz-vd-audio{transition:opacity .7s var(--_ease),transform .8s cubic-bezier(.33,0,.15,1),-webkit-backdrop-filter .7s var(--_ease),backdrop-filter .7s var(--_ease)}
+.pz-vd.is-hidden .pz-vd-topr .pz-vd-audio{transform:translateY(8px)}
+.pz-vd.is-hidden .pz-vd-topr:has(.pz-vd-vol) .pz-vd-audio{transform:translate(calc(var(--_cap) + var(--_gap)),8px)}
+.pz-vd.is-hidden.is-astay .pz-vd-topr .pz-vd-audio{opacity:1;-webkit-backdrop-filter:var(--_glassf);backdrop-filter:var(--_glassf)}
+
+/* ================= жидкий стиль (motion="liquid", по умолчанию) =================
+   Элементы появляются как капли: вырастают из своего края на упругой пружине с лёгким перелётом,
+   прячутся с коротким «вдохом» (чуть набухают и сжимаются). Контейнеры не двигаются — двигается само стекло,
+   поэтому размытие остаётся живым всю анимацию. */
+.pz-vd--liquid{--_spring:cubic-bezier(.3,1.5,.45,1);--_suck:cubic-bezier(.6,-.45,.75,.35)}
+/* появление: пружина, с небольшой задержкой друг за другом */
+.pz-vd.pz-vd--liquid :is(.pz-vd-cap,.pz-vd-bar,.pz-vd-cbtn){
+  transition:opacity .4s var(--_ease) var(--d,0s),transform .8s var(--_spring) var(--d,0s),padding .7s var(--_spring),background-color .35s var(--_ease),
+    -webkit-backdrop-filter .55s var(--_ease) var(--d,0s),backdrop-filter .55s var(--_ease) var(--d,0s)}
+/* скрытие: быстро, с «вдохом», без задержек */
+.pz-vd.pz-vd--liquid:is(.is-hidden,.is-idle) :is(.pz-vd-cap,.pz-vd-bar,.pz-vd-cbtn){
+  transition:opacity .3s var(--_ease) .08s,transform .45s var(--_suck),padding .45s var(--_ease),background-color .35s var(--_ease),
+    -webkit-backdrop-filter .3s var(--_ease) .08s,backdrop-filter .3s var(--_ease) .08s}
+.pz-vd--liquid .pz-vd-topl .pz-vd-cap{--d:.02s;transform-origin:0 50%}
+.pz-vd--liquid .pz-vd-topr .pz-vd-cap{--d:.04s;transform-origin:100% 50%}
+.pz-vd--liquid .pz-vd-tools .pz-vd-cap{--d:.06s;transform-origin:100% 100%}
+.pz-vd--liquid .pz-vd-tools .pz-vd-cap+.pz-vd-cap{--d:.1s}
+.pz-vd--liquid .pz-vd-bar{--d:.1s;transform-origin:50% 100%}
+.pz-vd--liquid .pz-vd-cskip{--d:.08s}
+/* контейнеры в жидком стиле стоят на месте */
+.pz-vd.pz-vd--liquid:is(.is-hidden,.is-idle) :is(.pz-vd-topl,.pz-vd-topr,.pz-vd-tools){transform:none}
+.pz-vd.pz-vd--liquid.is-hidden .pz-vd-center{transform:translate(-50%,-50%)}
+/* куда «стекает» капля */
+.pz-vd.pz-vd--liquid.is-hidden :is(.pz-vd-topl,.pz-vd-topr) .pz-vd-cap{transform:scale(.3,.55)}
+.pz-vd.pz-vd--liquid:is(.is-hidden,.is-idle) .pz-vd-tools .pz-vd-cap{transform:translateY(6px) scale(.3,.4)}
+.pz-vd.pz-vd--liquid:is(.is-hidden,.is-idle) .pz-vd-bar{transform:scale(.18,.45)}
+.pz-vd.pz-vd--liquid.is-hidden .pz-vd-cplay{transform:scale(.35)}
+/* −10 и +10 отделяются от центральной капли и стекаются в неё обратно */
+.pz-vd--liquid .pz-vd-cskip:first-child{--sx:95px}
+.pz-vd--liquid .pz-vd-cskip:last-child{--sx:-95px}
+.pz-vd--liquid.is-narrow .pz-vd-cskip:first-child{--sx:74px}
+.pz-vd--liquid.is-narrow .pz-vd-cskip:last-child{--sx:-74px}
+.pz-vd.pz-vd--liquid:is(.is-hidden,.is-idle) .pz-vd-cskip{transform:translateX(var(--sx)) scale(.3)}
+/* значок звука: едет в угол ровно по горизонтали, в конце сжимается каплей */
+.pz-vd--liquid .pz-vd-topr .pz-vd-audio{transform-origin:100% 50%;transition:opacity .45s var(--_ease),transform .9s var(--_spring),-webkit-backdrop-filter .5s var(--_ease),backdrop-filter .5s var(--_ease)}
+.pz-vd.pz-vd--liquid.is-hidden .pz-vd-topr .pz-vd-audio{transform:none}
+.pz-vd.pz-vd--liquid.is-hidden .pz-vd-topr:has(.pz-vd-vol) .pz-vd-audio{transform:translateX(calc(var(--_cap) + var(--_gap)))}
+.pz-vd.pz-vd--liquid.is-hidden:not(.is-astay) .pz-vd-topr .pz-vd-audio{transform:scale(.3,.5);transition:opacity .3s var(--_ease) .08s,transform .45s var(--_suck),-webkit-backdrop-filter .3s var(--_ease),backdrop-filter .3s var(--_ease)}
+.pz-vd.pz-vd--liquid.is-hidden:not(.is-astay) .pz-vd-topr:has(.pz-vd-vol) .pz-vd-audio{transform:translateX(calc(var(--_cap) + var(--_gap))) scale(.3,.5)}
+/* громкость раскрывается на пружине */
+.pz-vd--liquid .pz-vd-vrail{transition:width .75s var(--_spring),margin .75s var(--_spring),opacity .35s var(--_ease)}
+/* меню вырастает каплей из своей кнопки и стекает в неё обратно */
+.pz-vd.pz-vd--liquid .pz-vd-pop{transform:translateY(18px) scale(.5,.28);transform-origin:90% 100%;
+  transition:opacity .28s var(--_ease) .05s,transform .42s var(--_suck),height .5s var(--_spring)}
+.pz-vd.pz-vd--liquid .pz-vd-pop.on{transform:none;transition:opacity .3s var(--_ease),transform .75s var(--_spring),height .55s var(--_spring)}
+.pz-vd.pz-vd--liquid .pz-vd-pop.on.is-snap{transition:opacity .3s var(--_ease),transform .75s var(--_spring)}
+/* меню правого клика и подсказки — капля с колебанием */
+.pz-vd--liquid .pz-vd-ctx{animation:pzVdBlob .65s linear both}
+@keyframes pzVdBlob{0%{opacity:0;transform:scale(.35,.2)}25%{opacity:1;transform:scale(1.06,.92)}45%{transform:scale(.97,1.04)}65%{transform:scale(1.01,.99)}100%{opacity:1;transform:none}}
+.pz-vd--liquid .pz-vd-flash{animation-name:pzVdFlashL;animation-duration:.85s}
+@keyframes pzVdFlashL{0%{opacity:0;transform:translateX(-50%) scale(.4,.3)}22%{opacity:1;transform:translateX(-50%) scale(1.08,.93)}38%{transform:translateX(-50%) scale(.96,1.04)}55%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1.06,.96)}}
+/* точки загрузки → «смотреть»: капля переливается */
+.pz-vd--liquid .pz-vd-cplay .pz-vd-sw,.pz-vd--liquid .pz-vd-dots{transition:opacity .4s var(--_ease),transform .7s var(--_spring)}
+
+/* жидкий стиль: скрытие — точная обратная анимация появления.
+   Та же пружина, развёрнутая во времени: cubic-bezier(.3,1.5,.45,1) → (1−x2, 1−y2, 1−x1, 1−y1) = (.55,0,.7,−.5):
+   сначала лёгкое набухание (зеркало перелёта), потом капля втягивается. Та же длительность, прозрачность уходит в конце,
+   порядок обратный (--dr = .1s − --d): кто появился последним — уходит первым; ±10 стекаются в центр раньше, чем он сжимается */
+.pz-vd--liquid{--_spring-r:cubic-bezier(.55,0,.7,-.5)}
+.pz-vd.pz-vd--liquid:is(.is-hidden,.is-idle) :is(.pz-vd-cap,.pz-vd-bar,.pz-vd-cbtn){
+  transition:opacity .4s var(--_ease) calc(.4s + var(--dr,0s)),transform .8s var(--_spring-r) var(--dr,0s),padding .7s var(--_spring-r),background-color .35s var(--_ease),
+    -webkit-backdrop-filter .4s var(--_ease) calc(.4s + var(--dr,0s)),backdrop-filter .4s var(--_ease) calc(.4s + var(--dr,0s))}
+.pz-vd--liquid .pz-vd-topl .pz-vd-cap{--dr:.08s}
+.pz-vd--liquid .pz-vd-topr .pz-vd-cap{--dr:.06s}
+.pz-vd--liquid .pz-vd-tools .pz-vd-cap{--dr:.04s}
+.pz-vd--liquid .pz-vd-tools .pz-vd-cap+.pz-vd-cap{--dr:0s}
+.pz-vd--liquid .pz-vd-bar{--dr:0s}
+.pz-vd--liquid .pz-vd-cskip{--dr:0s}
+.pz-vd--liquid .pz-vd-cplay{--dr:.1s}
+/* значок звука и меню — тоже обратной пружиной той же длительности */
+.pz-vd.pz-vd--liquid.is-hidden:not(.is-astay) .pz-vd-topr .pz-vd-audio{transition:opacity .45s var(--_ease) .45s,transform .9s var(--_spring-r),-webkit-backdrop-filter .45s var(--_ease) .45s,backdrop-filter .45s var(--_ease) .45s}
+.pz-vd.pz-vd--liquid .pz-vd-pop:not(.on){transition:opacity .3s var(--_ease) .45s,transform .75s var(--_spring-r),height .55s var(--_spring)}
+
+/* интерфейс спрятан — громкость всегда сворачивается в кнопку, даже если дорожка в фокусе или под курсором.
+   Иначе раскрытая капсула оставалась шире, и значок звука, отъезжая в угол, застревал посередине */
+.pz-vd.pz-vd.is-hidden .pz-vd-topr .pz-vd-vol{padding-left:calc((var(--_cap) - 36px) / 2)}
+.pz-vd.pz-vd.is-hidden .pz-vd-topr .pz-vd-vol .pz-vd-vrail{width:0;margin-right:0;opacity:0}
+.pz-vd.pz-vd.is-narrow.is-hidden .pz-vd-topr .pz-vd-vol{padding-left:3px}

@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { parzDefine } from './vite.shared';
 // Сборка самого компонента в dist/ (npm run build:lib)
 export default defineConfig({
   plugins: [react()],
+  define: parzDefine,
   publicDir: false, // логотипы сайта в пакет не нужны
   build: {
     outDir: 'dist',

@@ -1,0 +1,84 @@
+/* Parz UI · Parz Badge */
+/* размеры парами «высота / шрифт» так, чтобы высота заглавных и цифр (≈0,727 em у Inter) ложилась в центр ровно,
+   без полупикселя: S 15/9.6 (7 px, по 4 сверху и снизу), M 20/11 (8 px, по 6), L 24/13.75 (10 px, по 7) */
+.pz-bd{--pz-bd-color:#ff4d5e;--pz-bd-h:20px;--pz-bd-fs:11px;--pz-bd-px:7px;--pz-bd-dot:10px;--ltb-icon:12px;--_ease:cubic-bezier(.33,0,.15,1);
+  --_bg:var(--pz-bd-color);--_fg:var(--pz-bd-fg,#fff);--_bd:transparent;
+  position:relative;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;vertical-align:middle;flex:none;
+  height:var(--pz-bd-h);min-width:var(--pz-bd-h);width:calc(var(--pz-bd-w) + var(--pz-bd-px) * 2);padding:0 var(--pz-bd-px);border-radius:999px;
+  background:var(--_bg);color:var(--_fg);box-shadow:inset 0 0 0 1.5px var(--_bd);
+  font-family:inherit;font-weight:700;font-size:var(--pz-bd-fs);line-height:1;letter-spacing:.01em;white-space:nowrap;font-variant-numeric:tabular-nums;
+  transition:width .42s var(--_ease),background-color .4s var(--_ease),color .4s var(--_ease),box-shadow .4s var(--_ease);
+  animation:pzBdIn .52s var(--_ease) backwards}
+.pz-bd--sm{--pz-bd-h:15px;--pz-bd-fs:9.6px;--pz-bd-px:5px;--pz-bd-dot:8px;--ltb-icon:10px}
+.pz-bd--lg{--pz-bd-h:24px;--pz-bd-fs:13.75px;--pz-bd-px:9px;--pz-bd-dot:12px;--ltb-icon:15px}
+
+.pz-bd--soft{--_bg:color-mix(in srgb,var(--pz-bd-color) 18%,transparent);--_fg:var(--pz-bd-fg,var(--pz-bd-color))}
+/* outline: почти прозрачный фон с лёгким оттенком цвета и размытием того, что под ним, — на кнопке или картинке
+   цифра не сливается с фоном, а обводка остаётся «воздушной» */
+.pz-bd--outline{--_bg:color-mix(in srgb,var(--pz-bd-color) 10%,transparent);--_bd:var(--pz-bd-color);--_fg:var(--pz-bd-fg,var(--pz-bd-color));
+  -webkit-backdrop-filter:blur(6px) saturate(1.4);backdrop-filter:blur(6px) saturate(1.4)}
+.pz-bd--glass{--_bg:rgba(255,255,255,.14);--_bd:rgba(255,255,255,.28);--_fg:var(--pz-bd-fg,#fff);
+  -webkit-backdrop-filter:blur(10px) saturate(1.5);backdrop-filter:blur(10px) saturate(1.5)}
+
+/* содержимое и его невидимая копия для замера ширины — одинаковая раскладка */
+.pz-bd-in,.pz-bd-sizer{display:inline-flex;align-items:center;gap:.36em}
+.pz-bd-sizer{position:absolute;left:0;top:0;visibility:hidden;pointer-events:none;white-space:nowrap}
+/* текст и цифры — блок, обрезанный ровно по высоте заглавных: flex центрирует именно его, а не строку с запасом */
+.pz-bd-label,.pz-bd-n{display:block;line-height:1;text-box:trim-both cap alphabetic}
+@supports not (text-box:trim-both cap alphabetic){.pz-bd-label,.pz-bd-n{transform:translateY(.06em)}}
+.pz-bd-ico{display:grid;place-items:center;width:var(--ltb-icon);height:var(--ltb-icon);flex:none}
+.pz-bd-ico .ltb-icon{width:100%;height:100%;display:grid;place-items:center}
+.pz-bd .pz-bd-ico .ltb-ms,.pz-bd .pz-bd-ico .ltb-mi{font-size:var(--ltb-icon);width:1em;height:1em;line-height:1;display:block;overflow:hidden}
+.pz-bd-ico .ltb-s{display:none}
+
+/* перекат числа: старое уезжает, новое въезжает; окно чуть выше цифр, чтобы при движении не было видно лишнего */
+.pz-bd-num{position:relative;display:inline-grid;overflow:hidden;padding:3px 0;margin:-3px 0}
+.pz-bd-n{grid-area:1/1}
+.pz-bd-n--in-up{animation:pzBdInUp .44s var(--_ease) backwards}
+.pz-bd-n--out-up{animation:pzBdOutUp .44s var(--_ease) forwards}
+.pz-bd-n--in-down{animation:pzBdInDown .44s var(--_ease) backwards}
+.pz-bd-n--out-down{animation:pzBdOutDown .44s var(--_ease) forwards}
+@keyframes pzBdInUp{from{transform:translateY(140%);opacity:0;filter:blur(2px)}}
+@keyframes pzBdOutUp{to{transform:translateY(-140%);opacity:0;filter:blur(2px)}}
+@keyframes pzBdInDown{from{transform:translateY(-140%);opacity:0;filter:blur(2px)}}
+@keyframes pzBdOutDown{to{transform:translateY(140%);opacity:0;filter:blur(2px)}}
+
+/* появление каплей: раздувается, чуть сплющивается и успокаивается; исчезновение — стягивается обратно */
+@keyframes pzBdIn{
+  0%{transform:scale(.2);opacity:0}
+  55%{transform:scale(1.12,.9);opacity:1}
+  78%{transform:scale(.96,1.04)}
+  100%{transform:none}}
+.pz-bd.is-leaving{animation:pzBdOut .36s cubic-bezier(.5,0,.75,0) forwards}
+@keyframes pzBdOut{
+  0%{transform:none;opacity:1}
+  35%{transform:scale(1.08,.9)}
+  100%{transform:scale(.2);opacity:0}}
+
+/* точка */
+.pz-bd--dot{width:var(--pz-bd-dot);height:var(--pz-bd-dot);min-width:0;padding:0}
+/* пульс: мягкое кольцо расходится и тает */
+.pz-bd.is-pulse::after{content:'';position:absolute;inset:0;border-radius:inherit;background:var(--pz-bd-color);opacity:0;pointer-events:none;
+  animation:pzBdPulse 1.9s cubic-bezier(.2,.6,.35,1) infinite}
+@keyframes pzBdPulse{0%{transform:scale(1);opacity:.5}100%{transform:scale(2.4);opacity:0}}
+
+/* на элементе: бейдж в углу, с тонкой обводкой цветом фона — отделяется от того, на чём сидит */
+.pz-bd-anchor{position:relative;display:inline-flex;vertical-align:middle}
+.pz-bd--at{position:absolute;z-index:1;box-shadow:inset 0 0 0 1.5px var(--_bd),0 0 0 2px var(--pz-bd-ring,#0c0c0f)}
+.pz-bd--top-end{top:calc(var(--pz-bd-h) * -.32);right:calc(var(--pz-bd-h) * -.32);transform-origin:30% 70%}
+.pz-bd--top-start{top:calc(var(--pz-bd-h) * -.32);left:calc(var(--pz-bd-h) * -.32);transform-origin:70% 70%}
+.pz-bd--bottom-end{bottom:calc(var(--pz-bd-h) * -.32);right:calc(var(--pz-bd-h) * -.32);transform-origin:30% 30%}
+.pz-bd--bottom-start{bottom:calc(var(--pz-bd-h) * -.32);left:calc(var(--pz-bd-h) * -.32);transform-origin:70% 30%}
+.pz-bd--at.pz-bd--dot.pz-bd--top-end{top:0;right:0}
+.pz-bd--at.pz-bd--dot.pz-bd--top-start{top:0;left:0}
+.pz-bd--at.pz-bd--dot.pz-bd--bottom-end{bottom:0;right:0}
+.pz-bd--at.pz-bd--dot.pz-bd--bottom-start{bottom:0;left:0}
+
+.pz-bd-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+@media (prefers-reduced-motion:reduce){
+  .pz-bd,.pz-bd.is-leaving,.pz-bd-n--in-up,.pz-bd-n--out-up,.pz-bd-n--in-down,.pz-bd-n--out-down{animation:none}
+  .pz-bd{transition-duration:.01ms}
+  .pz-bd.is-pulse::after{animation:pzBdCalm 2s ease-in-out infinite;transform:none}
+}
+@keyframes pzBdCalm{0%,100%{opacity:0}50%{opacity:.25}}

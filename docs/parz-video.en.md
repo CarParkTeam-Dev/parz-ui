@@ -1,0 +1,94 @@
+# Parz Video
+
+`ParzVideo` is the Parz UI video player. The control bar is liquid glass that floats over the video and gently hides while you watch. Nothing abrupt.
+
+- **seeking** — the seek line flows every frame instead of jumping four times a second; on hover it thickens and shows a knob and a time tooltip;
+- **center** — like the Apple player: a glass play/pause button with −10 and +10 on the sides (on a narrow player ±10 sit in the bar); shows together with the bar;
+- **poster** — `poster` lies over the video and dissolves when playback starts;
+- **audio badge** — `audioBadge="Dolby Atmos"` shows the Dolby Atmos mark, `"Spatial Audio"` a spatial audio icon, any other text a waves icon;
+- **icons** — play, pause and replay, volume and full screen morph into each other;
+- **bar** — fades away after `hideDelay` without mouse movement and is always visible while paused;
+- **volume** — the slider opens when you hover the sound button, its width flows;
+- **settings** — the gear opens a glass menu: quality, speed, subtitles and loop. Pages slide in from the side, the menu height flows, no modal windows;
+- **quality** — switching keeps the time and pause state, and the last frame dissolves into the new one;
+- **chapters** — the seek line splits into segments, the chapter name shows in the tooltip and next to the time;
+- **frame preview** — a frame from the hovered point appears above the seek line;
+- **subtitles** — WebVTT in the player's style; the line lifts gently while the bar is visible;
+- **±10 seconds** — skip buttons; click the time to see what is left;
+- **hints** — pause, seeking and volume changes show a soft icon in the center;
+- **waiting** — before the start, while the buffer fills, dots run inside the center button on dark blurred glass; if the video stalls during playback, an arc spins in the center;
+- **phone** — a tap shows or hides the bar, a double-tap on an edge skips 10 seconds; on a narrow player volume is just a button;
+- **right click** — a custom menu at the cursor: the Parz UI mark, “by CarPark Team”, the version and “About” (opens dev.carpark.am/parz-ui in a new tab);
+- **reduced motion** — with `prefers-reduced-motion` transitions are nearly instant.
+
+## Layout
+
+Everything over the video is a separate borderless glass capsule; a crisp outer shadow gives depth. They show and hide together.
+
+- **top left** — title, quality mark (4K / HD) and the current chapter;
+- **top right** — audio format badge and volume: on desktop a round sound button, the track opens on hover;
+- **center** — play/pause with −10 / +10, like the Apple player;
+- **above the timeline on the right** — quality, subtitles, speed and “more” (loop), next to them picture in picture, cast and full screen;
+- **bottom** — the timeline in its own capsule: time, line, time left (click for total length).
+
+**Narrow player (up to 460 px, phone):** top left — picture in picture and cast; top right — the sound button (mute / unmute only); bottom right — the “…” button with full screen to its right; the “…” menu has icons: quality, speed, subtitles, loop. On a short player the title hides.
+
+```tsx
+import { ParzVideo } from '@carparkteam/parz-ui';
+import '@carparkteam/parz-ui/style.css';
+
+<ParzVideo src="/video.mp4" poster="/poster.jpg" title="Our clip" />
+
+// quality, chapters and subtitles
+<ParzVideo
+  sources={[
+    { src: '/video-2160.mp4', label: '2160p' }, // shows 4K
+    { src: '/video-1080.mp4', label: '1080p' }, // shows HD
+    { src: '/video-720.mp4', label: '720p' }
+  ]}
+  chapters={[{ start: 0, title: 'Intro' }, { start: 42, title: 'Main part' }]}
+  tracks={[{ src: '/subs.en.vtt', label: 'English', srclang: 'en', default: true }]}
+/>
+```
+
+## Keys
+
+When the player is focused: `Space` or `K` — pause, `←` / `→` — 5 seconds back and forward, `J` / `L` — by `skipSeconds`, `0`–`9` — jump to 0–90% of the clip, `C` — subtitles, `↑` / `↓` — volume, `M` — sound, `F` — full screen, `Esc` — close the settings menu. On the seek line `Home` / `End` jump to the start and end.
+
+| Prop | Default | What it does |
+|---|---|---|
+| `src` | — | Video URL (optional when `sources` is set) |
+| `sources` | — | Quality options: `{ src, label, type?, badge? }[]`. The mark next to the gear comes from the label: `2160p` and up — **4K**, `720p` and up — **HD**; set your own with `badge`, an empty string hides it |
+| `defaultQuality` | `0` | Which quality to start with |
+| `chapters` | — | Chapters: `{ start, title }[]`, `start` in seconds |
+| `tracks` | — | WebVTT subtitles: `{ src, label, srclang, default? }[]`. Another domain needs CORS |
+| `previews` | `true` | Frame above the seek line on hover (loads the video a second time, only the needed frames) |
+| `poster` | — | Poster before playback; fades in softly once the image loads, dissolves once the video starts and returns when it ends (unless `loop`) |
+| `title` | — | Title at the top; hides with the bar |
+| `audioBadge` | — | Audio format badge at the top right; when the controls hide it slides into the corner, stays 3 s more and fades out. `'Dolby Atmos'` shows the Dolby Atmos mark, `'Spatial Audio'` a spatial audio icon, other text (`'5.1'`…) a waves icon |
+| `autoPlay` / `muted` / `loop` | `false` | Same as on `<video>`. Browsers only autoplay muted video |
+| `aspectRatio` | `'16 / 9'` | Aspect ratio |
+| `accent` | `#6ee7a0` | Color of the seek line, volume and the big button |
+| `motion` | `'liquid'` | Animation style: `'liquid'` — elements appear and hide like drops on a springy curve (capsules grow from their edge, −10/+10 split off the center button, menus grow from their button); `'fade'` — a calm fade in and out |
+| `radius` | `18` | Corner radius, px (none in full screen) |
+| `showSkip` / `skipSeconds` | `true` / `10` | Back and forward buttons and their step |
+| `showVolume` | `true` | Volume button and slider |
+| `showSettings` | `true` | Quality, subtitles, speed and “more” (loop) buttons |
+| `showCast` | `true` | Cast (AirPlay, Chromecast via Remote Playback) — the button appears only when the browser sees a device |
+| `showFullscreen` | `true` | Full screen button (double-click on the video works too) |
+| `showPip` | `false` | Picture in picture, if the browser supports it |
+| `speeds` | `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]` | Speeds in the menu |
+| `hideDelay` | `2600` | Ms without movement before the bar hides |
+| `labels` | English | Button labels for screen readers: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` is the step), `remaining`, `more`, `cast`, `on` |
+| `onPlay` / `onPause` / `onEnded` | — | Playback events |
+| `onTimeUpdate` | — | `(time, duration) => void` |
+| `onQualityChange` | — | `(index, source) => void` |
+| `className` / `style` | — | On the root element |
+
+## CSS variables
+
+`--pz-vd-accent` (accent), `--pz-vd-r` (radius), `--pz-vd-glass` (bar background), `--pz-vd-line` (bar edge), `--pz-vd-fg` (icon and text color).
+
+```css
+.trailer { --pz-vd-accent: #7aa7ff; --pz-vd-glass: rgba(10, 10, 20, .6); }
+```

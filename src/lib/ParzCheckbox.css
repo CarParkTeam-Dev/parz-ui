@@ -25,9 +25,13 @@
 .pz-cb.is-on .pz-cb-fill{transform:scale(1);border-radius:var(--pz-cb-r);transition:transform .5s cubic-bezier(.3,1.5,.5,1),border-radius .4s cubic-bezier(.3,1.2,.5,1)}
 
 .pz-cb-mark{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:var(--pz-cb-check);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;z-index:1}
-.pz-cb-tick,.pz-cb-dash{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .16s cubic-bezier(.5,0,.75,0)}
-.pz-cb.is-on:not(.is-mixed) .pz-cb-tick{stroke-dashoffset:0;transition:stroke-dashoffset .34s cubic-bezier(.3,.8,.4,1) .12s}
-.pz-cb.is-mixed .pz-cb-dash{stroke-dashoffset:0;transition:stroke-dashoffset .3s cubic-bezier(.3,.8,.4,1) .1s}
+/* длины штрихов — настоящие, в единицах viewBox (галочка ≈15, черта 9): iOS Safari не учитывает pathLength у пунктира
+   и рисовал круглые «шапочки» спрятанного штриха чёрными точками. Спрятанный штрих ещё и прозрачный — точек нет нигде. */
+.pz-cb-tick{--l:16}.pz-cb-dash{--l:10}
+.pz-cb-tick,.pz-cb-dash{stroke-dasharray:var(--l) var(--l);stroke-dashoffset:var(--l);opacity:0;
+  transition:stroke-dashoffset .16s cubic-bezier(.5,0,.75,0),opacity .01s linear .16s}
+.pz-cb.is-on:not(.is-mixed) .pz-cb-tick{stroke-dashoffset:0;opacity:1;transition:stroke-dashoffset .34s cubic-bezier(.3,.8,.4,1) .12s,opacity 0s linear .12s}
+.pz-cb.is-mixed .pz-cb-dash{stroke-dashoffset:0;opacity:1;transition:stroke-dashoffset .3s cubic-bezier(.3,.8,.4,1) .1s,opacity 0s linear .1s}
 
 /* у каждого состояния своя анимация — смена сама перезапускает «сплющился → отпружинил» */
 .pz-cb.is-moved .pz-cb-box{animation:pzCbOff .5s cubic-bezier(.3,.7,.4,1)}
@@ -43,5 +47,5 @@
   .pz-cb-box,.pz-cb-fill,.pz-cb.is-on .pz-cb-fill{transition-duration:.15s;transition-timing-function:ease}
   .pz-cb:active .pz-cb-box{transform:none}
   .pz-cb.is-moved .pz-cb-box,.pz-cb.is-moved.is-on .pz-cb-box{animation:none}
-  .pz-cb-tick,.pz-cb-dash,.pz-cb.is-on:not(.is-mixed) .pz-cb-tick,.pz-cb.is-mixed .pz-cb-dash{transition:stroke-dashoffset .15s ease}
+  .pz-cb-tick,.pz-cb-dash,.pz-cb.is-on:not(.is-mixed) .pz-cb-tick,.pz-cb.is-mixed .pz-cb-dash{transition:stroke-dashoffset .15s ease,opacity 0s}
 }

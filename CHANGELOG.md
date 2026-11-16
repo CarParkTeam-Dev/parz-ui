@@ -12,6 +12,20 @@ npm update @carparkteam/parz-ui
 
 ## Unreleased
 
+### Added
+- **Parz Button** (`ParzButton`) — button that gently squeezes when pressed while a drop spreads from the touch point; five looks (`solid`, `soft`, `outline`, `ghost`, `glass`), icons, links and smooth loading.
+- **Parz Progress** (`ParzProgress`) — progress bar or ring where the fill flows to each new value; unknown-duration mode, states (`success`, `warning`, `error`, `paused`), a soft glow at 100% and a beta `successMorph`: on success the bar turns into a circle with a check.
+- **Parz Badge** (`ParzBadge`) — label or counter that appears like a drop; digits roll and the width flows when the number changes; on its own or in the corner of a button, with a pulsing dot.
+- **Parz Video** (`ParzVideo`) — video player with a liquid-glass control bar, an Apple-style center (play/pause with −10 / +10), a poster that dissolves on start that gently hides while you watch; the seek line flows every frame, icons morph into each other, plus quality switching with a frame crossfade and an automatic 4K / HD mark, an audio format badge (e.g. Dolby Atmos), a settings menu (quality, speed, subtitles, loop), chapters, a frame preview on the seek line, WebVTT subtitles, ±10 s buttons, full screen, picture in picture and keyboard shortcuts.
+
+### Changed
+- Parz Toggle: the thumb is now a capsule, like on iOS, and the track is a little longer. While pressed, dragged or switching, the thumb swells well past the track and turns into translucent glass with a light rim, then settles back.
+- Parz Slider and Parz Range: the thumb is now a capsule too; while pressed or dragged it swells past the track and turns into clear glass with a light rim, then settles back.
+
+### Fixed
+- Parz Checkbox: no more small black dots on the box in Safari on iPhone and iPad.
+- Parz Slider and Parz Range: on phones the thumb now stays right under the finger while dragging instead of lagging behind.
+
 ## 1.0.2 — 2026-11-12
 
 ### Added

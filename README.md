@@ -12,6 +12,10 @@ React components with liquid motion — springy, smooth, nothing abrupt. Crafted
 | `ParzMenu` | Navigation bar: the highlight flows between tabs like a drop, round buttons bounce; on desktop it becomes a header with search | [docs](docs/parz-menu.en.md) |
 | `ParzToggle` | Switch with a liquid thumb that stretches, squashes and can be dragged; optional “too fast” rejected state | [docs](docs/parz-toggle.en.md) |
 | `ParzCheckbox` | Checkbox where color spreads like a drop and the tick draws itself; indeterminate and error states | [docs](docs/parz-checkbox.en.md) |
+| `ParzButton` | Button that gently squeezes when pressed while a drop spreads from the touch point; five looks, icons, smooth loading | [docs](docs/parz-button.en.md) |
+| `ParzProgress` | Progress bar or ring: the fill flows to each new value, an unknown-duration mode and a soft glow at 100% | [docs](docs/parz-progress.en.md) |
+| `ParzBadge` | Label or counter: appears like a drop, digits roll and the width flows; on its own or in the corner of a button, with a pulsing dot | [docs](docs/parz-badge.en.md) |
+| `ParzVideo` | Video player with a liquid-glass control bar: quality switching, settings menu, chapters, frame preview on the seek line, subtitles and keyboard shortcuts | [docs](docs/parz-video.en.md) |
 | `ParzSlider` | Slider whose thumb stretches with the speed of your drag | [docs](docs/parz-slider.en.md) |
 | `ParzRange` | Range slider with 2 to 5 thumbs on one track | [docs](docs/parz-slider.en.md) |
 | `AnimoLogo` | Living text logo: letters float in, catch a wave on hover, light up when held | [docs](docs/animologo.en.md) |
