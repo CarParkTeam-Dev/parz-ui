@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ParzMenu, AnimoLogo, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, ParzButton, ParzProgress, ParzBadge, ParzVideo, type TabItem } from '../lib';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { ParzMenu, AnimoLogo, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, ParzButton, ParzProgress, ParzBadge, ParzVideo, ParzTabs, ParzExpander, type TabItem } from '../lib';
 import { MenuEditor, Seg } from './App';
 import { LogoEditor } from './LogoEditor';
 import { ToggleEditor } from './ToggleEditor';
@@ -8,6 +8,8 @@ import { ButtonEditor } from './ButtonEditor';
 import { ProgressEditor } from './ProgressEditor';
 import { BadgeEditor } from './BadgeEditor';
 import { SliderEditor } from './SliderEditor';
+import { TabsEditor } from './TabsEditor';
+import { ExpanderEditor } from './ExpanderEditor';
 import { VideoEditor, DEMO_CLIP, useVideoLabels, usePoster } from './VideoEditor';
 import { Markdown } from './Markdown';
 import { ChangelogPage } from './Changelog';
@@ -41,20 +43,26 @@ import videoHy from '../../docs/parz-video.hy.md?raw';
 import sliderEn from '../../docs/parz-slider.en.md?raw';
 import sliderRu from '../../docs/parz-slider.ru.md?raw';
 import sliderHy from '../../docs/parz-slider.hy.md?raw';
+import tabsEn from '../../docs/parz-tabs.en.md?raw';
+import tabsRu from '../../docs/parz-tabs.ru.md?raw';
+import tabsHy from '../../docs/parz-tabs.hy.md?raw';
+import expEn from '../../docs/parz-expander.en.md?raw';
+import expRu from '../../docs/parz-expander.ru.md?raw';
+import expHy from '../../docs/parz-expander.hy.md?raw';
 import changesEn from '../../CHANGELOG.md?raw';
 import changesRu from '../../CHANGELOG.ru.md?raw';
 import changesHy from '../../CHANGELOG.hy.md?raw';
 import pkg from '../../package.json';
 
-type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'brand' | 'changelog';
-type Cmp = 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range';
-const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', toggle: 'Parz Toggle', check: 'Parz Checkbox', button: 'Parz Button', progress: 'Parz Progress', badge: 'Parz Badge', video: 'Parz Video', slider: 'Parz Slider', range: 'Parz Range' };
+type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander' | 'brand' | 'changelog';
+type Cmp = 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander';
+const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', toggle: 'Parz Toggle', check: 'Parz Checkbox', button: 'Parz Button', progress: 'Parz Progress', badge: 'Parz Badge', video: 'Parz Video', slider: 'Parz Slider', range: 'Parz Range', tabs: 'Parz Tabs', expander: 'Parz Expander' };
 const isCmp = (p: Page): p is Cmp => p in CMP_TITLE;
 type View = 'editor' | 'docs';
 type Route = { page: Page; view: View };
 export type Go = (p: Page, v?: View) => void;
 export type { Page, Lang };
-const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', button: 'parz-button', progress: 'parz-progress', badge: 'parz-badge', video: 'parz-video', slider: 'parz-slider', range: 'parz-range', brand: 'brand', changelog: 'changelog' };
+const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', button: 'parz-button', progress: 'parz-progress', badge: 'parz-badge', video: 'parz-video', slider: 'parz-slider', range: 'parz-range', tabs: 'parz-tabs', expander: 'parz-expander', brand: 'brand', changelog: 'changelog' };
 const DOCS: Record<Cmp, Record<Lang, string>> = {
   menu: { en: menuEn, ru: menuRu, hy: menuHy },
   animo: { en: logoEn, ru: logoRu, hy: logoHy },
@@ -65,9 +73,18 @@ const DOCS: Record<Cmp, Record<Lang, string>> = {
   badge: { en: badgeEn, ru: badgeRu, hy: badgeHy },
   video: { en: videoEn, ru: videoRu, hy: videoHy },
   slider: { en: sliderEn, ru: sliderRu, hy: sliderHy },
-  range: { en: sliderEn, ru: sliderRu, hy: sliderHy }
+  range: { en: sliderEn, ru: sliderRu, hy: sliderHy },
+  tabs: { en: tabsEn, ru: tabsRu, hy: tabsHy },
+  expander: { en: expEn, ru: expRu, hy: expHy }
 };
 const LANG_KEY = 'ltb-lang';
+const WIDE_KEY = 'pz-wide';
+/* «широкий просмотр»: сцена редактора занимает всё место справа от настроек; выбор запоминается */
+function useWide() {
+  const [wide, setWide] = useState(() => { try { return localStorage.getItem(WIDE_KEY) === '1'; } catch { return false; } });
+  const setWideKeep = (v: boolean) => { setWide(v); try { localStorage.setItem(WIDE_KEY, v ? '1' : '0'); } catch { /* нет хранилища */ } };
+  return { wide, setWideKeep };
+}
 
 /* поиск по компонентам: заголовки и слова для поиска на всех трёх языках — находится с любого */
 type Hit = { page: Page; view: View; title: string; sub: string; icon: string; words: string };
@@ -93,6 +110,10 @@ const INDEX: Omit<Hit, 'sub'>[] = [
   { page: 'slider', view: 'docs', title: 'Parz Slider', icon: 'description', words: 'parz slider docs props api документация пропсы ползунок փաստաթղթեր' },
   { page: 'range', view: 'editor', title: 'Parz Range', icon: 'tune', words: 'parz range interval between price filter multi thumbs промежуток диапазон интервал цена фильтр от до несколько միջակայք գին ֆիլտր' },
   { page: 'range', view: 'docs', title: 'Parz Range', icon: 'description', words: 'parz range docs props api документация пропсы промежуток փաստաթղթեր' },
+  { page: 'tabs', view: 'editor', title: 'Parz Tabs', icon: 'tab', words: 'parz tabs segmented control switch toggle group radio pill табы вкладки сегменты переключатель выбор ներդիրներ հատվածներ փոխարկիչ' },
+  { page: 'tabs', view: 'docs', title: 'Parz Tabs', icon: 'description', words: 'parz tabs segmented docs props api документация пропсы табы вкладки ներդիրներ փաստաթղթեր' },
+  { page: 'expander', view: 'editor', title: 'Parz Expander', icon: 'expand_more', words: 'parz expander accordion collapse collapsible details disclosure section faq экспандер аккордеон раскрыть свернуть секция вопросы ծալվող բացել փակել բաժին' },
+  { page: 'expander', view: 'docs', title: 'Parz Expander', icon: 'description', words: 'parz expander accordion docs props api документация пропсы экспандер аккордеон ծալվող փաստաթղթեր' },
   { page: 'changelog', view: 'editor', title: 'Changelog', icon: 'history', words: 'changelog what is new whats new release releases update version history что нового изменения обновление версия выпуск история ինչ նոր կա փոփոխություններ թարմացում տարբերակ' },
   { page: 'brand', view: 'editor', title: 'Parz UI', icon: 'palette', words: 'parz logos brand svg zip pack логотипы бренд логопак լոգոներ' }
 ];
@@ -151,6 +172,7 @@ export type SiteExtras = {
 
 export function Site({ extras = {} }: { extras?: SiteExtras }) {
   const has = (p: Page) => (p === 'home' ? !!extras.home : p === 'brand' ? !!extras.brand : true);
+  const { wide, setWideKeep } = useWide();
   const norm = (r: Route): Route => (has(r.page) ? r : { page: 'components', view: 'editor' });
   const [lang, setLang] = useState<Lang>(() => {
     try { const v = localStorage.getItem(LANG_KEY); if (v === 'en' || v === 'ru' || v === 'hy') return v; } catch { /* нет хранилища */ }
@@ -176,8 +198,34 @@ export function Site({ extras = {} }: { extras?: SiteExtras }) {
   const [revealed, setRevealed] = useState(!splash); // загрузчик ушёл — главная проигрывает свою анимацию заново, уже на виду
 
   const [query, setQuery] = useState('');
-  const hits = searchHits(query, lang, has);
+  const hits = useMemo(() => searchHits(query, lang, has), [query, lang]);
   const pick = (h: Hit) => { setQuery(''); go(h.page, h.view); };
+  // одна строка на компонент: нажатие ведёт в редактор, кнопка справа — в документацию
+  const groups = useMemo(() => {
+    const m = new Map<Page, { page: Page; main: Hit; docs?: Hit }>();
+    for (const h of hits) {
+      const g = m.get(h.page);
+      if (!g) m.set(h.page, { page: h.page, main: h, ...(h.view === 'docs' ? { docs: h } : {}) });
+      else if (h.view === 'docs') g.docs = h; else { g.main = h; }
+    }
+    return [...m.values()];
+  }, [hits]);
+  // список закрывается кликом мимо него и мимо поиска, а также Esc; снова открывается, как только меняется запрос
+  const [hitsOpen, setHitsOpen] = useState(true);
+  const hitsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { setHitsOpen(true); }, [query]);
+  useEffect(() => {
+    if (!query.trim()) return;
+    const down = (e: PointerEvent) => {
+      const el = e.target as Element;
+      if (hitsRef.current?.contains(el)) return;
+      // нажали в поле поиска — список возвращается; куда угодно ещё — закрывается
+      setHitsOpen(!!el.closest?.('.ltb input'));
+    };
+    const key = (e: KeyboardEvent) => { if (e.key === 'Escape') setHitsOpen(false); };
+    document.addEventListener('pointerdown', down, true); document.addEventListener('keydown', key);
+    return () => { document.removeEventListener('pointerdown', down, true); document.removeEventListener('keydown', key); };
+  }, [query]);
   const search = {
     searchPlaceholder: t('Поиск компонентов'), searchValue: query, onSearchChange: setQuery,
     onSearch: () => { if (hits[0]) pick(hits[0]); }
@@ -202,16 +250,19 @@ export function Site({ extras = {} }: { extras?: SiteExtras }) {
         {page === 'brand' && extras.brand?.({ lang, go, revealed })}
         {page === 'changelog' && <ChangelogPage lang={lang} source={CHANGES[lang]} install={<InstallCmd lang={lang} cmd={UPDATE} />} check={extras.updateCheck === false ? extras.changelogTop?.(lang) : <UpdateCheck lang={lang} current={pkg.version} />} footer={<Footer lang={lang} />} official={extras.updateCheck === false} />}
         {isCmp(page) && (
-          <div className="cmp">
+          <div className={`cmp${wide ? ' is-wide' : ''}`}>
             <div className="cmp-bar">
               <div className="cmp-t">
                 <button className="cmp-back" onClick={() => go('components')}><span className="material-symbols-rounded" aria-hidden="true">arrow_back</span>{t('Компоненты')}</button>
                 <b>{CMP_TITLE[page]}</b>
               </div>
-              <Seg label={t('Раздел')} value={v} options={[['editor', t('Редактор')], ['docs', t('Документация')]]} onChange={nv => go(page, nv)} />
+              <div className="cmp-r">
+                {v === 'editor' && <ParzToggle className="cmp-wide" size="sm" checked={wide} onChange={setWideKeep} label={t('Широкий просмотр')} />}
+                <Seg label={t('Раздел')} value={v} options={[['editor', t('Редактор')], ['docs', t('Документация')]]} onChange={nv => go(page, nv)} />
+              </div>
             </div>
             {v === 'editor'
-              ? (page === 'menu' ? <MenuEditor lang={lang} /> : page === 'animo' ? <LogoEditor /> : page === 'toggle' ? <ToggleEditor /> : page === 'check' ? <CheckboxEditor /> : page === 'button' ? <ButtonEditor /> : page === 'progress' ? <ProgressEditor /> : page === 'badge' ? <BadgeEditor /> : page === 'video' ? <VideoEditor /> : <SliderEditor key={page} kind={page} />)
+              ? (page === 'menu' ? <MenuEditor lang={lang} /> : page === 'animo' ? <LogoEditor /> : page === 'toggle' ? <ToggleEditor /> : page === 'check' ? <CheckboxEditor /> : page === 'button' ? <ButtonEditor /> : page === 'progress' ? <ProgressEditor /> : page === 'badge' ? <BadgeEditor /> : page === 'video' ? <VideoEditor /> : page === 'tabs' ? <TabsEditor /> : page === 'expander' ? <ExpanderEditor /> : <SliderEditor key={page} kind={page as 'slider' | 'range'} />)
               : <main className="docs page"><Markdown key={lang + page} source={DOCS[page][lang]} /></main>}
           </div>
         )}
@@ -230,14 +281,21 @@ export function Site({ extras = {} }: { extras?: SiteExtras }) {
           mobileSearch={search}
         />
 
-        {query.trim() && (
-          <div className="pz-hits" role="listbox" aria-label={t('Поиск компонентов')}>
-            {hits.length ? hits.map(h => (
-              <button key={h.page + h.view} role="option" aria-selected="false" className="pz-hit" onMouseDown={e => e.preventDefault()} onClick={() => pick(h)}>
-                <span className="material-symbols-rounded" aria-hidden="true">{h.icon}</span>
-                <span><b>{h.title}</b><small>{h.sub}</small></span>
-              </button>
-            )) : <p className="pz-hit-none">{t('Ничего не нашлось')}</p>}
+        {query.trim() && hitsOpen && (
+          <div className="pz-hits" ref={hitsRef} role="listbox" aria-label={t('Поиск компонентов')}>
+            <div className="pz-hits-sc">
+              {groups.length ? groups.map(g => (
+                <div key={g.page} className="pz-hit" role="option" aria-selected="false">
+                  <button className="pz-hit-main" onMouseDown={e => e.preventDefault()} onClick={() => pick(g.main)}>
+                    <span className="pz-hit-ico material-symbols-rounded" aria-hidden="true">{g.main.icon}</span>
+                    <span className="pz-hit-t"><b>{g.main.title}</b><small>{g.main.sub}</small></span>
+                  </button>
+                  {g.docs && <button className="pz-hit-doc" onMouseDown={e => e.preventDefault()} onClick={() => pick(g.docs!)} aria-label={`${g.main.title}: ${t('Документация')}`} title={t('Документация')}>
+                    <span className="material-symbols-rounded" aria-hidden="true">description</span>
+                  </button>}
+                </div>
+              )) : <p className="pz-hit-none">{t('Ничего не нашлось')}</p>}
+            </div>
           </div>
         )}
         {view}
@@ -280,7 +338,10 @@ function Skeleton({ route }: { route: Route }) {
 }
 
 /* ---------- каталог: из него собираются и главная, и страница Components ---------- */
-type Entry = { id: Cmp; title: string; desc: string; tags: string[]; demo: (lang: Lang) => ReactNode };
+type Cat = 'nav' | 'forms' | 'feedback' | 'media' | 'brand';
+type Entry = { id: Cmp; title: string; cat: Cat; desc: string; tags: string[]; demo: (lang: Lang) => ReactNode };
+/* категории каталога: у каждого компонента одна */
+const CATS: [Cat, string][] = [['nav', 'Навигация'], ['forms', 'Формы'], ['feedback', 'Статус'], ['media', 'Медиа'], ['brand', 'Бренд']];
 function MenuDemo({ lang }: { lang: Lang }) {
   const t = (k: string) => tr(lang, k);
   const [demo, setDemo] = useState('garage');
@@ -396,62 +457,93 @@ function RangeDemo({ lang }: { lang: Lang }) {
     </div>
   );
 }
+function TabsDemo({ lang }: { lang: Lang }) {
+  const t = (k: string) => tr(lang, k);
+  const [v, setV] = useState('week');
+  return (
+    <div className="card-demo card-demo--tabs">
+      <ParzTabs size="lg" value={v} onChange={setV} ariaLabel={t('Период')} options={[{ value: 'day', label: t('День') }, { value: 'week', label: t('Неделя') }, { value: 'month', label: t('Месяц') }]} />
+      <small>{t('Нажмите')}</small>
+    </div>
+  );
+}
+function ExpanderDemo({ lang }: { lang: Lang }) {
+  const t = (k: string) => tr(lang, k);
+  return (
+    <div className="card-demo card-demo--expander">
+      <div className="ex-card">
+        <ParzExpander variant="card" title={t('Доставка')} defaultOpen>{t('Привезём завтра с 10 до 18.')}</ParzExpander>
+        <ParzExpander variant="card" title={t('Оплата')}>{t('Картой или наличными при получении.')}</ParzExpander>
+      </div>
+    </div>
+  );
+}
 export const CATALOG: Entry[] = [
   {
-    id: 'menu', title: 'Parz Menu', tags: ['Navigation', 'Header', 'Search'],
+    id: 'menu', title: 'Parz Menu', cat: 'nav', tags: ['Navigation', 'Header', 'Search'],
     desc: 'Навигация, где подсветка перетекает каплей, кнопки пружинят, а на компьютере меню становится шапкой с поиском.',
     demo: lang => <div className="card-demo card-demo--menu"><MenuDemo lang={lang} /></div>
   },
   {
-    id: 'animo', title: 'AnimoLogo', tags: ['Branding', 'Text', 'Motion'],
+    id: 'animo', title: 'AnimoLogo', cat: 'brand', tags: ['Branding', 'Text', 'Motion'],
     desc: 'Живой логотип-надпись: буквы выплывают, ловят волну при наведении и загораются, если их удержать.',
     demo: lang => <div className="card-demo card-demo--logo"><AnimoLogo text="PARZ" size={46} /><small>{tr(lang, 'Наведите или зажмите')}</small></div>
   },
   {
-    id: 'toggle', title: 'Parz Toggle', tags: ['Forms', 'Switch', 'Motion'],
+    id: 'toggle', title: 'Parz Toggle', cat: 'forms', tags: ['Forms', 'Switch', 'Motion'],
     desc: 'Переключатель с жидким бегунком: он тянется, сплющивается и мягко перелетает. Можно нажать, потянуть или включить с клавиатуры.',
     demo: lang => <ToggleDemo lang={lang} />
   },
   {
-    id: 'check', title: 'Parz Checkbox', tags: ['Forms', 'Checkbox', 'Motion'],
+    id: 'check', title: 'Parz Checkbox', cat: 'forms', tags: ['Forms', 'Checkbox', 'Motion'],
     desc: 'Флажок, в котором цвет растекается каплей, а галочка дорисовывается штрихом. Есть «частично выбрано» и состояние ошибки.',
     demo: lang => <CheckDemo lang={lang} />
   },
   {
-    id: 'button', title: 'Parz Button', tags: ['Forms', 'Button', 'Motion'],
+    id: 'button', title: 'Parz Button', cat: 'forms', tags: ['Forms', 'Button', 'Motion'],
     desc: 'Кнопка, которая мягко поджимается при нажатии, а из точки касания растекается капля. Пять видов, иконки и плавная загрузка.',
     demo: lang => <ButtonDemo lang={lang} />
   },
   {
-    id: 'progress', title: 'Parz Progress', tags: ['Feedback', 'Loading', 'Motion'],
+    id: 'progress', title: 'Parz Progress', cat: 'feedback', tags: ['Feedback', 'Loading', 'Motion'],
     desc: 'Прогресс, который перетекает к новому значению, а не прыгает: полоса или кольцо, режим «неизвестно сколько» и мягкая вспышка на 100%.',
     demo: lang => <ProgressDemo lang={lang} />
   },
   {
-    id: 'badge', title: 'Parz Badge', tags: ['Status', 'Counter', 'Motion'],
+    id: 'badge', title: 'Parz Badge', cat: 'feedback', tags: ['Status', 'Counter', 'Motion'],
     desc: 'Метка или счётчик: появляется каплей, цифры перекатываются, а ширина перетекает. Можно поставить отдельно или в угол кнопки, есть точка с пульсом.',
     demo: lang => <BadgeDemo lang={lang} />
   },
   {
-    id: 'video', title: 'Parz Video', tags: ['Media', 'Player', 'Motion'],
+    id: 'video', title: 'Parz Video', cat: 'media', tags: ['Media', 'Player', 'Motion'],
     desc: 'Видеоплеер, где панель — жидкое стекло: полоса перемотки течёт плавно, значки перетекают друг в друга, а панель мягко прячется, пока вы смотрите.',
     demo: () => <VideoDemo />
   },
   {
-    id: 'slider', title: 'Parz Slider', tags: ['Forms', 'Slider', 'Motion'],
+    id: 'slider', title: 'Parz Slider', cat: 'forms', tags: ['Forms', 'Slider', 'Motion'],
     desc: 'Ползунок, у которого бегунок тянется по скорости движения, а заливка догоняет его с мягкой пружиной.',
     demo: lang => <SliderDemo lang={lang} />
   },
   {
-    id: 'range', title: 'Parz Range', tags: ['Forms', 'Range', 'Filter'],
+    id: 'range', title: 'Parz Range', cat: 'forms', tags: ['Forms', 'Range', 'Filter'],
     desc: 'Ползунок промежутка: от 2 до 5 бегунков на одной дорожке — цена «от и до», часы работы и другие интервалы.',
     demo: lang => <RangeDemo lang={lang} />
+  },
+  {
+    id: 'tabs', title: 'Parz Tabs', cat: 'nav', tags: ['Navigation', 'Segmented', 'Motion'],
+    desc: 'Сегментированный переключатель: плашка выбора перетекает к новому пункту каплей — передний край уходит первым, хвост догоняет.',
+    demo: lang => <TabsDemo lang={lang} />
+  },
+  {
+    id: 'expander', title: 'Parz Expander', cat: 'nav', tags: ['Layout', 'Accordion', 'Motion'],
+    desc: 'Секция, которая плавно раскрывается: высота мягко растекается, содержимое проявляется, стрелка поворачивается с лёгкой пружиной.',
+    demo: lang => <ExpanderDemo lang={lang} />
   }
 ];
-export function ComponentCard({ e, lang, go, i }: { e: Entry; lang: Lang; go: Go; i: number }) {
+export function ComponentCard({ e, lang, go, i, reveal }: { e: Entry; lang: Lang; go: Go; i: number; reveal?: boolean }) {
   const t = (k: string) => tr(lang, k);
   return (
-    <article className="card-c" style={{ '--i': i } as React.CSSProperties}>
+    <article className={`card-c${reveal ? ' rv' : ''}`} style={{ '--i': i } as React.CSSProperties}>
       {e.demo(lang)}
       <div className="card-b">
         <div className="card-tags">{e.tags.map(x => <span key={x}>{x}</span>)}</div>
@@ -529,20 +621,27 @@ export function InstallCmd({ lang, cmd = INSTALL }: { lang: Lang; cmd?: string }
 
 function ComponentsPage({ lang, go }: { lang: Lang; go: Go }) {
   const t = (k: string, v?: Record<string, string | number>) => tr(lang, k, v);
+  const [cat, setCat] = useState<'all' | Cat>('all');
+  const cats = CATS.filter(([c]) => CATALOG.some(e => e.cat === c));
+  const list = cat === 'all' ? CATALOG : CATALOG.filter(e => e.cat === cat);
   return (
     <main className="page comps">
-      <section className="brand-h">
+      <section className="brand-h brand-h--wide">
         <h1>{t('Компоненты')}</h1>
         <p>{t('Все компоненты Parz UI. Потрогайте живое превью, откройте редактор, настройте под себя и скопируйте код.')}</p>
-        <span className="comps-n">{t('{n} компонента', { n: CATALOG.length })}</span>
+        <div className="comps-bar">
+          <span className="comps-n">{t('{n} компонента', { n: list.length })}</span>
+          <Seg label={t('Категория')} value={cat} onChange={setCat} options={[['all', t('Все'), CATALOG.length] as const, ...cats.map(([c, l]) => [c, t(l), CATALOG.filter(e => e.cat === c).length] as const)]
+            .map(([c, l, n]) => [c, <span className="seg-n" key={c}>{l}<ParzBadge count={n} size="sm" variant={c === cat ? 'solid' : 'soft'} color={c === cat ? '#111114' : '#9a9aa6'} ariaLabel={String(n)} /></span>] as ['all' | Cat, ReactNode])} />
+        </div>
       </section>
-      <section className="cards cards--all" aria-label={t('Компоненты')}>
-        {CATALOG.map((e, i) => <ComponentCard key={e.id} e={e} lang={lang} go={go} i={i} />)}
-        <article className="card-soon" style={{ '--i': CATALOG.length } as React.CSSProperties}>
+      <section key={cat} className="cards cards--grid cards--all" aria-label={t('Компоненты')}>
+        {list.map((e, i) => <ComponentCard key={e.id} e={e} lang={lang} go={go} i={i} />)}
+        {cat === 'all' && <article className="card-soon" style={{ '--i': list.length } as React.CSSProperties}>
           <span className="material-symbols-rounded" aria-hidden="true">auto_awesome</span>
           <b>{t('Скоро новые компоненты')}</b>
           <p>{t('Мы собираем следующие детали интерфейса — они появятся здесь.')}</p>
-        </article>
+        </article>}
       </section>
       <Footer lang={lang} />
     </main>

@@ -600,12 +600,32 @@ export function LiquidTabBar({
     onChange?.(it.id);
   };
   const [menuRight, setMenuRight] = useState<number | null>(null);
+  const [menuShift, setMenuShift] = useState(0);
+  const menuRef = useRef<HTMLDivElement>(null);
   const toggleMenu = () => {
     if (!menuOpen) {
       squashHl(520, 0.5);
       // в шапке список встаёт под кнопкой «Меню», а не над группой справа
       const nav = navRef.current, main = mainRef.current, more = moreRef.current;
-      setMenuRight(isDesk && nav && main && more ? nav.clientWidth - (main.offsetLeft + more.offsetLeft + more.offsetWidth) : null);
+      const right = isDesk && nav && main && more ? nav.clientWidth - (main.offsetLeft + more.offsetLeft + more.offsetWidth) : null;
+      setMenuRight(right);
+      // если список упирается в левый край экрана или обрезающего контейнера (карточка, панель) — сдвигаем его вправо
+      let shift = 0;
+      const m = menuRef.current;
+      if (nav && m) {
+        const nr = nav.getBoundingClientRect();
+        let lo = 0, hi = document.documentElement.clientWidth;
+        for (let el = nav.parentElement; el && el !== document.body; el = el.parentElement) {
+          const cs = getComputedStyle(el);
+          if (cs.overflowX !== 'visible') { const r = el.getBoundingClientRect(); lo = Math.max(lo, r.left); hi = Math.min(hi, r.right); }
+        }
+        const gap = 8, w = m.offsetWidth;
+        const leftEdge = nr.right - (right ?? sideSpace) - w;
+        const R = right ?? sideSpace;
+        // сдвиг не больше, чем позволяет правый край
+        if (leftEdge < lo + gap) shift = Math.max(0, Math.min(lo + gap - leftEdge, hi - gap - nr.right + R));
+      }
+      setMenuShift(Math.round(shift));
     }
     setMenuOpen(o => !o);
   };
@@ -805,7 +825,7 @@ export function LiquidTabBar({
     <nav
       ref={navRef}
       className={`ltb ltb--${position} ltb--${layout}${sideOn ? '' : ' ltb--solo'}${isDesk ? ' ltb--desktop' : ''}${isDesk && D?.actionsAlign === 'next' ? ' ltb--actions-next' : ''}${searchKind === 'full' && searchOpen ? ' ltb--searching' : ''}${className ? ' ' + className : ''}`}
-      style={{ '--ltb-n': visible.length + (overflowing ? 1 : 0), '--ltb-menu-right': `${menuRight ?? sideSpace}px`,
+      style={{ '--ltb-n': visible.length + (overflowing ? 1 : 0), '--ltb-menu-right': `${(menuRight ?? sideSpace) - menuShift}px`, '--ltb-menu-shift': `${menuShift}px`,
         ...(isDesk ? { '--ltb-header-max': `${D?.maxWidth ?? 1360}px`, '--ltb-header-h': `${D?.height ?? 80}px`, '--ltb-search-w': `${D?.searchWidth ?? 420}px`, '--ltb-search-in': `${searchInW}px` } : {}),
         '--ltb-side-extra': searchInSide && searchOpen ? 'calc(var(--ltb-search-in) - var(--ltb-action))' : '0px', '--ltb-na': sideCount || actions.length, '--ltb-full-w': `${navW}px`, '--ltb-row-h': `${navH}px`, '--ltb-shift': `${reduce ? 0 : M.shift}ms`, ...vars, ...style } as CSSProperties}
       aria-label={ariaLabel}
@@ -860,7 +880,7 @@ export function LiquidTabBar({
       </div>
       {hidden.length > 0 && (
         // список спрятанных пунктов; стоит над кнопкой «Меню» (под ней — если меню вверху экрана)
-        <div className={`ltb-menu${menuOpen ? ' is-open' : ''}`} role="menu" aria-label={moreLabel} aria-hidden={!menuOpen || undefined} {...(!menuOpen ? { inert: '' } : {})}>
+        <div ref={menuRef} className={`ltb-menu${menuOpen ? ' is-open' : ''}`} role="menu" aria-label={moreLabel} aria-hidden={!menuOpen || undefined} {...(!menuOpen ? { inert: '' } : {})}>
           {hidden.map((it, i) => {
             const on = it.id === current;
             return (

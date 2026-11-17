@@ -13,6 +13,8 @@ npm update @carparkteam/parz-ui
 ## Unreleased
 
 ### Added
+- **Parz Tabs** — new component: a segmented control whose selection pill flows to the new item like a drop; arrow-key navigation, sizes, full width; badges on items (next to the label or in the corner, with a pulse); when items don’t fit — wrap, a “•••” group with a menu, or scrolling with faded edges and arrows.
+- **Parz Expander** — new component: a section that opens smoothly; controlled and uncontrolled, a card look (`variant="card"`), with a “one open at a time” example.
 - **Parz Video**: playlists — `playlist` with “previous / next”, a list with thumbnails, an “Up next” card with a countdown and smooth switching between videos; `Shift+N` / `Shift+P`.
 - **Parz Video**: “Auto” quality, on by default (`defaultQuality="auto"`) — picked by player size, screen density and network, and lowered if the video keeps stalling.
 - **Parz Video**: audio in several languages — `audio` with its own file or qualities per language; the button on the bar or in “More”; the choice carries over to the next episodes in a playlist.
@@ -22,6 +24,7 @@ npm update @carparkteam/parz-ui
 
 ### Fixed
 - **Parz Video**: on touch screens the controls no longer hide right after a tap; no endless loader in iOS/iPadOS Safari; the iPhone system full screen now keeps the chosen speed and subtitles; a compact layout for very small players; picture-in-picture and AirPlay sit on the left above the timeline; chapters are marked with thin lines on a continuous timeline; calmer, smaller subtitles on phones; while casting, the player shows a placeholder with a “Play here” button instead of a black screen. The same placeholder covers the browser’s black “picture in picture” screen, with a “Back to player” button.
+- **Parz Menu**: minor behavior fixes on narrow screens.
 
 ### Changed
 - **Parz Video**: on a computer the player starts at 70% volume; on phones the device controls the sound.

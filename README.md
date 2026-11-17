@@ -18,6 +18,8 @@ React components with liquid motion — springy, smooth, nothing abrupt. Crafted
 | `ParzVideo` | Video player with a liquid-glass control bar: quality switching, settings menu, chapters, frame preview on the seek line, subtitles and keyboard shortcuts | [docs](docs/parz-video.en.md) |
 | `ParzSlider` | Slider whose thumb stretches with the speed of your drag | [docs](docs/parz-slider.en.md) |
 | `ParzRange` | Range slider with 2 to 5 thumbs on one track | [docs](docs/parz-slider.en.md) |
+| `ParzTabs` | Segmented control: the selection pill flows to the new item like a drop | [docs](docs/parz-tabs.en.md) |
+| `ParzExpander` | A section that opens smoothly: the height flows out, the content fades in | [docs](docs/parz-expander.en.md) |
 | `AnimoLogo` | Living text logo: letters float in, catch a wave on hover, light up when held | [docs](docs/animologo.en.md) |
 
 ## Installation

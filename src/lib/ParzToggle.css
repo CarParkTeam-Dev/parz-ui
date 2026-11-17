@@ -34,7 +34,10 @@
   transition:background-color .55s cubic-bezier(.33,0,.15,1),box-shadow .55s cubic-bezier(.33,0,.15,1)}
 .pz-tg.is-press:not(.is-disabled) .pz-tg-core,.pz-tg.is-drag .pz-tg-core{background-color:var(--_glass);box-shadow:var(--_shg);transition:background-color .14s cubic-bezier(.2,.7,.3,1),box-shadow .2s cubic-bezier(.2,.7,.3,1)}
 /* у каждого состояния своя анимация — смена состояния сама перезапускает «тянется → сплющивается → успокаивается» */
-.pz-tg.is-moved .pz-tg-core{animation:pzTgOff .7s both}
+/* backwards, а не both: последний кадр совпадает с обычным состоянием, держать его не нужно. С both бегунок навсегда
+   оставался отдельным слоем с transform и округлялся до пикселя экрана отдельно от дорожки — на дробных координатах
+   (центровка по строке текста, масштаб экрана) съезжал на пиксель вниз после первого переключения */
+.pz-tg.is-moved .pz-tg-core{animation:pzTgOff .7s backwards}
 .pz-tg.is-moved.is-on .pz-tg-core{animation-name:pzTgOn}
 .pz-tg.is-moved.is-on.is-drag .pz-tg-core,.pz-tg.is-moved.is-drag .pz-tg-core,.pz-tg.is-moved.is-on.is-by-drag .pz-tg-core,.pz-tg.is-moved.is-by-drag .pz-tg-core{animation:none}
 /* переезд: бегунок сразу (без провала) раздувается за края дорожки, становится стеклянным и тянется по ходу движения,

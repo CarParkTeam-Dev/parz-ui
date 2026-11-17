@@ -1,0 +1,124 @@
+/* Parz UI · Parz Tabs */
+@property --pz-tabs-fl{syntax:'<length>';inherits:true;initial-value:0px}
+@property --pz-tabs-fr{syntax:'<length>';inherits:true;initial-value:0px}
+.pz-tabs{--pz-tabs-bg:#1c1c21;--pz-tabs-pill:#fff;--pz-tabs-on:#000;--pz-tabs-fg:#9a9aa3;
+  --pz-tabs-sh:0 1px 2px rgba(0,0,0,.35),0 4px 12px rgba(0,0,0,.28);--pz-tabs-ring:#7aa7ff;
+  --pz-tabs-menu-bg:#1f1f25;--pz-tabs-menu-fg:#e8e8ee;--pz-tabs-menu-hover:rgba(255,255,255,.07);--pz-tabs-menu-sh:0 0 0 1px rgba(255,255,255,.07),0 12px 32px -8px rgba(0,0,0,.6);
+  position:relative;isolation:isolate;display:inline-flex;max-width:100%;min-width:0;box-sizing:border-box;padding:3px;border-radius:999px;
+  background:var(--pz-tabs-bg);font-family:inherit;vertical-align:middle;-webkit-tap-highlight-color:transparent}
+.pz-tabs.is-menu{z-index:30}
+.pz-tabs-in{position:relative;display:flex;flex-wrap:wrap;min-width:0;max-width:100%;border-radius:inherit}
+.pz-tabs--more .pz-tabs-in,.pz-tabs--scroll .pz-tabs-in{flex-wrap:nowrap}
+.pz-tabs--full{display:flex;width:100%}
+.pz-tabs--full .pz-tabs-in{flex:1 1 auto}
+.pz-tabs--full:not(.pz-tabs--wrap) .pz-tabs-in{flex-wrap:nowrap}
+.pz-tabs--full .pz-tabs-b{flex:1 1 0;min-width:0}
+/* на всю ширину + перенос: пункты делят строку поровну, но не сжимаются меньше своего текста — лишние уходят на следующую строку */
+.pz-tabs--full.pz-tabs--wrap .pz-tabs-b{min-width:max-content}
+.pz-tabs--full .pz-tabs-b.pz-tabs-more{flex:none}
+.pz-tabs--full.pz-tabs--scroll .pz-tabs-b{flex:1 0 auto}
+.pz-tabs.is-disabled{opacity:.45}
+.pz-tabs .pz-tabs-b{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;flex:none;
+  margin:0;border:0;background:none;color:var(--pz-tabs-fg);border-radius:999px;font:inherit;font-weight:600;line-height:1.2;white-space:nowrap;cursor:pointer;
+  user-select:none;-webkit-user-select:none;
+  /* смена размера (sm/md/lg) — плавно: отступы и кегль перетекают, плашка идёт следом кадр в кадр */
+  transition:color .38s cubic-bezier(.3,0,.12,1),padding .42s cubic-bezier(.32,.72,0,1),font-size .42s cubic-bezier(.32,.72,0,1)}
+/* у Inter заглавные сидят чуть выше середины строки — сдвигаем текст на .06em вниз, высота кнопки не меняется */
+.pz-tabs--sm .pz-tabs-b{padding:calc(4px + .06em) 10px calc(4px - .06em);font-size:12px}
+.pz-tabs--md .pz-tabs-b{padding:calc(6px + .06em) 13px calc(6px - .06em);font-size:12.5px}
+.pz-tabs--lg .pz-tabs-b{padding:calc(9px + .06em) 18px calc(9px - .06em);font-size:14px}
+.pz-tabs-ico{position:relative;top:-.052em;flex:none;display:inline-grid;place-items:center;width:1.45em;height:1.45em;margin:-.2em 0;font-size:1.15em}
+.pz-tabs-ico .ltb-icon{width:100%;height:100%}
+.pz-tabs-ico .ltb-ms{font-size:inherit}
+/* бейдж в строке: компенсируем тот же сдвиг текста, чтобы он стоял по центру кнопки */
+.pz-tabs-bd{position:relative;top:-.06em;margin:-4px 0}
+.pz-tabs .pz-tabs-b:disabled{cursor:default}
+.pz-tabs .pz-tabs-b:disabled:not(.is-on){opacity:.5}
+.pz-tabs .pz-tabs-b:focus{outline:0}
+/* плашка лежит НАД пунктами (в ней тёмная копия подписей), поэтому кольцо фокуса — отдельный слой ещё выше */
+.pz-tabs .pz-tabs-b:focus-visible{outline:0}
+.pz-tabs .pz-tabs-in>.pz-tabs-b:focus-visible::before{content:'';position:absolute;z-index:3;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 2px var(--pz-tabs-ring);pointer-events:none}
+@media (hover:hover){.pz-tabs .pz-tabs-b:not(.is-on):not(:disabled):hover{color:color-mix(in srgb,var(--pz-tabs-fg) 55%,var(--pz-tabs-pill))}}
+
+/* бейдж в углу: не раздвигает пункт, садится в правый верхний угол поверх отступа */
+.pz-tabs--bd-corner .pz-tabs-b .pz-tabs-bd{position:absolute;top:1px;right:2px;margin:0;pointer-events:none}
+.pz-tabs--bd-corner .pz-tabs-b .pz-tabs-bd.pz-bd--dot{top:4px;right:5px}
+.pz-tabs--bd-corner .pz-tabs-mi .pz-tabs-bd{position:static;margin-left:auto}
+.pz-tabs--bd-corner .pz-tabs-more .pz-tabs-bd{position:relative;top:-.06em;right:auto;margin:-4px 0}
+/* «•••»: три точки и нейтральный счётчик спрятанных пунктов; красная точка — если среди них есть бейджи */
+.pz-tabs-more.has-alert::after{content:'';position:absolute;z-index:3;top:3px;right:5px;width:7px;height:7px;border-radius:50%;background:#ff4d5e;box-shadow:0 0 0 2px var(--pz-tabs-bg);
+  transition:box-shadow .3s}
+.pz-tabs-more.has-alert.is-on::after{box-shadow:0 0 0 2px var(--pz-tabs-pill)}
+
+/* меню спрятанных пунктов: проявляется и чуть вырастает от «•••» */
+.pz-tabs-menu{position:absolute;z-index:20;top:calc(100% + 6px);right:0;min-width:160px;max-width:min(280px,calc(100vw - 32px));max-height:min(320px,60vh);overflow:auto;
+  box-sizing:border-box;padding:5px;border-radius:16px;background:var(--pz-tabs-menu-bg);box-shadow:var(--pz-tabs-menu-sh);display:flex;flex-direction:column;gap:2px;
+  opacity:0;transform:translateY(-4px) scale(.96);transform-origin:top right;pointer-events:none;visibility:hidden;
+  transition:opacity .2s cubic-bezier(.4,0,1,1),transform .26s cubic-bezier(.4,0,1,1),visibility 0s .26s}
+.pz-tabs-menu.is-open{opacity:1;transform:none;pointer-events:auto;visibility:visible;
+  transition:opacity .26s cubic-bezier(.2,0,0,1),transform .42s cubic-bezier(.32,1.25,.5,1),visibility 0s}
+.pz-tabs-menu--start{right:auto;left:0;transform-origin:top left}
+.pz-tabs .pz-tabs-mi{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:11px;cursor:pointer;
+  color:var(--pz-tabs-menu-fg);font:inherit;font-weight:600;font-size:13px;line-height:1.2;white-space:nowrap;transition:background-color .2s}
+.pz-tabs .pz-tabs-mi.is-on{background:var(--pz-tabs-pill);color:var(--pz-tabs-on)}
+.pz-tabs .pz-tabs-mi:disabled{opacity:.45;cursor:default}
+.pz-tabs .pz-tabs-mi:focus-visible{outline:2px solid var(--pz-tabs-ring);outline-offset:-2px}
+@media (hover:hover){.pz-tabs .pz-tabs-mi:not(.is-on):not(:disabled):hover{background:var(--pz-tabs-menu-hover)}}
+.pz-tabs-mi .pz-tabs-ico{top:0}
+.pz-tabs-mi .pz-tabs-bd{top:0;margin-left:auto}
+
+/* невидимая копия всех пунктов — по ней считаем, сколько помещается */
+.pz-tabs-meas{position:absolute;left:0;top:0;width:0;height:0;overflow:hidden;visibility:hidden;pointer-events:none}
+.pz-tabs-meas-row{display:flex;width:max-content}
+
+/* прокрутка: без полосы, края мягко затеняются там, где за ними есть ещё пункты */
+.pz-tabs--scroll{padding:0 3px}
+/* прокрутка режет всё, что вылезает за контейнер, и по вертикали тоже — даём тени плашки запас 12px сверху и снизу, не меняя размер дорожки */
+.pz-tabs--scroll .pz-tabs-in{padding:15px 0;margin:-12px 0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain;
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 var(--pz-tabs-fl),#000 calc(100% - var(--pz-tabs-fr)),transparent 100%);
+  mask-image:linear-gradient(to right,transparent 0,#000 var(--pz-tabs-fl),#000 calc(100% - var(--pz-tabs-fr)),transparent 100%);
+  transition:--pz-tabs-fl .3s cubic-bezier(.3,0,.12,1),--pz-tabs-fr .3s cubic-bezier(.3,0,.12,1)}
+.pz-tabs--scroll .pz-tabs-in::-webkit-scrollbar{display:none}
+.pz-tabs.fade-l{--pz-tabs-fl:28px}
+.pz-tabs.fade-r{--pz-tabs-fr:28px}
+
+/* подсказка в затенении: красная точка, если за этим краем есть пункты с бейджами */
+.pz-tabs-hint{position:absolute;z-index:2;top:50%;width:6px;height:6px;margin-top:-3px;border-radius:50%;background:#ff4d5e;pointer-events:none;
+  opacity:0;transform:scale(.4);transition:opacity .25s,transform .35s cubic-bezier(.32,1.35,.5,1)}
+.pz-tabs-hint.is-shown{opacity:1;transform:none}
+.pz-tabs-hint--l{left:10px}
+.pz-tabs-hint--r{right:10px}
+.pz-tabs .pz-tabs-arr.has-alert::after{content:'';position:absolute;top:-1px;right:-1px;width:7px;height:7px;border-radius:50%;background:#ff4d5e;box-shadow:0 0 0 1.5px var(--pz-tabs-bg)}
+/* стрелки прокрутки: маленькие круглые кнопки поверх затенённых краёв; появляются, только если в ту сторону есть куда листать */
+.pz-tabs.has-arr.fade-l{--pz-tabs-fl:46px}
+.pz-tabs.has-arr.fade-r{--pz-tabs-fr:46px}
+.pz-tabs .pz-tabs-arr{position:absolute;z-index:2;top:50%;width:24px;height:24px;margin:-12px 0 0;padding:0;border:0;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;background:var(--pz-tabs-pill);color:var(--pz-tabs-on);box-shadow:var(--pz-tabs-sh);-webkit-tap-highlight-color:transparent;
+  opacity:0;transform:scale(.6);pointer-events:none;transition:opacity .2s cubic-bezier(.4,0,1,1),transform .28s cubic-bezier(.4,0,1,1)}
+.pz-tabs .pz-tabs-arr.is-shown{opacity:1;transform:none;pointer-events:auto;transition:opacity .26s cubic-bezier(.2,0,0,1),transform .42s cubic-bezier(.32,1.35,.5,1)}
+.pz-tabs .pz-tabs-arr:active{transform:scale(.88);transition-duration:.12s}
+.pz-tabs-arr--l{left:5px}
+.pz-tabs-arr--r{right:5px}
+/* шеврон из двух линий; сдвиг на 1px компенсирует оптический центр уголка */
+.pz-tabs-arr i{display:block;width:6px;height:6px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;box-sizing:border-box}
+.pz-tabs-arr--l i{transform:translateX(1px) rotate(135deg)}
+.pz-tabs-arr--r i{transform:translateX(-1px) rotate(-45deg)}
+
+/* плашка: левый и правый края едут с разной скоростью — ведущий быстрее, хвост догоняет, и она на миг вытягивается каплей */
+.pz-tabs-pill{position:absolute;z-index:2;left:var(--l,0);right:var(--r,100%);top:var(--t,0);height:var(--h,0);border-radius:999px;
+  background:var(--pz-tabs-pill);box-shadow:var(--pz-tabs-sh);pointer-events:none;transition:opacity .2s;overflow:hidden}
+/* копия подписей внутри плашки: её левый/верхний край едет ровно навстречу плашке (те же длительности и кривые), поэтому стоит на месте */
+.pz-tabs-ovl{position:absolute;left:calc(-1 * var(--l,0px));top:calc(-1 * var(--t,0px));width:var(--iw,100%);display:flex;flex-wrap:nowrap;pointer-events:none}
+.pz-tabs--wrap .pz-tabs-ovl{flex-wrap:wrap}
+.pz-tabs--scroll .pz-tabs-ovl{padding:15px 0}
+.pz-tabs .pz-tabs-ovl .pz-tabs-b{color:var(--pz-tabs-on);cursor:default}
+.pz-tabs .pz-tabs-ovl .pz-tabs-b.is-off{opacity:.5}
+.pz-tabs.is-ready:not(.is-snap) .pz-tabs-ovl{transition:left .44s cubic-bezier(.5,0,.1,1) .06s,top .4s cubic-bezier(.3,0,.12,1)}
+.pz-tabs.is-ready.to-left:not(.is-snap) .pz-tabs-ovl{transition:left .44s cubic-bezier(.3,0,.12,1),top .4s cubic-bezier(.3,0,.12,1)}
+.pz-tabs.is-ready:not(.is-snap) .pz-tabs-pill{transition:left .44s cubic-bezier(.5,0,.1,1) .06s,right .44s cubic-bezier(.3,0,.12,1),top .4s cubic-bezier(.3,0,.12,1),height .4s cubic-bezier(.3,0,.12,1),opacity .2s}
+.pz-tabs.is-ready.is-snap .pz-tabs-pill{transition:opacity .2s}
+.pz-tabs.is-ready.to-left:not(.is-snap) .pz-tabs-pill{transition:left .44s cubic-bezier(.3,0,.12,1),right .44s cubic-bezier(.5,0,.1,1) .06s,top .4s cubic-bezier(.3,0,.12,1),height .4s cubic-bezier(.3,0,.12,1),opacity .2s}
+@media (prefers-reduced-motion:reduce){
+  .pz-tabs.is-ready .pz-tabs-pill,.pz-tabs.is-ready .pz-tabs-ovl,.pz-tabs .pz-tabs-b,.pz-tabs-hint,.pz-tabs-menu,.pz-tabs-menu.is-open,.pz-tabs--scroll .pz-tabs-in,.pz-tabs .pz-tabs-arr{transition-duration:.01ms;transition-delay:0s}
+  .pz-tabs-menu{transform:none}
+}

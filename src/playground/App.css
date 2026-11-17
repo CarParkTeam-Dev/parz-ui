@@ -93,9 +93,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
 .btns button{border:1px solid #2a2a2f;background:none;border-radius:99px;padding:8px 14px;font-weight:600;font-size:13px}
 .btns button:first-child{background:var(--acc);border-color:var(--acc);color:#04130a}
 
-.rng{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 10px;margin-bottom:8px;font-size:13px}
-.rng output{color:var(--mut);font-variant-numeric:tabular-nums}
-.rng input{grid-column:1/-1}
+.rng{display:block;width:100%;margin-bottom:10px;font-size:13px;--pz-sl-accent:var(--acc)}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:none;cursor:pointer}
 input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:#2a2a30}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;margin-top:-6px}
@@ -212,6 +210,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .card-demo{position:relative;height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;
   background:radial-gradient(120% 90% at 50% 0%,#1a2a22 0%,#0c0c0f 60%);border-bottom:1px solid var(--line)}
 .card-demo--menu{background:radial-gradient(90% 80% at 30% 20%,#173a5c 0%,transparent 60%),radial-gradient(80% 80% at 80% 90%,#3b1d4d 0%,transparent 60%),#0b0b0e}
+.card-demo--menu{justify-content:flex-end;padding-bottom:18px}
 .card-demo--menu>.ltb{width:min(400px,100%)}
 .card-demo small{color:var(--mut);font-size:12px}
 .card-b{padding:20px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
@@ -265,17 +264,32 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 @media (min-width:900px){.home,.brand-p,.comps{padding-top:80px}.docs.page{padding-top:114px}.cmp{padding-top:80px}}
 
 /* результаты поиска компонентов: всплывают под шапкой (на телефоне — над нижним меню) */
-.pz-hits{position:fixed;z-index:60;right:max(16px,calc(50% - 680px + 22px));top:84px;width:min(340px,calc(100% - 32px));padding:6px;border-radius:20px;
-  background:rgba(24,24,28,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.07);box-shadow:0 18px 40px -12px rgba(0,0,0,.8);
-  animation:pzHits .35s cubic-bezier(.22,1,.36,1)}
-@keyframes pzHits{from{opacity:0;transform:translateY(-8px) scale(.98)}}
-.pz-hit{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:14px;background:none;color:var(--txt);text-align:left;cursor:pointer;font:inherit;transition:background .2s}
-.pz-hit .material-symbols-rounded{font-size:22px;color:var(--acc)}
-.pz-hit span:last-child{display:flex;flex-direction:column;line-height:1.25}
-.pz-hit small{color:var(--mut);font-size:12px}
-.pz-hit-none{margin:0;padding:12px 14px;color:var(--mut)}
-@media (hover:hover){.pz-hit:hover{background:rgba(255,255,255,.06)}}
-@media (max-width:899px){.pz-hits{top:auto;bottom:100px;left:16px;right:16px;width:auto;animation-name:pzHitsUp}}
+/* живые результаты поиска: та же стеклянная поверхность, что у меню «Ещё»; одна строка на компонент,
+   справа — круглая кнопка документации; список не выше экрана и прокручивается внутри */
+.pz-hits{position:fixed;z-index:60;right:max(16px,calc(50% - 680px + 22px));top:84px;width:min(340px,calc(100% - 32px));border-radius:22px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(34,34,40,.78),rgba(20,20,24,.86));-webkit-backdrop-filter:blur(24px) saturate(1.4);backdrop-filter:blur(24px) saturate(1.4);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -1px 0 rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.06),0 22px 50px -16px rgba(0,0,0,.85);
+  transform-origin:calc(100% - 40px) 0;animation:pzHits .5s cubic-bezier(.3,1.35,.5,1)}
+.pz-hits-sc{max-height:min(440px,calc(100dvh - 110px));overflow:auto;overscroll-behavior:contain;padding:6px;display:flex;flex-direction:column;gap:2px;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.15) transparent;
+  -webkit-mask:linear-gradient(transparent,#000 8px,#000 calc(100% - 8px),transparent);mask:linear-gradient(transparent,#000 8px,#000 calc(100% - 8px),transparent)}
+@keyframes pzHits{from{opacity:0;transform:translateY(-10px) scale(.9,.8)}}
+@keyframes pzHitsUp{from{opacity:0;transform:translateY(10px) scale(.9,.8)}}
+.pz-hit{display:flex;align-items:center;gap:4px;border-radius:16px;transition:background .25s cubic-bezier(.33,0,.15,1)}
+.pz-hit-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:8px 10px;border:0;border-radius:16px;background:none;color:var(--txt);text-align:left;cursor:pointer;font:inherit}
+.pz-hit .pz-hit-ico.material-symbols-rounded{flex:none;box-sizing:border-box;min-width:36px;overflow:hidden;display:grid;place-items:center;width:36px;height:36px;border-radius:12px;font-size:21px;line-height:1;color:var(--acc);background:rgba(110,231,160,.1);box-shadow:inset 0 0 0 1px rgba(110,231,160,.14)}
+.pz-hit-t{min-width:0;display:flex;flex-direction:column;gap:2px;line-height:1.2}
+.pz-hit-t b{font-size:14px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pz-hit-t small{color:var(--mut);font-size:12px}
+.pz-hit-doc{flex:none;display:grid;place-items:center;width:36px;height:36px;margin-right:6px;border:0;border-radius:50%;background:rgba(255,255,255,.06);color:var(--mut);cursor:pointer;
+  transition:background .25s cubic-bezier(.33,0,.15,1),color .25s cubic-bezier(.33,0,.15,1)}
+.pz-hit-doc .material-symbols-rounded{font-size:19px;line-height:1;display:block;width:1em;height:1em;overflow:hidden}
+.pz-hit-main:focus-visible,.pz-hit-doc:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.pz-hit-none{margin:0;padding:14px 16px;color:var(--mut)}
+@media (hover:hover){.pz-hit:hover{background:rgba(255,255,255,.05)}.pz-hit-doc:hover{background:rgba(255,255,255,.12);color:var(--txt)}}
+@media (max-width:899px){.pz-hits{top:auto;bottom:100px;left:16px;right:16px;width:auto;transform-origin:50% 100%;animation-name:pzHitsUp}
+  .pz-hits-sc{max-height:min(420px,calc(100dvh - 190px))}}
+@media (prefers-reduced-motion:reduce){.pz-hits{animation:none}}
 @keyframes pzHitsUp{from{opacity:0;transform:translateY(8px) scale(.98)}}
 
 /* ===== переходы между страницами ===== */
@@ -635,3 +649,60 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 /* переключатель сразу под тумблером и поле под ним — ровные отступы */
 .chk + .seg{margin:8px 0 6px}
 .reveal>div>.row:first-child{padding-top:10px;margin-bottom:6px}
+
+/* главная: избранное — две крупные карточки рядом; остальные — сетка, на больших экранах минимум по три в ряд */
+.sec-h--wide{max-width:1280px}
+.cards--feat{max-width:1280px;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));margin-bottom:44px}
+.cards--feat .card-demo{height:300px}
+.cards--grid{max-width:1280px;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr))}
+@media (min-width:1000px){.cards--grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (min-width:1500px){.cards--grid,.cards--feat,.sec-h--wide{max-width:1420px}.cards--grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* избранное: плеер растягивается почти на всё окно демо — отступы меньше, ширина по высоте окна (16:9) */
+.cards--feat .card-demo--video{padding:14px}
+.cards--feat .vd-card{width:min(100%,calc((300px - 28px) * 16 / 9))}
+/* главная: шапка на весь первый экран, содержимое по центру */
+.hero.hero--full{min-height:calc(100svh - 80px);box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;padding:40px 0 56px}
+@media (max-width:899px){.hero.hero--full{min-height:calc(100svh - 110px)}}
+/* появление при прокрутке */
+.pz-view.is-in .rv,.rv{animation:none;opacity:0;transform:translateY(36px) scale(.97);
+  transition:opacity .6s cubic-bezier(.2,0,0,1) var(--rd,0ms),transform .9s cubic-bezier(.22,1,.36,1) var(--rd,0ms)}
+.pz-view.is-in .rv.is-seen,.rv.is-seen{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{transform:none;transition:opacity .3s}}
+
+/* каталог: та же сетка, что на главной, и категории рядом со счётчиком */
+.brand-h--wide{max-width:1280px}
+@media (min-width:1500px){.brand-h--wide{max-width:1420px}}
+.comps-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.comps-bar .seg{max-width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+.seg-n{display:inline-flex;align-items:center;gap:6px}
+
+/* Parz Tabs — редактор и карточка */
+.tb-stage{align-items:stretch}
+.tb-stage .tg-cap{align-self:flex-start}
+.tb-stage .pz-tabs{align-self:flex-start}
+.tb-stage .pz-tabs--full{align-self:stretch}
+.tg-stage--dark .pz-tabs{--pz-tabs-ring:#7aa7ff}
+.tg-stage--light .pz-tabs{--pz-tabs-ring:#3d6fe0;--pz-tabs-sh:0 0 0 .5px rgba(0,0,0,.06),0 1px 1px rgba(0,0,0,.06),0 3px 8px rgba(0,0,0,.1),0 8px 18px -6px rgba(0,0,0,.14)}
+.card-demo--tabs{background:radial-gradient(90% 80% at 20% 15%,#1d2a4d 0%,transparent 60%),radial-gradient(80% 80% at 85% 90%,#2a1d3d 0%,transparent 60%),#0b0b0e}
+.card-demo--tabs .pz-tabs{max-width:calc(100% - 32px)}
+/* Parz Expander — редактор и карточка */
+.ex-stage{align-items:stretch;justify-content:flex-start}
+.ex-list{width:100%;min-width:0}
+.tg-stage--light .pz-ex{--pz-ex-ring:#3d6fe0}
+.card-demo--expander{background:radial-gradient(90% 80% at 80% 15%,#163a2a 0%,transparent 60%),radial-gradient(80% 80% at 15% 90%,#1d2a4d 0%,transparent 60%),#0b0b0e}
+.ex-card{width:min(300px,calc(100% - 40px));font-size:13.5px;color:#c8c8d0;text-align:left}
+.tg-stage--light .pz-ex--card{--pz-ex-bg:#fff;--pz-ex-edge:#e2e3ea}
+.ex-set{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding-top:2px}
+.tb-stage:has(.pz-tabs.is-menu){position:relative;z-index:5}
+.tg-stage--light .pz-tabs{--pz-tabs-menu-bg:#fff;--pz-tabs-menu-fg:#16161b;--pz-tabs-menu-hover:rgba(0,0,0,.05);--pz-tabs-menu-sh:0 0 0 1px rgba(0,0,0,.06),0 12px 28px -8px rgba(0,0,0,.22);--pz-tabs-pill-mi:#111114}
+.tg-stage--light .pz-tabs-mi.is-on{background:#16161b;color:#fff}
+
+/* широкий просмотр: сцена и код плавно растягиваются на всё место справа от настроек, по краям остаются поля .stage */
+.cmp-r{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+.cmp-wide{font-size:13px;color:var(--mut)}
+.stage>:is(.tg-stages,.code,.logo-stage){width:100%;max-width:820px;transition:max-width .6s cubic-bezier(.32,.72,0,1)}
+.cmp.is-wide .stage>:is(.tg-stages,.code,.logo-stage){max-width:100%}
+@media (max-width:900px){.cmp-wide{display:none}}
+@media (prefers-reduced-motion:reduce){.stage>:is(.tg-stages,.code,.logo-stage){transition:none}}
+
+.clr .clr-a{min-width:0;--pz-sl-accent:var(--acc)}

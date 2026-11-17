@@ -22,3 +22,7 @@ export { ParzBadge } from './ParzBadge';
 export type { ParzBadgeProps, ParzBadgeVariant, ParzBadgeSize, ParzBadgePlacement } from './ParzBadge';
 export { ParzVideo, PARZ_VIDEO_LABELS } from './ParzVideo';
 export type { ParzVideoProps, ParzVideoLabels, ParzVideoSource, ParzVideoTrack, ParzVideoChapter, ParzVideoMotion, ParzVideoItem, ParzVideoAudio, ParzVideoButton, ParzVideoState, ParzVideoRememberOptions } from './ParzVideo';
+export { ParzTabs } from './ParzTabs';
+export type { ParzTabsProps, ParzTabsOption, ParzTabsSize, ParzTabsOverflow, ParzTabsBadgePlacement } from './ParzTabs';
+export { ParzExpander } from './ParzExpander';
+export type { ParzExpanderProps, ParzExpanderVariant } from './ParzExpander';

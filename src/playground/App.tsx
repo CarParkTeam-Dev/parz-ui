@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { LiquidTabBar, ParzToggle, Wordmark, LTB_STRINGS, DEFAULT_MOTION, DEFAULT_THEME, BUILTIN_ICONS, GLASS_PRESETS, type GlassPreset, type LiquidMotion, type LiquidTabBarTheme, type TabItem, type BadgeValue } from '../lib';
+import { LiquidTabBar, ParzToggle, ParzSlider, Wordmark, LTB_STRINGS, DEFAULT_MOTION, DEFAULT_THEME, BUILTIN_ICONS, GLASS_PRESETS, type GlassPreset, type LiquidMotion, type LiquidTabBarTheme, type TabItem, type BadgeValue } from '../lib';
 import { slug } from './Markdown';
 import { PRESETS } from './presets';
 import { tr, retr, useT, type Lang } from './i18n';
@@ -139,7 +139,7 @@ function codeFor(o: { lang: Lang; mSearch: boolean; desk: Desk; more: boolean; m
 }
 
 /* ---------- мелкие контролы ---------- */
-export function Seg<T extends string>({ value, options, onChange, label }: { value: T; options: [T, string][]; onChange: (v: T) => void; label: string }) {
+export function Seg<T extends string>({ value, options, onChange, label }: { value: T; options: [T, React.ReactNode][]; onChange: (v: T) => void; label: string }) {
   // плашка выбора перетекает к новому значению: ведущий край уходит первым, хвост догоняет — как капля в меню
   const box = useRef<HTMLDivElement>(null);
   const [pill, setPill] = useState<{ l: number; t: number; w: number; h: number; dir: 1 | -1; ready: boolean } | null>(null);
@@ -169,10 +169,8 @@ export function Seg<T extends string>({ value, options, onChange, label }: { val
 }
 export function Range({ label, value, min, max, step, unit = '', onChange }: { label: string; value: number; min: number; max: number; step: number; unit?: string; onChange: (v: number) => void }) {
   return (
-    <label className="rng">
-      <span>{label}</span><output>{step < 1 ? value.toFixed(step < 0.01 ? 3 : 2) : value}{unit}</output>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(+e.target.value)} />
-    </label>
+    <ParzSlider className="rng" size="sm" label={label} value={value} min={min} max={max} step={step} onChange={onChange}
+      formatValue={v => `${step < 1 ? v.toFixed(step < 0.01 ? 3 : 2) : v}${unit}`} />
   );
 }
 export function ColorField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -182,7 +180,7 @@ export function ColorField({ label, value, onChange }: { label: string; value: s
     <div className="clr">
       <input type="color" value={hex} onChange={e => onChange(joinColor(e.target.value, a))} aria-label={label} />
       <span>{label}</span>
-      <input type="range" min={0} max={1} step={0.01} value={a} onChange={e => onChange(joinColor(hex, +e.target.value))} aria-label={t('{l}: прозрачность', { l: label })} title={t('Прозрачность')} />
+      <ParzSlider size="sm" className="clr-a" min={0} max={1} step={0.01} value={a} onChange={v => onChange(joinColor(hex, v))} ariaLabel={t('{l}: прозрачность', { l: label })} formatValue={v => `${Math.round(v * 100)}%`} />
     </div>
   );
 }

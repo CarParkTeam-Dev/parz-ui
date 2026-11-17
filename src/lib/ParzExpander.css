@@ -1,0 +1,34 @@
+/* Parz UI · Parz Expander */
+.pz-ex{--pz-ex-fg:#f2f2f5;--pz-ex-chev:#9a9aa3;--pz-ex-line:#26262c;--pz-ex-ring:#7aa7ff;border-bottom:1px solid var(--pz-ex-line)}
+.pz-ex--flat{border-bottom:0}
+.pz-ex .pz-ex-h{all:unset;box-sizing:border-box;width:100%;cursor:pointer;padding:16px 0;font:inherit;font-weight:700;font-size:15px;color:var(--pz-ex-fg);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;-webkit-tap-highlight-color:transparent}
+.pz-ex .pz-ex-h:focus-visible{outline:2px solid var(--pz-ex-ring);outline-offset:2px;border-radius:6px}
+.pz-ex.is-disabled .pz-ex-h{cursor:default;opacity:.45}
+.pz-ex-t{min-width:0}
+.pz-ex-chev{flex:none;width:8px;height:8px;border-right:1.5px solid var(--pz-ex-chev);border-bottom:1.5px solid var(--pz-ex-chev);
+  transform:translateY(-3px) rotate(45deg);transition:transform .55s cubic-bezier(.34,1.4,.5,1)}
+.pz-ex.is-open .pz-ex-chev{transform:translateY(2px) rotate(-135deg)}
+/* высота: мягкий старт и долгое «растекание» в конце; закрытие чуть быстрее */
+.pz-ex-w{display:grid;grid-template-rows:0fr;transition:grid-template-rows .42s cubic-bezier(.4,0,.2,1)}
+.pz-ex.is-open .pz-ex-w{grid-template-rows:1fr;transition:grid-template-rows .56s cubic-bezier(.32,.72,0,1)}
+.pz-ex-c{min-height:0;overflow:hidden}
+/* после раскрытия выпускаем содержимое наружу — тени и кольца фокуса не обрезаются */
+.pz-ex.is-open .pz-ex-c{animation:pzExClip 0s .56s forwards}
+@keyframes pzExClip{to{overflow:visible}}
+.pz-ex-b{padding:0 0 18px;opacity:0;transition:opacity .28s cubic-bezier(.4,0,1,1)}
+.pz-ex.is-open .pz-ex-b{opacity:1;transition:opacity .42s cubic-bezier(.2,0,0,1) .08s}
+@media (prefers-reduced-motion:reduce){
+  .pz-ex-w,.pz-ex.is-open .pz-ex-w,.pz-ex-b,.pz-ex.is-open .pz-ex-b,.pz-ex-chev{transition-duration:.01ms;transition-delay:0s}
+  .pz-ex.is-open .pz-ex-c{animation-delay:.01ms}
+}
+
+/* вид «карточка»: стеклянная плашка; соседние карточки склеиваются в одну группу с линиями внутри */
+.pz-ex--card{--pz-ex-bg:rgba(255,255,255,.04);--pz-ex-edge:rgba(255,255,255,.07);position:relative;padding:0 18px;
+  background:var(--pz-ex-bg);border:1px solid var(--pz-ex-edge);border-radius:16px}
+.pz-ex--card .pz-ex-h{padding:13px 0;font-size:14px}
+.pz-ex--card .pz-ex-b{padding-bottom:13px}
+.pz-ex--card + .pz-ex--card{border-top:0;border-top-left-radius:0;border-top-right-radius:0}
+.pz-ex--card:has(+ .pz-ex--card){border-bottom:0;border-bottom-left-radius:0;border-bottom-right-radius:0}
+.pz-ex--card + .pz-ex--card::before{content:'';position:absolute;left:18px;right:18px;top:0;height:1px;background:var(--pz-ex-line)}
+.pz-ex--card.pz-ex--flat + .pz-ex--card::before{display:none}
