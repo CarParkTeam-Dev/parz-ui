@@ -100,7 +100,8 @@ export function ParzTabs<T extends string = string>({
     const calc = () => {
       const ps = getComputedStyle(p), rs = getComputedStyle(r);
       const avail = p.clientWidth - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight) - parseFloat(rs.paddingLeft) - parseFloat(rs.paddingRight);
-      const w = Array.from(m.children).map(c => (c as HTMLElement).getBoundingClientRect().width);
+      const mr = m.offsetWidth ? m.getBoundingClientRect().width / m.offsetWidth : 1, mk = Math.abs(mr - 1) < 0.02 ? 1 : mr; // поправка на внешний масштаб, без учёта округления offsetWidth
+      const w = Array.from(m.children).map(c => (c as HTMLElement).getBoundingClientRect().width / (mk || 1));
       const moreW = w.pop() ?? 0;
       const total = w.reduce((a, b) => a + b, 0);
       if (total <= avail + 0.5) { setFit(options.length); return; }
@@ -122,8 +123,12 @@ export function ParzTabs<T extends string = string>({
         // r — правый край пункта; в CSS это calc(100% - r), так что ширина контейнера в расчёт не входит
         // дробные координаты (offsetLeft округляет до целых — плашка и текст в ней расходились на полпикселя)
         const er = el.getBoundingClientRect(), br = b.getBoundingClientRect();
-        const l = br.left - er.left - el.clientLeft + el.scrollLeft, t = br.top - er.top - el.clientTop + el.scrollTop;
-        const n = { l, r: l + br.width, t, h: br.height, iw: er.width };
+        // если снаружи идёт анимация масштаба (например, всплывающее окно раскрывается), экранные размеры сжаты — делим на масштаб
+        // offsetWidth округлён до целых — малое расхождение это не масштаб, а дробная ширина; её не трогаем
+        const sc = (a: number, b: number) => { const x = b ? a / b : 1; return Math.abs(x - 1) < 0.02 ? 1 : x; };
+        const k = sc(er.width, el.offsetWidth), ky = sc(er.height, el.offsetHeight);
+        const l = (br.left - er.left) / k - el.clientLeft + el.scrollLeft, t = (br.top - er.top) / ky - el.clientTop + el.scrollTop;
+        const n = { l, r: l + br.width / k, t, h: br.height / ky, iw: er.width / k };
         if (p && p.l === n.l && p.r === n.r && p.t === n.t && p.h === n.h && p.iw === n.iw) return p;
         // плашка перетекает, только когда выбор переехал; если меняется ширина или размер — идёт за пунктом кадр в кадр, без опоздания
         // пока плашка ещё едет к новому пункту (~0.5 с), замеры не обрывают её переезд

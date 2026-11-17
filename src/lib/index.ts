@@ -33,3 +33,5 @@ export type { ParzDaysProps, ParzDaysSize, ParzDaysTheme, ParzDaysPicker } from 
 export { ParzAvatar, ParzAvatarGroup } from './ParzAvatar';
 export { PARZ_AVATAR_PRESETS } from './ParzAvatarPresets';
 export type { ParzAvatarChange, ParzAvatarLabels, ParzAvatarProps, ParzAvatarGroupProps, ParzAvatarSize, ParzAvatarShape, ParzAvatarStatus, ParzAvatarTheme } from './ParzAvatar';
+export { ParzColorPicker, PARZ_COLOR_SWATCHES, parseColor } from './ParzColorPicker';
+export type { ParzColorPickerProps, ParzColorPickerLabels, ParzColorValue, ParzColorFormat, ParzColorPickerTheme } from './ParzColorPicker';

@@ -1,0 +1,107 @@
+/* Parz UI · Parz Color Picker */
+.pz-cp{--pz-cp-bg:rgba(28,28,34,.72);--pz-cp-fg:#f4f4f6;--pz-cp-sub:rgba(244,244,246,.6);--pz-cp-field:rgba(255,255,255,.08);--pz-cp-line:rgba(255,255,255,.12);--pz-cp-ring:#0c0c0f;
+  --pz-cp-ease:cubic-bezier(.34,1.3,.64,1);--pz-cp-dur:.5s;--pz-cp-chk:repeating-conic-gradient(#d8d8de 0 25%,#fff 0 50%) 0 0/10px 10px;
+  display:flex;flex-direction:column;gap:12px;box-sizing:border-box;width:280px;max-width:100%;padding:12px;border-radius:22px;
+  background:var(--pz-cp-bg);color:var(--pz-cp-fg);-webkit-backdrop-filter:blur(14px) saturate(1.8);backdrop-filter:blur(14px) saturate(1.8);
+  box-shadow:0 18px 40px -16px rgba(0,0,0,.5),0 0 0 1px rgba(127,127,140,.2),inset 0 1px 0 rgba(255,255,255,.1);font-size:13px;user-select:none}
+.pz-cp--light{--pz-cp-bg:rgba(255,255,255,.8);--pz-cp-fg:#16161b;--pz-cp-sub:rgba(22,22,27,.55);--pz-cp-field:rgba(22,22,27,.06);--pz-cp-line:rgba(22,22,27,.1);--pz-cp-ring:#fff;
+  box-shadow:0 18px 40px -18px rgba(20,20,40,.3),0 0 0 1px rgba(22,22,27,.1),inset 0 1px 0 #fff}
+.pz-cp.is-disabled{opacity:.5;pointer-events:none}
+
+/* поле насыщенности и яркости */
+.pz-cp-area{position:relative;height:168px;border-radius:14px;cursor:crosshair;touch-action:none;outline:none;
+  background:linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,var(--pz-cp-pure));
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.pz-cp-row{display:flex;align-items:center;gap:10px}
+.pz-cp-bars{flex:1;display:flex;flex-direction:column;gap:10px;min-width:0}
+/* полосы оттенка и прозрачности */
+.pz-cp-bar{position:relative;height:14px;border-radius:99px;cursor:pointer;touch-action:none;outline:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.pz-cp-bar[style*="--pz-cp-to"]{background:linear-gradient(90deg,transparent,var(--pz-cp-to)),var(--pz-cp-chk)}
+
+/* бегунок: белое кольцо с цветом внутри; положение и «жидкая» растяжка задаются из JS */
+.pz-cp-th{position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;box-sizing:border-box;pointer-events:none;will-change:transform;
+  border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.18),0 3px 10px rgba(0,0,0,.35);background:transparent;transition:width .25s var(--pz-cp-ease),height .25s var(--pz-cp-ease)}
+.pz-cp-area .pz-cp-th{width:22px;height:22px}
+.pz-cp-area:active .pz-cp-th{width:26px;height:26px}
+.pz-cp-bar:active .pz-cp-th{width:22px;height:22px}
+.pz-cp-area:focus-visible .pz-cp-th,.pz-cp-bar:focus-visible .pz-cp-th{box-shadow:0 0 0 1px rgba(0,0,0,.18),0 0 0 4px #7aa7ff,0 3px 10px rgba(0,0,0,.35)}
+
+/* превью выбранного цвета: под ним шахматка — видно прозрачность */
+/* цвет и шахматка — один фон одного элемента: на сглаженном краю круга ничего не просвечивает; цвет меняется сразу, без запаздывания */
+.pz-cp-prev{flex:none;width:40px;height:40px;border-radius:50%;background:linear-gradient(var(--pz-cp-c),var(--pz-cp-c)),var(--pz-cp-chk)}
+.pz-cp-prev>i{display:none}
+
+/* пипетка */
+.pz-cp .pz-cp-ico{flex:none;display:grid;place-items:center;width:36px;height:36px;margin:0;padding:0;border:0;border-radius:50%;background:var(--pz-cp-field);color:var(--pz-cp-fg);cursor:pointer;
+  transition:background-color .2s,transform calc(var(--pz-cp-dur) * .45) var(--pz-cp-ease)}
+.pz-cp-ico svg{width:18px;height:18px;fill:currentColor}
+@media (hover:hover){.pz-cp .pz-cp-ico:hover{background:color-mix(in srgb,var(--pz-cp-fg) 16%,transparent)}}
+.pz-cp .pz-cp-ico:active{transform:scale(.9);transition-duration:.1s}
+.pz-cp .pz-cp-ico:focus-visible{outline:2px solid #7aa7ff;outline-offset:2px}
+
+/* ввод: формат и значение */
+.pz-cp-in{display:flex;align-items:center;gap:8px}
+.pz-cp-in .pz-tabs{flex:none}
+.pz-cp .pz-cp-txt{flex:1;min-width:0;box-sizing:border-box;height:32px;margin:0;padding:0 10px;border:0;border-radius:10px;background:var(--pz-cp-field);color:var(--pz-cp-fg);
+  font:inherit;font-size:12.5px;font-variant-numeric:tabular-nums;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;outline:0;user-select:text;
+  transition:box-shadow .2s}
+.pz-cp .pz-cp-txt:focus{box-shadow:0 0 0 2px #7aa7ff}
+.pz-cp .pz-cp-txt.is-bad{animation:pzCpShake .4s cubic-bezier(.36,.07,.19,.97);box-shadow:0 0 0 2px #ff4d5e}
+@keyframes pzCpShake{20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+
+/* образцы */
+/* кружки целого размера: при дробном (сетка делит ширину поровну) кружок и рамка выбора округлялись по-разному и расходились */
+.pz-cp-sw{display:grid;grid-template-columns:repeat(auto-fill,26px);justify-content:space-between;gap:8px}
+.pz-cp .pz-cp-s{position:relative;width:26px;height:26px;margin:0;padding:0;border:0;border-radius:50%;background:linear-gradient(var(--pz-cp-s),var(--pz-cp-s)),var(--pz-cp-chk);cursor:pointer;
+  transition:transform calc(var(--pz-cp-dur) * .45) var(--pz-cp-ease)}
+.pz-cp-s::after{content:'';position:absolute;inset:-3px;border-radius:50%;box-shadow:0 0 0 2px var(--pz-cp-fg);opacity:0;transform:scale(.8);
+  transition:opacity .2s ease,transform calc(var(--pz-cp-dur) * .45) var(--pz-cp-ease)}
+.pz-cp-s.is-on::after{opacity:1;transform:none}
+@media (hover:hover){.pz-cp .pz-cp-s:hover{transform:scale(1.12)}}
+.pz-cp .pz-cp-s:active{transform:scale(.9);transition-duration:.1s}
+.pz-cp .pz-cp-s:focus-visible{outline:none}
+.pz-cp .pz-cp-s:focus-visible::after{opacity:1;transform:none;box-shadow:0 0 0 2px #7aa7ff}
+
+/* ---------- всплывающий режим ---------- */
+/* кнопка всегда на своём слое: на дробных координатах иначе после анимации нажатия браузер перерисовывает её с привязкой к пикселям
+   и текст с кружком прыгают на долю пикселя */
+.pz-cp-trig{will-change:transform;backface-visibility:hidden;display:inline-flex;align-items:center;gap:8px;height:36px;margin:0;padding:0 12px 0 4px;border:0;border-radius:99px;cursor:pointer;
+  background:rgba(255,255,255,.08);color:#f4f4f6;font:inherit;font-size:13px;font-weight:600;line-height:1;
+  transition:background-color .2s,transform calc(var(--pz-cp-dur,.5s) * .45) var(--pz-cp-ease,ease)}
+.pz-cp-trig--light{background:rgba(22,22,27,.06);color:#16161b}
+@media (hover:hover){.pz-cp-trig:hover{background:rgba(255,255,255,.13)}.pz-cp-trig--light:hover{background:rgba(22,22,27,.1)}}
+.pz-cp-trig{position:relative;overflow:hidden;isolation:isolate;transition:background-color .2s,scale .16s cubic-bezier(.3,0,.3,1)}
+.pz-cp-trig.is-press{scale:.94 .88}
+/* капля от точки касания — светлое пятно растекается по кнопке и тает */
+.pz-cp-drop{position:absolute;z-index:-1;width:160%;aspect-ratio:1;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.28) 0%,rgba(255,255,255,.1) 38%,transparent 62%);
+  transform:translate(-50%,-50%) scale(0);animation:pzCpDrop .65s cubic-bezier(.2,.7,.2,1) forwards}
+.pz-cp-trig--light .pz-cp-drop{background:radial-gradient(circle,rgba(22,22,27,.14) 0%,rgba(22,22,27,.05) 38%,transparent 62%)}
+@keyframes pzCpDrop{60%{opacity:1}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.pz-cp-trig:focus-visible{outline:2px solid #7aa7ff;outline-offset:2px}
+.pz-cp-dot{position:relative;width:28px;height:28px;border-radius:50%;flex:none;background:linear-gradient(var(--pz-cp-c),var(--pz-cp-c)),repeating-conic-gradient(#d8d8de 0 25%,#fff 0 50%) 0 0/8px 8px;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.pz-cp-dot>i{display:none}
+.pz-cp-lbl,.pz-cp-code{display:block;text-box:trim-both cap alphabetic}
+.pz-cp-code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:500;opacity:.7;font-size:12px}
+/* окно вырастает каплей из кружка, лежит поверх страницы */
+.pz-cp-pop{position:fixed;z-index:1000;left:var(--pz-cp-x);top:var(--pz-cp-y);width:min(280px,calc(100vw - 16px));
+  opacity:0;visibility:hidden;pointer-events:none;transform-origin:var(--pz-cp-ox) -10px;transform:translateX(-50%) translateY(-8px) scale(.8,.66);
+  transition:opacity .18s cubic-bezier(.4,0,1,1),transform .24s cubic-bezier(.4,0,1,1),visibility 0s .24s}
+.pz-cp-pop.is-up{transform-origin:var(--pz-cp-ox) calc(100% + 10px);transform:translateX(-50%) translateY(8px) scale(.8,.66)}
+.pz-cp-pop.is-open{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%);
+  transition:opacity .22s cubic-bezier(.2,0,0,1),transform var(--pz-cp-dur) var(--pz-cp-ease),visibility 0s}
+.pz-cp-pop .pz-cp{width:100%}
+
+@media (prefers-reduced-motion:reduce){
+  .pz-cp-pop,.pz-cp-pop.is-open,.pz-cp-th,.pz-cp .pz-cp-s,.pz-cp-s::after,.pz-cp .pz-cp-ico,.pz-cp-trig{transition-duration:.01ms}
+  .pz-cp .pz-cp-txt.is-bad,.pz-cp-drop{animation:none}
+}
+/* бегунок прозрачности: внутри лёгкое матовое стекло — видно цвет под ним, но шахматка не рябит */
+.pz-cp-bar[style*="--pz-cp-to"] .pz-cp-th{background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(3px) saturate(1.3);backdrop-filter:blur(3px) saturate(1.3)}
+/* светлая тема Parz Tabs внутри пикера — та же, что у самого Parz Tabs на светлом фоне: белая плашка с мягкой тенью */
+.pz-cp-tabs--light{--pz-tabs-ring:#3d6fe0;--pz-tabs-sh:0 0 0 .5px rgba(0,0,0,.06),0 1px 1px rgba(0,0,0,.06),0 3px 8px rgba(0,0,0,.1),0 8px 18px -6px rgba(0,0,0,.14)}
+/* отключённая кнопка: блёклая, без наведения и без жидкого нажатия */
+.pz-cp-trig:disabled{opacity:.45;cursor:not-allowed}
+.pz-cp-trig:disabled .pz-cp-dot{filter:saturate(.35)}
+@media (hover:hover){.pz-cp-trig:disabled:hover{background:rgba(255,255,255,.08)}.pz-cp-trig--light:disabled:hover{background:rgba(22,22,27,.06)}}

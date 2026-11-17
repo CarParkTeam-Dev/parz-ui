@@ -716,3 +716,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .av-stage .pz-avg{padding-top:4px;max-width:100%}
 .av-acts{align-items:center}
 .card-demo--avatar{background:radial-gradient(90% 80% at 25% 20%,#3a1d4d 0%,transparent 60%),radial-gradient(80% 80% at 85% 85%,#1d3a4d 0%,transparent 60%),#0b0b0e;gap:18px}
+/* Parz Color Picker */
+.cp-stage{align-items:center}
+.cp-segs{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin:6px 0 12px}
+.card-demo--color{background:radial-gradient(90% 80% at 20% 20%,#4d1d3a 0%,transparent 60%),radial-gradient(80% 80% at 85% 85%,#1d2f4d 0%,transparent 60%),#0b0b0e}

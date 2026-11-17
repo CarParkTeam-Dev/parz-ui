@@ -108,7 +108,7 @@
 .pz-tabs-pill{position:absolute;z-index:2;left:var(--l,0);right:var(--r,100%);top:var(--t,0);height:var(--h,0);border-radius:999px;
   background:var(--pz-tabs-pill);box-shadow:var(--pz-tabs-sh);pointer-events:none;transition:opacity .2s;overflow:hidden}
 /* копия подписей внутри плашки: её левый/верхний край едет ровно навстречу плашке (те же длительности и кривые), поэтому стоит на месте */
-.pz-tabs-ovl{position:absolute;left:calc(-1 * var(--l,0px));top:calc(-1 * var(--t,0px));width:var(--iw,100%);display:flex;flex-wrap:nowrap;pointer-events:none}
+.pz-tabs-ovl{position:absolute;left:calc(-1 * var(--l,0px));top:calc(-1 * var(--t,0px));width:calc(var(--iw,100%) + 1px);display:flex;flex-wrap:nowrap;pointer-events:none}
 .pz-tabs--wrap .pz-tabs-ovl{flex-wrap:wrap}
 .pz-tabs--scroll .pz-tabs-ovl{padding:15px 0}
 .pz-tabs .pz-tabs-ovl .pz-tabs-b{color:var(--pz-tabs-on);cursor:default}
