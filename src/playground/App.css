@@ -217,8 +217,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .card-b h2{margin:0;font-size:21px;letter-spacing:-.01em}
 .card-b p{margin:0;color:var(--mut);text-wrap:pretty}
 .card-a{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto;padding-top:10px}
-.card-a button,.teaser button{border:1px solid #2a2a2f;background:none;color:var(--txt);border-radius:99px;padding:9px 16px;font:600 13.5px Inter,system-ui,sans-serif;cursor:pointer;transition:background .25s,border-color .25s}
-.card-a button.pri{background:var(--acc);border-color:var(--acc);color:#04130a}
+.teaser button{border:1px solid #2a2a2f;background:none;color:var(--txt);border-radius:99px;padding:9px 16px;font:600 13.5px Inter,system-ui,sans-serif;cursor:pointer;transition:background .25s,border-color .25s}
 .teaser{max-width:1080px;margin:18px auto 0;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
   padding:22px;border:1px solid var(--line);border-radius:24px;background:var(--panel)}
 .teaser h2{margin:0 0 4px;font-size:19px}.teaser p{margin:0;color:var(--mut)}
@@ -255,8 +254,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .logo-stage .flash{margin:0}
 
 @media (hover:hover) and (pointer:fine){
-  .card-a button:hover,.teaser button:hover{border-color:#3a3a42;background:#17171b}
-  .card-a button.pri:hover{background:#86efb2;border-color:#86efb2}
+  .teaser button:hover{border-color:#3a3a42;background:#17171b}
   .var figcaption a:hover{background:rgba(110,231,160,.1)}
 }
 
@@ -331,8 +329,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 
 /* ===== главная и страница Components ===== */
 .hero-a{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:24px}
-.hero-a button,.sec-h button{border:1px solid #2a2a2f;background:none;color:var(--txt);border-radius:99px;padding:10px 18px;font:600 14px Inter,system-ui,sans-serif;cursor:pointer;transition:background .25s,border-color .25s}
-.hero-a button.pri{background:var(--acc);border-color:var(--acc);color:#04130a}
+.sec-h button{border:1px solid #2a2a2f;background:none;color:var(--txt);border-radius:99px;padding:10px 18px;font:600 14px Inter,system-ui,sans-serif;cursor:pointer;transition:background .25s,border-color .25s}
 .sec-h{max-width:1080px;margin:0 auto 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .sec-h h2{margin:0;font-size:20px;letter-spacing:-.01em}
 .sec-h button{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;font-size:13px}
@@ -347,8 +344,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .cmp-back{display:inline-flex;align-items:center;gap:4px;background:none;border:0;padding:0;color:var(--mut);font:600 12px Inter,system-ui,sans-serif;cursor:pointer;margin-bottom:2px;transition:color .25s}
 .cmp-back .material-symbols-rounded{font-size:16px;transition:transform .35s cubic-bezier(.22,1,.36,1)}
 @media (hover:hover) and (pointer:fine){
-  .hero-a button:hover,.sec-h button:hover{border-color:#3a3a42;background:#17171b}
-  .hero-a button.pri:hover{background:#86efb2;border-color:#86efb2}
+  .sec-h button:hover{border-color:#3a3a42;background:#17171b}
   .sec-h button:hover .material-symbols-rounded{transform:translateX(3px)}
   .cmp-back:hover{color:var(--txt)}.cmp-back:hover .material-symbols-rounded{transform:translateX(-3px)}
 }

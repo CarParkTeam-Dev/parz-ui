@@ -570,7 +570,7 @@ export function ComponentCard({ e, lang, go, i, reveal }: { e: Entry; lang: Lang
         <div className="card-tags">{e.tags.map(x => <span key={x}>{x}</span>)}</div>
         <h2>{e.title}</h2>
         <p>{t(e.desc)}</p>
-        <div className="card-a"><button className="pri" onClick={() => go(e.id)}>{t('Открыть редактор')}</button><button onClick={() => go(e.id, 'docs')}>{t('Документация')}</button></div>
+        <div className="card-a"><ParzButton size="sm" accent="#6ee7a0" textColor="#04130a" onClick={() => go(e.id)}>{t('Открыть редактор')}</ParzButton><ParzButton size="sm" variant="outline" accent="#e8e8ee" onClick={() => go(e.id, 'docs')}>{t('Документация')}</ParzButton></div>
       </div>
     </article>
   );
