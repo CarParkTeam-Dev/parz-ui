@@ -51,6 +51,41 @@ import '@carparkteam/parz-ui/style.css';
 />
 ```
 
+## Ձայն մի քանի լեզվով
+
+Սերիալների և կրկնօրինակման համար փոխանցեք `audio`. յուրաքանչյուր լեզու տեսանյութի իր տարբերակն է՝ մեկ ֆայլ կամ իր որակները։ Փոխելիս ժամանակը և դադարը պահպանվում են, կադրը լուծվում է ինչպես որակը փոխելիս. «Ավտո» որակն աշխատում է ընտրված լեզվի ներսում։ Ցանկում դիտողի ընտրությունն անցնում է հաջորդ սերիաներին (ըստ `lang`-ի, այլապես ըստ անվան)։ Կոճակը վահանակին է ենթագրերի կողքին. `buttons={{ audio: 'more' }}`-ը տեղափոխում է այն «Ավելին» (նեղ նվագարկիչում այն միշտ այնտեղ է)։
+
+```tsx
+<ParzVideo
+  audio={[
+    { label: 'English', lang: 'en', sources: [{ src: '/e1.en.1080.mp4', label: '1080p' }, { src: '/e1.en.720.mp4', label: '720p' }] },
+    { label: 'Հայերեն', lang: 'hy', src: '/e1.hy.mp4' }
+  ]}
+  defaultAudio="hy"
+/>
+```
+
+## Դիտումը հիշելը
+
+`remember`-ով նվագարկիչը դիտողի բրաուզերում (`localStorage`) պահում է սերիան և տեղը, ձայնի լեզուն, ենթագրերը, որակը (կամ «Ավտո»), արագությունը և ձայնի ուժգնությունը։ Հաջորդ անգամ «դիտել»-ի փոխարեն հայտնվում է «Շարունակել · Սերիա 2 · 15:12 · Կրկնօրինակում» պարկուճը և փոքր «Սկզբից»-ը, իսկ սանդղակին արդեն նշված է կանգառի տեղը։ Տեղը պահվում է մի քանի վայրկյանը մեկ, դադարի, կարգավորումները փոխելիս և ներդիրը փակելիս։ Սկիզբը (10 վ-ից պակաս) չի հիշվում. 95%-ից ավել դիտված տեսանյութը համարվում է դիտված, և ցանկում առաջարկվում է հաջորդ սերիան։
+
+```tsx
+<ParzVideo
+  playlist={episodes}
+  remember="series-42"                  // own key for every film or series
+  rememberOptions={{ volume: false }}   // optional: what not to remember
+/>
+```
+
+Առաջընթացը ձեր սերվերում պահելու համար փոխանցեք `initialState` և պահեք այն, ինչ գալիս է `onProgress`-ով.
+
+```tsx
+<ParzVideo
+  initialState={progressFromServer}       // { i, t, audio, sub, q, rate, … }
+  onProgress={state => fetch('/api/progress', { method: 'POST', body: JSON.stringify(state) })}
+/>
+```
+
 ## Ցանկ
 
 Փոխանցեք `playlist`, և նվագարկիչը տեսանյութերը կխաղա իրար հետևից։ Յուրաքանչյուրն ունի իր `src` կամ `sources`, `title`, `poster`, `chapters`, `tracks` և ոչ պարտադիր `duration` ցանկի համար։ Կենտրոնում −10 / +10-ի կողքերին «նախորդը» և «հաջորդը» են (նեղ նվագարկիչում՝ դրանց փոխարեն). ցանկի կոճակը բացում է տեսանյութերը մանրապատկերներով, ընթացիկը նշված է։ Ավարտից մի քանի վայրկյան առաջ հայտնվում է «Հաջորդը» քարտը հետհաշվարկի օղակով. սեղմեք՝ հաջորդը կսկսվի անմիջապես, չեղարկեք՝ տեսանյութը պարզապես կավարտվի։ Փոխելիս նվագարկումը շարունակվում է, իսկ վերջին կադրը լուծվում է նորի մեջ։
@@ -116,6 +151,14 @@ export function Course({ id }: { id: string }) {
 | `sources` | — | Որակի տարբերակներ՝ `{ src, label, type?, badge? }[]`։ Ատամնանիվի կողքի նշանը որոշվում է պիտակից՝ `2160p` և ավելի — **4K**, `720p` և ավելի — **HD**; սեփականը՝ `badge`, դատարկ տող՝ առանց նշանի |
 | `defaultQuality` | `'auto'` | Որ որակով սկսել. `sources`-ի համարը կամ `'auto'` — նվագարկիչն ինքն է ընտրում ըստ իր չափի, էկրանի խտության և ցանցի (տրաֆիկի խնայում, 2g/3g, արագություն) և իջնում է, եթե տեսանյութը կախվում է։ Ձեռքով ընտրությունն անջատում է ավտոմատը, ընտրացանկի «Ավտո» կետը՝ միացնում |
 | `chapters` | — | Գլուխներ՝ `{ start, title }[]`, `start`-ը վայրկյաններով |
+| `audio` | — | Լեզուներ՝ `{ label, lang?, src?, sources? }[]` — յուրաքանչյուրն իր ֆայլով կամ որակներով (այդ դեպքում `src` և `sources` պետք չեն) |
+| `defaultAudio` | առաջինը | Որ լեզվով սկսել. համար կամ `lang` |
+| `onAudioChange` | — | `(index, audio) => void` |
+| `buttons` | բոլորը վահանակին | Որ կարգավորումների կոճակները տեղափոխել «Ավելին»՝ `{ audio?, subtitles?, speed?: 'bar' \| 'more' }`։ Որակը և ցանկը միշտ վահանակին են, կրկնությունը՝ միշտ «Ավելին»-ում; վահանակին առավելագույնը 5 կոճակ, մնացածը՝ «Ավելին»; նեղ նվագարկիչում ամեն ինչ «Ավելին»-ում է։ «Նկար նկարում»-ը և հեռարձակումը առանձին են |
+| `showShare` / `shareUrl` | `true` / էջի հասցեն | «Կիսվել»-ը «Ավելին»-ում. պատճենել հղումը և «Այլ…»՝ բրաուզերի համակարգային պատուհանը (ցույց է տրվում միայն եթե այն կա) |
+| `remember` | — | Բանալի, որով դիտումը և դիտողի կարգավորումները հիշվում են նրա բրաուզերում |
+| `rememberOptions` | ամեն ինչ | Ինչ չհիշել՝ `{ position?, audio?, subtitles?, quality?, speed?, volume?: false }` |
+| `initialState` / `onProgress` | — | Ձեր պահոցը. սկզբնական վիճակ `localStorage`-ի փոխարեն և կանչ յուրաքանչյուր պահպանման ժամանակ |
 | `tracks` | — | WebVTT ենթագրեր՝ `{ src, label, srclang, default? }[]`։ Սկզբում անջատված են; `default`-ը այն ուղին է, որը միացնում է C ստեղնը։ Այլ դոմենից պետք է CORS |
 | `previews` | `true` | Կադր գծի վերևում (տեսանյութը բեռնում է երկրորդ անգամ, միայն անհրաժեշտ կադրերը) |
 | `poster` | — | Շապիկ մինչև մեկնարկը; մեղմ հայտնվում է նկարը բեռնվելիս, սահուն անհետանում է, երբ տեսանյութը սկսվում է, և վերադառնում է ավարտին (եթե `loop` չկա) |
@@ -134,11 +177,11 @@ export function Course({ id }: { id: string }) {
 | `showPip` | `false` | «Նկար նկարի մեջ», եթե զննարկիչը աջակցում է |
 | `speeds` | `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]` | Արագություններն ընտրացանկում |
 | `hideDelay` | `2600` | Քանի մվ առանց շարժման հետո թաքցնել վահանակը |
-| `labels` | անգլերեն | Կոճակների պիտակներ էկրանային ընթերցիչների համար՝ `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}`՝ քայլը), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
+| `labels` | անգլերեն | Կոճակների պիտակներ էկրանային ընթերցիչների համար՝ `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}`՝ քայլը), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `resume`, `startOver`, `episode`, `audioTrack`, `share`, `copyLink`, `linkCopied`, `shareOther`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
 | `onPlay` / `onPause` / `onEnded` | — | Նվագարկման իրադարձություններ |
 | `onTimeUpdate` | — | `(time, duration) => void` |
 | `onQualityChange` | — | `(index, source) => void` |
-| `playlist` | — | Տեսանյութեր իրար հետևից՝ `{ src?, sources?, title?, poster?, chapters?, tracks?, audioBadge?, duration? }[]`։ Ընթացիկի դաշտերը փոխարինում են `src`, `sources`, `title`, `poster`, `chapters` և `tracks` |
+| `playlist` | — | Տեսանյութեր իրար հետևից՝ `{ src?, sources?, audio?, title?, poster?, chapters?, tracks?, audioBadge?, duration? }[]`։ Ընթացիկի դաշտերը փոխարինում են `src`, `sources`, `title`, `poster`, `chapters` և `tracks` |
 | `index` / `defaultIndex` | `0` | Ընթացիկ տեսանյութը (կառավարվող / սկզբնական) |
 | `onIndexChange` | — | `(index, item) => void` — տեսանյութը փոխվեց |
 | `autoAdvance` | `true` | Ավարտից հետո միացնել հաջորդը |

@@ -601,3 +601,49 @@ button.pz-vd-mh{padding-left:10px;opacity:.8}
 @keyframes pzVdTipTxt{from{opacity:.25}to{opacity:1}}
 .pz-vd:is(.is-menu,.is-sheet,.is-hidden,.is-drag) .pz-vd-bt{opacity:0}
 @media (hover:none){.pz-vd-bt{display:none}}
+
+/* текстовые подсказки в центре («Ссылка скопирована», качество, озвучка…) — их надо успеть прочитать:
+   появляются, спокойно стоят и мягко растворяются; значки перемотки и громкости остаются короткими */
+.pz-vd-flash--info{animation:pzVdFlashInfo 2s var(--_ease) both}
+@keyframes pzVdFlashInfo{0%{opacity:0;transform:translateX(-50%) scale(.9);filter:blur(4px)}12%{opacity:1;transform:translateX(-50%) scale(1);filter:none}
+  78%{opacity:1;transform:translateX(-50%) scale(1);filter:none}100%{opacity:0;transform:translateX(-50%) scale(1.04);filter:blur(2px)}}
+.pz-vd--liquid .pz-vd-flash--info{animation:pzVdFlashInfoL 2.1s linear both}
+@keyframes pzVdFlashInfoL{0%{opacity:0;transform:translateX(-50%) scale(.4,.3)}10%{opacity:1;transform:translateX(-50%) scale(1.08,.93)}17%{transform:translateX(-50%) scale(.96,1.04)}
+  25%{transform:translateX(-50%) scale(1)}80%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1.04,.97)}}
+
+/* «Продолжить просмотр»: стеклянная капсула в центре вместо «смотреть» — значок, «Продолжить» и место; под ней «Сначала» */
+.pz-vd-resume{position:absolute;z-index:3;left:50%;top:50%;display:flex;flex-direction:column;align-items:center;gap:10px;transform:translate(-50%,-50%);
+  animation:pzVdResumeIn .5s var(--_ease) both}
+@keyframes pzVdResumeIn{from{opacity:0;transform:translate(-50%,-46%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%)}}
+.pz-vd--liquid .pz-vd-resume{animation:pzVdResumeInL .8s linear both}
+@keyframes pzVdResumeInL{0%{opacity:0;transform:translate(-50%,-50%) scale(.4,.3)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.06,.94)}45%{transform:translate(-50%,-50%) scale(.98,1.03)}65%{transform:translate(-50%,-50%) scale(1.01,.99)}100%{opacity:1;transform:translate(-50%,-50%)}}
+.pz-vd-resume-go{display:flex;align-items:center;gap:12px;height:60px;padding:0 22px 0 10px;margin:0;border:0;border-radius:99px;color:#fff;font:inherit;cursor:pointer;
+  background:rgba(255,255,255,.16);box-shadow:var(--_depth);-webkit-backdrop-filter:blur(20px) saturate(1.7);backdrop-filter:blur(20px) saturate(1.7);
+  transition:background-color .35s var(--_ease),transform .5s cubic-bezier(.3,1.3,.5,1)}
+.pz-vd-resume-i{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.18)}
+.pz-vd .pz-vd-resume-i svg{width:22px;height:22px}
+.pz-vd-resume-t{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;white-space:nowrap}
+.pz-vd-resume-t b{font-size:15.13px;font-weight:700;line-height:1.1}
+.pz-vd-resume-t small{font-size:12.38px;font-weight:550;opacity:.75;font-variant-numeric:tabular-nums}
+.pz-vd-resume-0{height:30px;padding:0 14px;margin:0;border:0;border-radius:99px;background:rgba(10,10,14,.35);color:#fff;font:inherit;font-size:12.38px;font-weight:600;cursor:pointer;
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);transition:background-color .35s var(--_ease),transform .45s cubic-bezier(.3,1.4,.5,1)}
+@media (hover:hover){.pz-vd-resume-go:hover{background:rgba(255,255,255,.26);transform:scale(1.03)}.pz-vd-resume-0:hover{background:rgba(10,10,14,.55)}}
+.pz-vd-resume-go:active{transform:scale(.95)}
+.pz-vd-resume-0:active{transform:scale(.94)}
+.pz-vd.pz-vd :is(.pz-vd-resume-go,.pz-vd-resume-0):focus-visible{outline:0;box-shadow:0 0 0 2px var(--pz-vd-accent)}
+/* пока предлагаем продолжить — обычные кнопки центра скрыты */
+.pz-vd.is-offer .pz-vd-center{opacity:0}
+.pz-vd.is-offer .pz-vd-center *{pointer-events:none!important}
+.pz-vd.is-narrow .pz-vd-resume{gap:8px}
+.pz-vd.is-narrow .pz-vd-resume-go{height:50px;padding:0 16px 0 8px;gap:10px}
+.pz-vd.is-narrow .pz-vd-resume-i{width:34px;height:34px}
+.pz-vd.is-narrow .pz-vd-resume-i svg{width:18px;height:18px}
+.pz-vd.is-narrow .pz-vd-resume-t b{font-size:13.75px}
+.pz-vd.is-narrow .pz-vd-resume-t small{font-size:11px}
+/* совсем маленький плеер: компактно — «▶ 15:12», «Сначала» ниже */
+.pz-vd.is-tiny .pz-vd-resume-t b{display:none}
+.pz-vd.is-tiny .pz-vd-resume-t small{font-size:13.75px;font-weight:650;opacity:1}
+.pz-vd.is-tiny .pz-vd-resume-go{height:42px;padding:0 14px 0 6px}
+.pz-vd.is-tiny .pz-vd-resume-i{width:30px;height:30px}
+.pz-vd.is-tiny .pz-vd-resume{gap:4px;margin-top:4px}
+.pz-vd.is-tiny .pz-vd-resume-0{height:22px;padding:0 10px;font-size:11px}

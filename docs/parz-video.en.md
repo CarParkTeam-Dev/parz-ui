@@ -51,6 +51,41 @@ import '@carparkteam/parz-ui/style.css';
 />
 ```
 
+## Audio in several languages
+
+For series and dubbing, pass `audio`: each language is its own version of the video — one file or its own qualities. Switching keeps the time and pause, and the frame dissolves just like a quality change; “Auto” quality works inside the chosen language. In a playlist the viewer's choice carries over to the next episodes (by `lang`, otherwise by label). The button sits on the bar next to subtitles; `buttons={{ audio: 'more' }}` moves it into “More” (on a narrow player it is always there).
+
+```tsx
+<ParzVideo
+  audio={[
+    { label: 'English', lang: 'en', sources: [{ src: '/e1.en.1080.mp4', label: '1080p' }, { src: '/e1.en.720.mp4', label: '720p' }] },
+    { label: 'Русский', lang: 'ru', src: '/e1.ru.mp4' }
+  ]}
+  defaultAudio="en"
+/>
+```
+
+## Remember progress
+
+With `remember` the player keeps, in the viewer's own browser (`localStorage`), the episode and the place, the audio language, subtitles, quality (or “Auto”), speed and volume. Next time a glass “Continue · Episode 2 · 15:12 · English” capsule with a small “Start over” appears instead of “Play”, and the seek line already shows where they stopped. The place is saved every few seconds, on pause, when settings change and when the tab closes, so even after a crash only a few seconds are lost. The very beginning (under 10 s) is not remembered; a video watched past 95% counts as finished, and in a playlist the next episode is offered.
+
+```tsx
+<ParzVideo
+  playlist={episodes}
+  remember="series-42"                  // own key for every film or series
+  rememberOptions={{ volume: false }}   // optional: what not to remember
+/>
+```
+
+To keep progress on your server (one account, many devices) pass `initialState` and save what `onProgress` gives you:
+
+```tsx
+<ParzVideo
+  initialState={progressFromServer}       // { i, t, audio, sub, q, rate, … }
+  onProgress={state => fetch('/api/progress', { method: 'POST', body: JSON.stringify(state) })}
+/>
+```
+
 ## Playlist
 
 Pass `playlist` and the player plays the videos one after another. Each item has its own `src` or `sources`, `title`, `poster`, `chapters`, `tracks` and an optional `duration` for the list. In the centre, “previous” and “next” sit on either side of −10 / +10 (on a narrow player they replace them); the list button opens the videos with thumbnails, and the current one is marked. A few seconds before the end, an “Up next” card appears with a countdown ring: click it to start the next video now, or cancel it to let the video simply end. Switching keeps playing and the last frame dissolves into the new video.
@@ -116,6 +151,14 @@ When the player is focused: `Space` or `K` — pause, `←` / `→` — 5 second
 | `sources` | — | Quality options: `{ src, label, type?, badge? }[]`. The mark next to the gear comes from the label: `2160p` and up — **4K**, `720p` and up — **HD**; set your own with `badge`, an empty string hides it |
 | `defaultQuality` | `'auto'` | Which quality to start with: an index in `sources` or `'auto'` — the player picks by its size, screen density and network (data saver, 2g/3g, downlink) and steps down if the video keeps stalling. Picking a quality by hand turns auto off; “Auto” in the menu turns it back on |
 | `chapters` | — | Chapters: `{ start, title }[]`, `start` in seconds |
+| `audio` | — | Languages: `{ label, lang?, src?, sources? }[]` — each with its own file or qualities (then `src` and `sources` are not needed) |
+| `defaultAudio` | first | Which language to start with: an index or `lang` |
+| `onAudioChange` | — | `(index, audio) => void` |
+| `buttons` | all on the bar | Which settings buttons go into “More”: `{ audio?, subtitles?, speed?: 'bar' \| 'more' }`. Quality and playlist always stay on the bar, loop is always in “More”; at most 5 buttons on the bar, the rest go to “More”; on a narrow player everything is in “More”. Picture in picture and casting are separate |
+| `showShare` / `shareUrl` | `true` / page address | “Share” in “More”: copy the link and “Other…” — the browser's share sheet (shown only where the browser has one) |
+| `remember` | — | Key to remember progress and the viewer's settings in their browser |
+| `rememberOptions` | everything | What not to remember: `{ position?, audio?, subtitles?, quality?, speed?, volume?: false }` |
+| `initialState` / `onProgress` | — | Your own storage: starting state instead of `localStorage`, and a callback on every save |
 | `tracks` | — | WebVTT subtitles: `{ src, label, srclang, default? }[]`. Subtitles start off; `default` is the track the C key turns on. Another domain needs CORS |
 | `previews` | `true` | Frame above the seek line on hover (loads the video a second time, only the needed frames) |
 | `poster` | — | Poster before playback; fades in softly once the image loads, dissolves once the video starts and returns when it ends (unless `loop`) |
@@ -134,11 +177,11 @@ When the player is focused: `Space` or `K` — pause, `←` / `→` — 5 second
 | `showPip` | `false` | Picture in picture, if the browser supports it |
 | `speeds` | `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]` | Speeds in the menu |
 | `hideDelay` | `2600` | Ms without movement before the bar hides |
-| `labels` | English | Button labels for screen readers: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` is the step), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
+| `labels` | English | Button labels for screen readers: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` is the step), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `resume`, `startOver`, `episode`, `audioTrack`, `share`, `copyLink`, `linkCopied`, `shareOther`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
 | `onPlay` / `onPause` / `onEnded` | — | Playback events |
 | `onTimeUpdate` | — | `(time, duration) => void` |
 | `onQualityChange` | — | `(index, source) => void` |
-| `playlist` | — | Videos in a row: `{ src?, sources?, title?, poster?, chapters?, tracks?, audioBadge?, duration? }[]`. The current item's fields replace `src`, `sources`, `title`, `poster`, `chapters` and `tracks` |
+| `playlist` | — | Videos in a row: `{ src?, sources?, audio?, title?, poster?, chapters?, tracks?, audioBadge?, duration? }[]`. The current item's fields replace `src`, `sources`, `title`, `poster`, `chapters` and `tracks` |
 | `index` / `defaultIndex` | `0` | Current video (controlled / initial) |
 | `onIndexChange` | — | `(index, item) => void` — the video changed |
 | `autoAdvance` | `true` | Start the next video when one ends |

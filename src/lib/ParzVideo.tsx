@@ -18,6 +18,12 @@ export interface ParzVideoLabels {
   /** Плейлист: кнопка и список, «предыдущий», «следующий», карточка «Далее». */
   /** Пункт «Авто» в меню качества. */
   auto: string;
+  /** «Продолжить просмотр»: кнопка, «Сначала», «Серия {n}». */
+  resume: string; startOver: string; episode: string;
+  /** «Поделиться» в меню «Ещё»: копирование ссылки и системное окно браузера. */
+  share: string; copyLink: string; linkCopied: string; shareOther: string;
+  /** Кнопка и меню озвучки. */
+  audioTrack: string;
   playlist: string; previous: string; next: string; upNext: string; playNow: string; cancel: string; nowPlaying: string;
 }
 export const PARZ_VIDEO_LABELS: ParzVideoLabels = {
@@ -27,7 +33,7 @@ export const PARZ_VIDEO_LABELS: ParzVideoLabels = {
   more: 'More', cast: 'Play on another device', on: 'On', about: 'About', version: 'Version',
   casting: 'Playing on another device', castBack: 'Play here',
   pipActive: 'In a separate window', pipBack: 'Back to player',
-  auto: 'Auto',
+  auto: 'Auto', resume: 'Continue', startOver: 'Start over', episode: 'Episode {n}', audioTrack: 'Audio', share: 'Share', copyLink: 'Copy link', linkCopied: 'Link copied', shareOther: 'Other…',
   playlist: 'Playlist', previous: 'Previous', next: 'Next', upNext: 'Up next', playNow: 'Play now', cancel: 'Cancel', nowPlaying: 'Now playing'
 };
 
@@ -41,9 +47,23 @@ export interface ParzVideoTrack { src: string; label: string; srclang: string; d
 /** Глава: с какой секунды начинается и как называется. */
 export interface ParzVideoChapter { start: number; title: string }
 
+/** Что плеер помнит о зрителе: серия, место, озвучка, субтитры, качество, скорость и звук. */
+export interface ParzVideoState {
+  i?: number; t: number; d?: number; done?: boolean;
+  audio?: string; sub?: string | null; q?: number | 'auto'; rate?: number; vol?: number; muted?: boolean; at?: number;
+}
+/** Что не запоминать (по умолчанию запоминается всё). */
+export type ParzVideoRememberOptions = Partial<Record<'position' | 'audio' | 'subtitles' | 'quality' | 'speed' | 'volume', boolean>>;
+
+/** Кнопки настроек, которые можно держать на панели или в «Ещё». */
+export type ParzVideoButton = 'audio' | 'subtitles' | 'speed';
+
+/** Озвучка: своя версия ролика (файл или качества) на каждом языке. Переключение сохраняет время и паузу. */
+export interface ParzVideoAudio { label: string; lang?: string; src?: string; sources?: ParzVideoSource[] }
+
 /** Ролик плейлиста: всё своё — адрес или качества, название, обложка, главы, субтитры. */
 export interface ParzVideoItem {
-  src?: string; sources?: ParzVideoSource[]; title?: ReactNode; poster?: string; chapters?: ParzVideoChapter[]; tracks?: ParzVideoTrack[]; audioBadge?: ReactNode;
+  src?: string; sources?: ParzVideoSource[]; audio?: ParzVideoAudio[]; title?: ReactNode; poster?: string; chapters?: ParzVideoChapter[]; tracks?: ParzVideoTrack[]; audioBadge?: ReactNode;
   /** Длительность, с — для списка; если не задана, список её не показывает, пока ролик не открыт. */
   duration?: number;
 }
@@ -57,6 +77,27 @@ export interface ParzVideoProps {
   /** Какое качество взять сначала (индекс в sources). По умолчанию 0. */
   /** Какое качество взять сначала: номер в sources или 'auto' (по умолчанию) — плеер сам выбирает по размеру плеера, плотности экрана и сети и снижает качество, если видео подвисает. Выбор вручную отключает автоматику. */
   defaultQuality?: number | 'auto';
+  /** Озвучки на разных языках: у каждой свой файл или свои качества (тогда src и sources не нужны). */
+  audio?: ParzVideoAudio[];
+  /** Какую озвучку взять сначала: номер или lang. По умолчанию первая. В плейлисте выбор зрителя переходит на следующие серии. */
+  defaultAudio?: number | string;
+  onAudioChange?: (index: number, audio: ParzVideoAudio) => void;
+  /** Где кнопки настроек: 'bar' — на панели над шкалой (по умолчанию), 'more' — в меню «Ещё». На панели не больше 5 кнопок, лишние уходят в «Ещё»;
+   *  качество и плейлист всегда на панели, повтор всегда в «Ещё». На узком плеере всё в «Ещё». «Картинка в картинке» и трансляция — отдельно. */
+  buttons?: Partial<Record<ParzVideoButton, 'bar' | 'more'>>;
+  /** Запоминать просмотр в браузере зрителя (localStorage) под этим ключом — у каждого фильма или сериала свой.
+   *  При следующем открытии плеер предложит «Продолжить» с того же места, с той же серией и настройками. */
+  remember?: string;
+  /** Что не запоминать: { volume: false } и т. п. */
+  rememberOptions?: ParzVideoRememberOptions;
+  /** Своё хранилище (например, сервер): начальное состояние вместо localStorage. */
+  initialState?: ParzVideoState;
+  /** Вызывается при каждом сохранении (раз в несколько секунд, на паузе, при смене настроек и закрытии вкладки). */
+  onProgress?: (state: ParzVideoState) => void;
+  /** «Поделиться» в меню «Ещё». По умолчанию да. */
+  showShare?: boolean;
+  /** Чем делиться. По умолчанию — адрес текущей страницы. */
+  shareUrl?: string;
   /** Субтитры WebVTT. */
   tracks?: ParzVideoTrack[];
   /** Главы: полоса перемотки делится на отрезки, в подсказке — название главы. */
@@ -228,6 +269,12 @@ const Loop = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path className="
 const Prev = () => <svg viewBox="0 0 24 24" aria-hidden="true"><rect className="f" x="5" y="6" width="2.6" height="12" rx="1.1" /><path className="f" d="M18.6 6.9v10.2c0 .8-.9 1.3-1.6.8l-7.4-5.1a1 1 0 0 1 0-1.6L17 6.1c.7-.5 1.6 0 1.6.8z" /></svg>;
 const Next = () => <svg viewBox="0 0 24 24" aria-hidden="true"><rect className="f" x="16.4" y="6" width="2.6" height="12" rx="1.1" /><path className="f" d="M5.4 6.9v10.2c0 .8.9 1.3 1.6.8l7.4-5.1a1 1 0 0 0 0-1.6L7 6.1c-.7-.5-1.6 0-1.6.8z" /></svg>;
 const List = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path className="s" d="M9 6.5h11M9 12h11M9 17.5h11" /><circle className="f" cx="4.8" cy="6.5" r="1.4" /><circle className="f" cx="4.8" cy="12" r="1.4" /><circle className="f" cx="4.8" cy="17.5" r="1.4" /></svg>;
+/* озвучка — «Audio lines» из библиотеки значков, переведён на сетку 24 */
+const Dub = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path className="s" d="M3.4 10.5v3M7.7 6.75v10.5M12 3.4v17.2M16.3 7.9v8.2M20.6 10.5v3" /></svg>;
+/* «Поделиться», «ссылка», «другое» — значки Share out, Link и Share из библиотеки значков, на их сетке 16 */
+const ShareOut = () => <svg viewBox="0 0 16 16" aria-hidden="true"><path className="s" style={{ strokeWidth: 1.33 }} d="M5.25 7H4.13C3.5 7 3 7.5 3 8.13V12c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8.13C13 7.5 12.5 7 11.88 7h-1.13M8 2v7.75M5.5 4.5L8 2l2.5 2.5" /></svg>;
+const LinkIc = () => <svg viewBox="0 0 16 16" aria-hidden="true"><g transform="rotate(-45 8 8)"><path className="s" style={{ strokeWidth: 1.33 }} d="M7 5.75H4.75a2.25 2.25 0 0 0 0 4.5H7M9 5.75h2.25a2.25 2.25 0 0 1 0 4.5H9M5.75 8h4.5" /></g></svg>;
+const ShareNet = () => <svg viewBox="0 0 16 16" aria-hidden="true"><path className="s" style={{ strokeWidth: 1.33 }} d="M5.77 7.14l4.46-2.53M5.77 8.86l4.46 2.53" /><circle className="s" style={{ strokeWidth: 1.33 }} cx="11.75" cy="3.75" r="1.75" /><circle className="s" style={{ strokeWidth: 1.33 }} cx="4.25" cy="8" r="1.75" /><circle className="s" style={{ strokeWidth: 1.33 }} cx="11.75" cy="12.25" r="1.75" /></svg>;
 const Dots = () => <svg viewBox="0 0 24 24" aria-hidden="true"><circle className="f" cx="5.5" cy="12" r="1.9" /><circle className="f" cx="12" cy="12" r="1.9" /><circle className="f" cx="18.5" cy="12" r="1.9" /></svg>;
 /* знак Parz UI — тот же, что в логотипе */
 const ParzMark = () => <svg viewBox="8 8 65 65" aria-hidden="true" className="pz-vd-mark"><g fill="none" stroke="currentColor" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 61V31C21 19 28 14 39 14H48C58 14 64 21 64 30C64 39 58 45 48 45H38" /><path d="M39 56H58" /></g></svg>;
@@ -235,7 +282,7 @@ const Info = () => <svg viewBox="0 0 24 24" aria-hidden="true"><circle className
 const Chevron = ({ back }: { back?: boolean }) => <svg viewBox="0 0 24 24" aria-hidden="true" className="pz-vd-chev"><path className="s" d={back ? 'M14.5 6l-6 6 6 6' : 'M9.5 6l6 6-6 6'} /></svg>;
 const Tick = () => <svg viewBox="0 0 24 24" aria-hidden="true" className="pz-vd-tick"><path className="s" d="M5.5 12.5l4 4 9-9" /></svg>;
 
-type Page = 'more' | 'speed' | 'quality' | 'subs';
+type Page = 'more' | 'speed' | 'quality' | 'subs' | 'audio' | 'share';
 /* пункты меню настроек — отдельные постоянные компоненты, чтобы при смене значения ничего не пересоздавалось */
 type Go = (p: Page | null, d?: 1 | -1) => void;
 const Row = ({ label, value, to, go, icon }: { label: string; value: ReactNode; to: Page; go: Go; icon?: ReactNode }) => (
@@ -257,21 +304,30 @@ type Flash = { k: number; kind: 'play' | 'pause' | 'fwd' | 'back' | 'vol' | 'mut
 export function ParzVideo(props: ParzVideoProps) {
   const { playlist, index, defaultIndex = 0, onIndexChange } = props;
   const n = playlist?.length ?? 0;
-  const [own, setOwn] = useState(defaultIndex);
+  /* запомненный просмотр: из initialState или localStorage; досмотренная серия — значит, начинаем следующую */
+  const [saved] = useState<ParzVideoState | null>(() => {
+    if (props.initialState) return props.initialState;
+    if (!props.remember) return null;
+    try { const x = JSON.parse(localStorage.getItem(`parz-video:${props.remember}`) ?? 'null'); return x && typeof x.t === 'number' ? x : null; } catch { return null; }
+  });
+  const [own, setOwn] = useState(() => {
+    if (saved?.i != null && n) { const j = saved.done ? saved.i + 1 : saved.i; if (j >= 0 && j < n) return j; }
+    return defaultIndex;
+  });
   const i = Math.min(Math.max(0, index ?? own), Math.max(0, n - 1));
-  if (!playlist || !n) return <Player {...props} />;
+  if (!playlist || !n) return <Player {...props} saved={saved} />;
   const it = playlist[i];
   const go = (j: number) => { if (j < 0 || j >= n || j === i) return; if (index == null) setOwn(j); onIndexChange?.(j, playlist[j]); };
   return <Player {...props} src={it.src} sources={it.sources} poster={it.poster} title={it.title ?? props.title} chapters={it.chapters} tracks={it.tracks}
-    audioBadge={it.audioBadge ?? props.audioBadge} pl={{ items: playlist, i, go }} />;
+    audio={it.audio} audioBadge={it.audioBadge ?? props.audioBadge} pl={{ items: playlist, i, go }} saved={saved} />;
 }
 
 function Player({
-  pl, autoAdvance = true, upNextSeconds = 8,
-  src, sources, defaultQuality = 'auto', tracks, chapters, previews = true, poster, title, audioBadge, autoPlay, muted: muted0 = false, loop: loop0 = false,
+  pl, saved, remember, rememberOptions, onProgress, autoAdvance = true, upNextSeconds = 8, audio, defaultAudio, onAudioChange, buttons, showShare = true, shareUrl,
+  src: srcProp, sources: sourcesProp, defaultQuality = 'auto', tracks, chapters, previews = true, poster, title, audioBadge, autoPlay, muted: muted0 = false, loop: loop0 = false,
   aspectRatio = '16 / 9', accent, radius, motion = 'liquid', showSkip = true, skipSeconds = 10, showVolume = true, showSettings = true, showFullscreen = true, showPip = false, showCast = true,
   speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2], hideDelay = 2600, labels, onPlay, onPause, onEnded, onTimeUpdate, onQualityChange, className, style
-}: ParzVideoProps & { pl?: PlCtx }) {
+}: ParzVideoProps & { pl?: PlCtx; saved?: ParzVideoState | null }) {
   const L = { ...PARZ_VIDEO_LABELS, ...labels };
   const sk = (s: string) => s.replace('{n}', String(skipSeconds));
   const root = useRef<HTMLDivElement>(null);
@@ -281,6 +337,21 @@ function Player({
   const snapCv = useRef<HTMLCanvasElement>(null);
   const curEl = useRef<HTMLSpanElement>(null);
   const seekEl = useRef<HTMLDivElement>(null);
+  /* озвучка: выбранный язык; в плейлисте переходит на следующие серии (по lang, иначе по подписи) */
+  const audioPick = (list: ParzVideoAudio[] | undefined, want?: number | string, prev?: ParzVideoAudio) => {
+    if (!list?.length) return 0;
+    if (prev) { const j = list.findIndex(x => (prev.lang && x.lang === prev.lang) || x.label === prev.label); if (j >= 0) return j; }
+    if (typeof want === 'number') return Math.min(Math.max(0, want), list.length - 1);
+    if (typeof want === 'string') { const j = list.findIndex(x => x.lang === want || x.label === want); if (j >= 0) return j; }
+    return 0;
+  };
+  const [ai, setAi] = useState(() => audioPick(audio, defaultAudio));
+  const audioPref = useRef<ParzVideoAudio | undefined>(audio?.[ai]);
+  const aIdx = audio?.length ? Math.min(ai, audio.length - 1) : 0;
+  const curAudio = audio?.[aIdx];
+  const sources = curAudio ? curAudio.sources : sourcesProp;
+  const src = curAudio ? curAudio.src : srcProp;
+  useEffect(() => { if (audio?.length) { const j = audioPick(audio, defaultAudio, audioPref.current); if (j !== ai) setAi(j); } }, [audio]);
   const [auto, setAuto] = useState(defaultQuality === 'auto');
   const [q, setQ] = useState(() => defaultQuality === 'auto' ? autoPick(sources, typeof window !== 'undefined' ? Math.min(window.innerWidth, 1280) : 1280) : Math.min(Math.max(0, defaultQuality), Math.max(0, (sources?.length ?? 1) - 1)));
   const url = sources?.[Math.min(q, sources.length - 1)]?.src ?? src ?? '';
@@ -288,8 +359,9 @@ function Player({
   const [ended, setEnded] = useState(false);
   const [started, setStarted] = useState(!!autoPlay);
   const [dur, setDur] = useState(0);
-  const [muted, setMuted] = useState(muted0);
-  const [vol, setVol] = useState(1);
+  const [muted, setMuted] = useState(() => (saved?.muted != null && rememberOptions?.volume !== false ? saved.muted : muted0));
+  /* громкость по умолчанию: на ПК (мышь) — 70%, на телефоне — 100%: там звук регулирует сам телефон */
+  const [vol, setVol] = useState(() => (saved?.vol != null && rememberOptions?.volume !== false ? saved.vol : typeof matchMedia === "function" && matchMedia("(hover: hover) and (pointer: fine)").matches ? 0.7 : 1));
   const [rate, setRate] = useState(1);
   const [loop, setLoop] = useState(loop0);
   /* субтитры по умолчанию выключены, даже если дорожки есть — включает зритель */
@@ -371,11 +443,12 @@ function Player({
 
   /* позиция пишется прямо в CSS-переменную на каждом кадре — полоса течёт, а не скачет */
   const remainRef = useRef(remain); remainRef.current = remain;
+  const offerRef = useRef<number | null>(null);
   const paint = useCallback((p?: number) => {
     const v = vid.current, r = root.current;
     if (!v || !r) return;
     const d = v.duration || 0;
-    const x = clamp(p ?? (d ? v.currentTime / d : 0));
+    const x = clamp(p ?? (offerRef.current != null && d ? offerRef.current / d : d ? v.currentTime / d : 0));
     r.style.setProperty('--pz-vd-p', x.toFixed(5));
     const txt = fmt(x * d), rest = remainRef.current ? `−${fmt(d - x * d)}` : fmt(d);
     if (curEl.current && curEl.current.textContent !== txt) curEl.current.textContent = txt;
@@ -512,7 +585,7 @@ function Player({
   useLayoutEffect(() => {
     if (page && pageEl.current) { setSnapH(!wasOpen.current); setPopH(pageEl.current.offsetHeight); }
     wasOpen.current = !!page;
-  }, [page, q, rate, sub, loop, tracks, sources, narrow, tiny, castOk, pl?.i]);
+  }, [page, q, rate, sub, loop, tracks, sources, narrow, tiny, castOk, pl?.i, aIdx]);
   const go = (p: Page | null, d: 1 | -1 = 1) => { setDir(d); setNested(p !== null && p !== 'more' && (d < 0 ? false : page === 'more')); setPage(p); };
   const open = (p: Page) => { setDir(1); setNested(false); setPage(cur => (cur === p ? null : p)); };
   /* узкий плеер (телефон): качество и скорость уходят в «ещё», громкость — только кнопкой */
@@ -615,6 +688,82 @@ function Player({
     }
     setQ(i); onQualityChange?.(i, sources[i]);
     if (!fromAuto) { show({ kind: 'info', text: sources[i].label }); go(null); }
+  };
+  /* смена озвучки — как смена качества: кадр растворяется, время и пауза сохраняются */
+  const pickAudio = (i: number) => {
+    if (!audio || i === aIdx) { go(null); return; }
+    const v = vid.current;
+    if (v) {
+      resume.current = { t: v.currentTime, play: !v.paused && !v.ended };
+      const c = snapCv.current;
+      if (c && v.videoWidth) { try { c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d')?.drawImage(v, 0, 0); setSnap(true); } catch { /* без CORS — без перетекания */ } }
+    }
+    audioPref.current = audio[i]; setAi(i); onAudioChange?.(i, audio[i]);
+    show({ kind: 'info', text: audio[i].label });
+    go(null);
+  };
+  /* ---- запоминание просмотра ---- */
+  const keep = (k: keyof ParzVideoRememberOptions) => rememberOptions?.[k] !== false;
+  const memOn = !!(remember || onProgress);
+  /* настройки зрителя возвращаем один раз, при открытии */
+  useEffect(() => {
+    const x = saved; if (!x) return;
+    if (keep('speed') && x.rate) setRate(x.rate);
+    if (keep('subtitles') && x.sub !== undefined) { const j = x.sub == null ? -1 : (tracks ?? []).findIndex(t => t.srclang === x.sub || t.label === x.sub); setSub(j); }
+    if (keep('audio') && x.audio && audio?.length) { const j = audio.findIndex(a => a.lang === x.audio || a.label === x.audio); if (j >= 0) { audioPref.current = audio[j]; setAi(j); } }
+    if (keep('quality') && x.q != null) { if (x.q === 'auto') setAuto(true); else if (sources && x.q < sources.length) { setAuto(false); setQ(x.q); } }
+  }, []);
+  /* «Продолжить»: только для той же серии, не в самом начале и не досмотренной */
+  const [offer, setOffer] = useState<number | null>(() => {
+    const x = saved;
+    if (!x || !keep('position') || x.done || x.t < 10) return null;
+    if (pl && x.i != null && x.i !== pl.i) return null;
+    return x.t;
+  });
+  offerRef.current = offer;
+  useEffect(() => { if (offer != null && saved?.d) root.current?.style.setProperty('--pz-vd-p', clamp(offer / saved.d).toFixed(4)); }, []);
+  useEffect(() => { if (pl && saved?.i != null && pl.i !== saved.i) setOffer(null); }, [pl?.i]);
+  const resumeAt = (t: number | null) => {
+    const v = vid.current; setOffer(null);
+    if (!v) return;
+    if (t != null) { if (v.readyState >= 1) v.currentTime = t; else resume.current = { t, play: true }; }
+    setStarted(true); void v.play().catch(() => {});
+  };
+  const save = () => {
+    if (!memOn || !started) return; /* ничего не смотрели — прошлый просмотр не трогаем */
+    const v = vid.current; if (!v) return;
+    const d = v.duration || 0, t = v.currentTime || 0;
+    const done = !!d && (v.ended || t > d * 0.95);
+    if (offer != null && t < 1) return; /* ещё не продолжили — старое место не затираем */
+    const st: ParzVideoState = { t: done || t < 10 ? 0 : Math.floor(t), d: d ? Math.round(d) : undefined, done, at: Date.now() };
+    if (pl) st.i = pl.i;
+    if (keep('audio') && curAudio) st.audio = curAudio.lang ?? curAudio.label;
+    if (keep('subtitles') && tracks?.length) st.sub = sub >= 0 ? (tracks[sub].srclang || tracks[sub].label) : null;
+    if (keep('quality') && sources && sources.length > 1) st.q = auto ? 'auto' : q;
+    if (keep('speed')) st.rate = rate;
+    if (keep('volume')) { st.vol = Math.round(vol * 100) / 100; st.muted = muted; }
+    if (remember) { try { localStorage.setItem(`parz-video:${remember}`, JSON.stringify(st)); } catch { /* хранилище недоступно */ } }
+    onProgress?.(st);
+  };
+  const saveRef = useRef(save); saveRef.current = save;
+  useEffect(() => { if (!playing || !memOn) return; const id = window.setInterval(() => saveRef.current(), 5000); return () => window.clearInterval(id); }, [playing]);
+  useEffect(() => { if (started) saveRef.current(); }, [playing, ended, rate, vol, muted, sub, aIdx, q, auto, pl?.i]);
+  useEffect(() => {
+    const off = () => saveRef.current();
+    const vis = () => { if (document.visibilityState === 'hidden') off(); };
+    window.addEventListener('pagehide', off); document.addEventListener('visibilitychange', vis);
+    return () => { window.removeEventListener('pagehide', off); document.removeEventListener('visibilitychange', vis); };
+  }, []);
+  /* «Поделиться»: ссылка — в буфер обмена; «Другое…» — системное окно браузера (если его нет, пункт не показываем) */
+  const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  const link = () => shareUrl ?? (typeof location !== 'undefined' ? location.href : '');
+  const copyLink = async () => {
+    go(null);
+    try { await navigator.clipboard.writeText(link()); show({ kind: 'info', text: L.linkCopied }); } catch { /* буфер обмена недоступен */ }
+  };
+  const shareOther = () => {
+    go(null);
+    void navigator.share?.({ url: link(), title: typeof title === 'string' ? title : undefined }).catch(() => { /* зритель закрыл окно */ });
   };
   /* «Авто»: до запуска и при смене ролика выбираем сразу; во время просмотра — повышаем только в полном экране,
      а если видео дважды подвисло за 20 с — мягко опускаемся на ступень ниже (с тем же растворением кадра) */
@@ -783,11 +932,21 @@ function Player({
     return () => window.clearTimeout(id);
   }, [visible]);
   const vars = { '--_tn': (showSettings ? 1 : 0) + (showFullscreen ? 1 : 0), ...(accent && { '--pz-vd-accent': accent }), ...(radius != null && { '--pz-vd-r': `${radius}px` }), aspectRatio, ...style } as CSSProperties;
-  const cls = ['pz-vd', `pz-vd--${motion}`, playing && 'is-playing', visible ? 'is-shown' : 'is-hidden', drag && 'is-drag', fs && 'is-fs', !started && 'is-idle', menuOpen && 'is-menu', aStay && 'is-astay', narrow && 'is-narrow', tiny && 'is-tiny', (remote || pipOn) && 'is-remote', unOn && 'is-un', listOpen && 'is-sheet', className].filter(Boolean).join(' ');
+  const cls = ['pz-vd', `pz-vd--${motion}`, playing && 'is-playing', visible ? 'is-shown' : 'is-hidden', drag && 'is-drag', fs && 'is-fs', !started && 'is-idle', menuOpen && 'is-menu', aStay && 'is-astay', narrow && 'is-narrow', tiny && 'is-tiny', offer != null && 'is-offer', (remote || pipOn) && 'is-remote', unOn && 'is-un', listOpen && 'is-sheet', className].filter(Boolean).join(' ');
   const rateTxt = (s: number) => (s === 1 ? L.normal : `${s}×`);
   const cur = sources?.[Math.min(q, sources.length - 1)];
   const hasQ = !!sources && sources.length > 1;
   const hasSubs = !!tracks?.length;
+  const hasAudio = !!audio && audio.length > 1;
+  /* какие кнопки на панели: по порядку, без тех, что разработчик убрал в «Ещё»; плейлист всегда на панели; всего не больше 5 */
+  const BAR_MAX = 5;
+  const barIds = (() => {
+    if (narrow) return [] as ParzVideoButton[];
+    const want = (['audio', 'subtitles', 'speed'] as ParzVideoButton[])
+      .filter(id => (id === 'audio' ? hasAudio : id === 'subtitles' ? hasSubs : true) && buttons?.[id] !== 'more');
+    return want.slice(0, BAR_MAX - (pl ? 1 : 0) - (hasQ ? 1 : 0));
+  })();
+  const onBar = (id: ParzVideoButton | 'quality') => (id === 'quality' ? hasQ && !narrow : barIds.includes(id));
   const qBadge = autoBadge(cur);
   const fsBtn = showFullscreen && <button type="button" className="pz-vd-btn" onClick={toggleFs} aria-label={fs ? L.exitFullscreen : L.fullscreen} data-tip={fs ? L.exitFullscreen : L.fullscreen}><Full on={fs} /></button>;
   const share = (pip || (showCast && (castOk || remote))) && <>
@@ -876,6 +1035,16 @@ function Player({
         )}
       </div>
 
+      {/* «Продолжить просмотр»: вместо «смотреть» — капсула с местом, серией и озвучкой; под ней «Сначала» */}
+      {offer != null && (
+        <div className="pz-vd-resume" onPointerDown={e => e.stopPropagation()} onPointerUp={e => e.stopPropagation()}>
+          <button type="button" className="pz-vd-resume-go" onClick={() => resumeAt(offer)}>
+            <span className="pz-vd-resume-i"><PlayPause playing={false} ended={false} /></span>
+            <span className="pz-vd-resume-t"><b>{L.resume}</b><small>{[pl && L.episode.replace('{n}', String(pl.i + 1)), fmt(offer), audio && audio.length > 1 ? curAudio?.label : null].filter(Boolean).join(' · ')}</small></span>
+          </button>
+          <button type="button" className="pz-vd-resume-0" onClick={() => resumeAt(null)}>{L.startOver}</button>
+        </div>
+      )}
       {/* центр, как в плеере Apple */}
       <div className="pz-vd-center">
         {/* плейлист: «предыдущий/следующий» по краям; на узком плеере — вместо ±10 */}
@@ -893,9 +1062,10 @@ function Player({
       <div className="pz-vd-tools" onPointerDown={e => e.stopPropagation()}>
         {showSettings && (
           <div className="pz-vd-cap">
-            {!narrow && hasQ && tool('quality', L.quality, <Quality />)}
-            {!narrow && hasSubs && tool('subs', L.subtitles, <Subs />)}
-            {!narrow && tool('speed', L.speed, <Gauge />)}
+            {onBar('quality') && tool('quality', L.quality, <Quality />)}
+            {onBar('audio') && tool('audio', L.audioTrack, <Dub />)}
+            {onBar('subtitles') && tool('subs', L.subtitles, <Subs />)}
+            {onBar('speed') && tool('speed', L.speed, <Gauge />)}
             {pl && !narrow && <button type="button" className={`pz-vd-btn${listOpen ? ' is-on' : ''}`} onClick={() => { setPage(null); setListOpen(o => !o); }} aria-label={L.playlist} data-tip={L.playlist} aria-expanded={listOpen}><List /></button>}
             {tool('more', L.more, <Dots />)}
           </div>
@@ -945,11 +1115,13 @@ function Player({
             {view === 'more' && <>
               {!narrow && <Head go={go} icon={<Dots />} label={L.more} />}
               {narrow && pl && <button type="button" role="menuitem" className="pz-vd-mi" onClick={() => { go(null); setListOpen(true); }}><span className="pz-vd-mi-i"><List /></span><span className="pz-vd-mi-l">{L.playlist}</span><span className="pz-vd-mi-v">{pl.i + 1} / {pl.items.length}</span><Chevron /></button>}
-              {narrow && hasQ && <Row go={go} icon={<Quality />} label={L.quality} value={auto ? `${L.auto} · ${cur?.label ?? ''}` : cur?.label} to="quality" />}
-              {narrow && <Row go={go} icon={<Gauge />} label={L.speed} value={rateTxt(rate)} to="speed" />}
-              {narrow && hasSubs && <Row go={go} icon={<Subs />} label={L.subtitles} value={sub >= 0 ? tracks![sub]?.label : L.off} to="subs" />}
+              {hasQ && !onBar('quality') && <Row go={go} icon={<Quality />} label={L.quality} value={auto ? `${L.auto} · ${cur?.label ?? ''}` : cur?.label} to="quality" />}
+              {hasAudio && !onBar('audio') && <Row go={go} icon={<Dub />} label={L.audioTrack} value={curAudio?.label} to="audio" />}
+              {hasSubs && !onBar('subtitles') && <Row go={go} icon={<Subs />} label={L.subtitles} value={sub >= 0 ? tracks![sub]?.label : L.off} to="subs" />}
+              {!onBar('speed') && <Row go={go} icon={<Gauge />} label={L.speed} value={rateTxt(rate)} to="speed" />}
               {tiny && pip && <button type="button" role="menuitem" className="pz-vd-mi" onClick={() => { go(null); togglePip(); }}><span className="pz-vd-mi-i"><Pip /></span><span className="pz-vd-mi-l">{L.pip}</span></button>}
               {tiny && showCast && (castOk || remote) && <button type="button" role="menuitem" className="pz-vd-mi" onClick={() => { go(null); cast(); }}><span className="pz-vd-mi-i"><Cast /></span><span className="pz-vd-mi-l">{L.cast}</span></button>}
+              {showShare && <Row go={go} icon={<ShareOut />} label={L.share} value="" to="share" />}
               <div className="pz-vd-mi pz-vd-mi--sw">
                 <span className="pz-vd-mi-i"><Loop /></span><span className="pz-vd-mi-l">{L.loop}</span>
                 <ParzToggle size="sm" checked={loop} onChange={setLoop} ariaLabel={L.loop} accent={accent ?? 'var(--pz-vd-accent)'} />
@@ -963,6 +1135,15 @@ function Player({
             {view === 'speed' && <>
               <Head go={go} back={nested} icon={<Gauge />} label={L.speed} />
               {[...speeds].reverse().map(s => <Opt key={s} on={s === rate} onPick={() => { setRate(s); go(nested ? 'more' : null, -1); }}>{rateTxt(s)}</Opt>)}
+            </>}
+            {view === 'share' && <>
+              <Head go={go} back={nested} icon={<ShareOut />} label={L.share} />
+              <button type="button" role="menuitem" className="pz-vd-mi" onClick={copyLink}><span className="pz-vd-mi-i"><LinkIc /></span><span className="pz-vd-mi-l">{L.copyLink}</span></button>
+              {canShare && <button type="button" role="menuitem" className="pz-vd-mi" onClick={shareOther}><span className="pz-vd-mi-i"><ShareNet /></span><span className="pz-vd-mi-l">{L.shareOther}</span></button>}
+            </>}
+            {view === 'audio' && audio && <>
+              <Head go={go} back={nested} icon={<Dub />} label={L.audioTrack} />
+              {audio.map((x, i) => <Opt key={x.label + i} on={i === aIdx} onPick={() => pickAudio(i)}>{x.label}</Opt>)}
             </>}
             {view === 'subs' && tracks && <>
               <Head go={go} back={nested} icon={<Subs />} label={L.subtitles} />

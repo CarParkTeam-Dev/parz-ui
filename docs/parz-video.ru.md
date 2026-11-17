@@ -51,6 +51,41 @@ import '@carparkteam/parz-ui/style.css';
 />
 ```
 
+## Озвучка на нескольких языках
+
+Для сериалов и дубляжа передайте `audio`: каждый язык — своя версия ролика, один файл или свои качества. Переключение сохраняет время и паузу, а кадр растворяется так же, как при смене качества; «Авто» качество работает внутри выбранного языка. В плейлисте выбор зрителя переходит на следующие серии (по `lang`, иначе по подписи). Кнопка стоит на панели рядом с субтитрами; `buttons={{ audio: 'more' }}` переносит её в «Ещё» (на узком плеере она всегда там).
+
+```tsx
+<ParzVideo
+  audio={[
+    { label: 'English', lang: 'en', sources: [{ src: '/e1.en.1080.mp4', label: '1080p' }, { src: '/e1.en.720.mp4', label: '720p' }] },
+    { label: 'Русский', lang: 'ru', src: '/e1.ru.mp4' }
+  ]}
+  defaultAudio="ru"
+/>
+```
+
+## Запоминание просмотра
+
+С `remember` плеер хранит в браузере самого зрителя (`localStorage`) серию и место, озвучку, субтитры, качество (или «Авто»), скорость и громкость. В следующий раз вместо «смотреть» появляется стеклянная капсула «Продолжить · Серия 2 · 15:12 · Дубляж» и маленькая «Сначала», а на шкале уже отмечено, где остановились. Место сохраняется раз в несколько секунд, на паузе, при смене настроек и при закрытии вкладки — даже если браузер вылетит, потеряется лишь несколько секунд. Самое начало (меньше 10 с) не запоминается; ролик, досмотренный дальше 95%, считается просмотренным, и в плейлисте предлагается следующая серия.
+
+```tsx
+<ParzVideo
+  playlist={episodes}
+  remember="series-42"                  // свой ключ у каждого фильма или сериала
+  rememberOptions={{ volume: false }}   // по желанию: что не запоминать
+/>
+```
+
+Чтобы хранить прогресс на своём сервере (один аккаунт, разные устройства), передайте `initialState` и сохраняйте то, что приходит в `onProgress`:
+
+```tsx
+<ParzVideo
+  initialState={progressFromServer}       // { i, t, audio, sub, q, rate, … }
+  onProgress={state => fetch('/api/progress', { method: 'POST', body: JSON.stringify(state) })}
+/>
+```
+
 ## Плейлист
 
 Передайте `playlist` — плеер играет ролики друг за другом. У каждого ролика свои `src` или `sources`, `title`, `poster`, `chapters`, `tracks` и необязательная `duration` для списка. В центре по краям от −10 / +10 — «предыдущий» и «следующий» (на узком плеере — вместо них); кнопка списка открывает ролики с миниатюрами, текущий отмечен. За несколько секунд до конца появляется карточка «Далее» с кольцом отсчёта: нажмите — следующий ролик начнётся сразу, отмените — ролик просто закончится. При переключении воспроизведение продолжается, а последний кадр растворяется в новом ролике.
@@ -116,6 +151,14 @@ export function Course({ id }: { id: string }) {
 | `sources` | — | Варианты качества: `{ src, label, type?, badge? }[]`. Пометка рядом со шестерёнкой ставится сама по подписи: `2160p` и выше — **4K**, `720p` и выше — **HD**; свою задаёт `badge`, пустая строка — без пометки |
 | `defaultQuality` | `'auto'` | Какое качество взять сначала: номер в `sources` или `'auto'` — плеер сам выбирает по своему размеру, плотности экрана и сети (экономия трафика, 2g/3g, скорость) и опускается ниже, если видео подвисает. Выбор вручную отключает автоматику, пункт «Авто» в меню включает обратно |
 | `chapters` | — | Главы: `{ start, title }[]`, `start` в секундах |
+| `audio` | — | Озвучки: `{ label, lang?, src?, sources? }[]` — у каждой свой файл или свои качества (тогда `src` и `sources` не нужны) |
+| `defaultAudio` | первая | С какой озвучки начать: номер или `lang` |
+| `onAudioChange` | — | `(index, audio) => void` |
+| `buttons` | все на панели | Какие кнопки настроек убрать в «Ещё»: `{ audio?, subtitles?, speed?: 'bar' \| 'more' }`. Качество и плейлист всегда на панели, повтор всегда в «Ещё»; на панели не больше 5 кнопок, лишние уходят в «Ещё»; на узком плеере всё в «Ещё». «Картинка в картинке» и трансляция — отдельно |
+| `showShare` / `shareUrl` | `true` / адрес страницы | «Поделиться» в «Ещё»: скопировать ссылку и «Другое…» — системное окно браузера (показывается, только если оно есть) |
+| `remember` | — | Ключ, под которым запоминается просмотр и настройки зрителя в его браузере |
+| `rememberOptions` | всё | Что не запоминать: `{ position?, audio?, subtitles?, quality?, speed?, volume?: false }` |
+| `initialState` / `onProgress` | — | Своё хранилище: начальное состояние вместо `localStorage` и вызов при каждом сохранении |
 | `tracks` | — | Субтитры WebVTT: `{ src, label, srclang, default? }[]`. Изначально выключены; `default` — дорожка, которую включает клавиша C. С чужого домена нужен CORS |
 | `previews` | `true` | Кадр над полосой при наведении (грузит видео второй раз, только нужные кадры) |
 | `poster` | — | Обложка до запуска; мягко проявляется, когда картинка загрузилась, плавно растворяется, когда видео пошло, и возвращается, когда оно закончилось (если нет `loop`) |
@@ -134,11 +177,11 @@ export function Course({ id }: { id: string }) {
 | `showPip` | `false` | «Картинка в картинке», если браузер умеет |
 | `speeds` | `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]` | Скорости в меню |
 | `hideDelay` | `2600` | Через сколько мс без движения прятать панель |
-| `labels` | английские | Подписи кнопок для экранных дикторов: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` — шаг), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
+| `labels` | английские | Подписи кнопок для экранных дикторов: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` — шаг), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `resume`, `startOver`, `episode`, `audioTrack`, `share`, `copyLink`, `linkCopied`, `shareOther`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
 | `onPlay` / `onPause` / `onEnded` | — | События воспроизведения |
 | `onTimeUpdate` | — | `(time, duration) => void` |
 | `onQualityChange` | — | `(index, source) => void` |
-| `playlist` | — | Ролики подряд: `{ src?, sources?, title?, poster?, chapters?, tracks?, audioBadge?, duration? }[]`. Поля текущего ролика заменяют `src`, `sources`, `title`, `poster`, `chapters` и `tracks` |
+| `playlist` | — | Ролики подряд: `{ src?, sources?, audio?, title?, poster?, chapters?, tracks?, audioBadge?, duration? }[]`. Поля текущего ролика заменяют `src`, `sources`, `title`, `poster`, `chapters` и `tracks` |
 | `index` / `defaultIndex` | `0` | Текущий ролик (управляемый / начальный) |
 | `onIndexChange` | — | `(index, item) => void` — ролик сменился |
 | `autoAdvance` | `true` | Включать следующий ролик, когда текущий закончился |

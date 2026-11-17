@@ -15,11 +15,16 @@ npm update @carparkteam/parz-ui
 ### Added
 - **Parz Video**: playlists — `playlist` with “previous / next”, a list with thumbnails, an “Up next” card with a countdown and smooth switching between videos; `Shift+N` / `Shift+P`.
 - **Parz Video**: “Auto” quality, on by default (`defaultQuality="auto"`) — picked by player size, screen density and network, and lowered if the video keeps stalling.
+- **Parz Video**: audio in several languages — `audio` with its own file or qualities per language; the button on the bar or in “More”; the choice carries over to the next episodes in a playlist.
+- **Parz Video**: `buttons` — audio, subtitles and speed buttons can sit on the bar or in “More”; at most 5 buttons on the bar, quality and playlist always stay there.
+- **Parz Video**: “Share” in “More” — copy the link or open the browser's share sheet (`showShare`, `shareUrl`).
+- **Parz Video**: remember progress — `remember` keeps the episode, place, audio, subtitles, quality, speed and volume in the viewer's browser and offers “Continue · 15:12”; `initialState` and `onProgress` for your own storage.
 
 ### Fixed
 - **Parz Video**: on touch screens the controls no longer hide right after a tap; no endless loader in iOS/iPadOS Safari; the iPhone system full screen now keeps the chosen speed and subtitles; a compact layout for very small players; picture-in-picture and AirPlay sit on the left above the timeline; chapters are marked with thin lines on a continuous timeline; calmer, smaller subtitles on phones; while casting, the player shows a placeholder with a “Play here” button instead of a black screen. The same placeholder covers the browser’s black “picture in picture” screen, with a “Back to player” button.
 
 ### Changed
+- **Parz Video**: on a computer the player starts at 70% volume; on phones the device controls the sound.
 - **Parz Video**: subtitles are off by default even when tracks are given; `default` now picks the track the C key turns on.
 
 ## 1.1.0 — 2026-11-16

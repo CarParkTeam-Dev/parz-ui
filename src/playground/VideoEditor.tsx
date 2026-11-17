@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ParzVideo, ParzToggle, ParzSlider, type ParzVideoItem, type ParzVideoLabels, type ParzVideoSource, type ParzVideoChapter, type ParzVideoTrack, type ParzVideoMotion } from '../lib';
+import { ParzVideo, ParzToggle, ParzSlider, type ParzVideoItem, type ParzVideoAudio, type ParzVideoButton, type ParzVideoLabels, type ParzVideoSource, type ParzVideoChapter, type ParzVideoTrack, type ParzVideoMotion } from '../lib';
 import { Seg, ColorField, Sec } from './App';
 import { useT } from './i18n';
 import clip from '../../playback.mp4';
@@ -15,11 +15,11 @@ type Ratio = '16 / 9' | '4 / 3' | '1 / 1' | '9 / 16';
 type O = {
   withTitle: boolean; title: string; poster: boolean; audio: boolean; audioText: string; ratio: Ratio; radius: number; accent: string; motion: ParzVideoMotion;
   volume: boolean; skip: boolean; settings: boolean; fullscreen: boolean; pip: boolean;
-  quality: boolean; chapters: boolean; subs: boolean; previews: boolean; loop: boolean; muted: boolean;
+  quality: boolean; dub: boolean; more: ParzVideoButton[]; remember: boolean; chapters: boolean; subs: boolean; previews: boolean; loop: boolean; muted: boolean;
 };
 const O0: O = {
   withTitle: true, title: 'Parz UI', poster: true, audio: true, audioText: 'Dolby Atmos', ratio: '16 / 9', radius: 18, accent: '#6ee7a0', motion: 'liquid',
-  volume: true, skip: true, settings: true, fullscreen: true, pip: false, quality: true, chapters: true, subs: true, previews: true, loop: false, muted: false
+  volume: true, skip: true, settings: true, fullscreen: true, pip: false, quality: true, dub: true, more: [], remember: true, chapters: true, subs: true, previews: true, loop: false, muted: false
 };
 
 const q = (s: string) => `'${s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
@@ -28,6 +28,9 @@ function codeFor(o: O) {
     ? ['sources={[', "  { src: '/video-2160.mp4', label: '2160p' },   // на панели — 4K", "  { src: '/video-1080.mp4', label: '1080p' },   // — HD", "  { src: '/video-720.mp4', label: '720p' },", "  { src: '/video-480.mp4', label: '480p' }", ']}']
     : ['src="/video.mp4"'];
   if (o.chapters) a.push("chapters={[{ start: 0, title: 'Intro' }, { start: 16, title: 'Logo' }, { start: 40, title: 'Outro' }]}");
+  if (o.dub) a.push("audio={[", "  { label: 'English', lang: 'en', src: '/video.en.mp4' },", "  { label: 'Русский', lang: 'ru', src: '/video.ru.mp4' }", ']}');
+  if (o.more.length) a.push(`buttons={{ ${o.more.map(id => `${id}: 'more'`).join(', ')} }}`);
+  if (o.remember) a.push('remember="movie-42"');
   if (o.subs) a.push("tracks={[{ src: '/subs.en.vtt', label: 'English', srclang: 'en' }]}");
   if (o.poster) a.push('poster="/poster.jpg"');
   if (o.withTitle) a.push(`title=${q(o.title)}`);
@@ -58,7 +61,7 @@ export function useVideoLabels(): Partial<ParzVideoLabels> {
     more: t('Ещё'), cast: t('Смотреть на другом устройстве'), on: t('Вкл.'), about: t('О Parz UI'), version: t('Версия'),
     casting: t('Идёт на другом устройстве'), castBack: t('Смотреть здесь'),
     pipActive: t('В отдельном окне'), pipBack: t('Вернуть в плеер'),
-    auto: t('Авто'), playlist: t('Плейлист'), previous: t('Предыдущий'), next: t('Следующий'), upNext: t('Далее'), playNow: t('Смотреть сейчас'), cancel: t('Отменить'), nowPlaying: t('Сейчас идёт')
+    auto: t('Авто'), resume: t('Продолжить'), startOver: t('Сначала'), episode: t('Серия {n}'), audioTrack: t('Озвучка'), share: t('Поделиться'), copyLink: t('Скопировать ссылку'), linkCopied: t('Ссылка скопирована'), shareOther: t('Другое…'), playlist: t('Плейлист'), previous: t('Предыдущий'), next: t('Следующий'), upNext: t('Далее'), playNow: t('Смотреть сейчас'), cancel: t('Отменить'), nowPlaying: t('Сейчас идёт')
   };
 }
 export const DEMO_CLIP = clip;
@@ -95,9 +98,14 @@ export function VideoEditor() {
   const code = useMemo(() => codeFor(o), [o]);
   const copy = async () => { try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { /* буфер недоступен */ } };
 
+  /* демо озвучки: файл один, поэтому «языки» отличаются только адресом; в жизни это разные файлы */
+  const dubs: ParzVideoAudio[] | undefined = o.dub ? [
+    { label: t('Русский'), lang: 'ru', src: clip, sources: o.quality ? DEMO_SOURCES : undefined },
+    { label: 'English', lang: 'en', src: clip + '#en', sources: o.quality ? DEMO_SOURCES.map(x => ({ ...x, src: x.src + (x.src.includes('#') ? '-en' : '#en') })) : undefined }
+  ] : undefined;
   /* плейлист: первый ролик — тот же, что в одиночном плеере (с главами, субтитрами и качеством из настроек), дальше — три ролика с природой */
   const playlist: ParzVideoItem[] = [
-    { src: clip, sources: o.quality ? DEMO_SOURCES : undefined, title: o.withTitle ? o.title : undefined, poster: o.poster ? posterUrl : undefined,
+    { src: clip, sources: o.quality ? DEMO_SOURCES : undefined, audio: dubs, title: o.withTitle ? o.title : undefined, poster: o.poster ? posterUrl : undefined,
       chapters: o.chapters ? demo.chapters : undefined, tracks: o.subs ? demo.tracks : undefined, duration: 63.7 },
     { src: bay, title: t('Бухта'), poster: bayPoster, duration: 27.4 },
     { src: tulips, title: t('Тюльпаны'), poster: tulipsPoster, duration: 33.3 },
@@ -109,7 +117,9 @@ export function VideoEditor() {
       <div className={`vd-box${o.ratio === '9 / 16' ? ' vd-box--tall' : ''}`}>
         <ParzVideo playlist={list ? playlist : undefined} src={clip} sources={o.quality ? DEMO_SOURCES : undefined} chapters={o.chapters ? demo.chapters : undefined} tracks={o.subs ? demo.tracks : undefined}
           previews={o.previews} poster={o.poster ? posterUrl : undefined} title={o.withTitle ? o.title : undefined} audioBadge={o.audio && o.audioText ? o.audioText : undefined} aspectRatio={o.ratio} radius={o.radius} motion={o.motion} accent={o.accent} labels={labels}
-          showSkip={o.skip} showVolume={o.volume} showSettings={o.settings} showFullscreen={o.fullscreen} showPip={o.pip} loop={o.loop} muted={o.muted} />
+          showSkip={o.skip} showVolume={o.volume} showSettings={o.settings} showFullscreen={o.fullscreen} showPip={o.pip} loop={o.loop} muted={o.muted}
+          audio={list ? undefined : dubs} buttons={Object.fromEntries(o.more.map(id => [id, 'more']))}
+          remember={o.remember ? (list ? 'demo-playlist' : 'demo-single') : undefined} />
       </div>
     </div>
   );
@@ -134,9 +144,16 @@ export function VideoEditor() {
           <ParzToggle className="chk" checked={o.quality} onChange={v => upd({ quality: v })} label={t('Выбор качества')} />
           <ParzToggle className="chk" checked={o.chapters} onChange={v => upd({ chapters: v })} label={t('Главы')} />
           <ParzToggle className="chk" checked={o.subs} onChange={v => upd({ subs: v })} label={t('Субтитры')} />
+          <ParzToggle className="chk" checked={o.remember} onChange={v => upd({ remember: v })} label={t('Запоминать просмотр')} />
+          <ParzToggle className="chk" checked={o.dub} onChange={v => upd({ dub: v })} label={t('Озвучка на двух языках')} />
           <ParzToggle className="chk" checked={o.previews} onChange={v => upd({ previews: v })} label={t('Кадр при наведении')} />
           {/* прямой эфир — в работе: тумблер выключен и недоступен */}
           <ParzToggle className="chk" checked={false} disabled label={`${t('Прямой эфир (LIVE)')} · ${t('скоро')}`} />
+        </Sec>
+        <Sec title={t('В меню «Ещё»')}>
+          {([['audio', t('Озвучка')], ['subtitles', t('Субтитры')], ['speed', t('Скорость')]] as [ParzVideoButton, string][]).map(([id, label]) => (
+            <ParzToggle key={id} className="chk" checked={o.more.includes(id)} onChange={v => upd({ more: v ? [...o.more, id] : o.more.filter(x => x !== id) })} label={label} />
+          ))}
         </Sec>
         <Sec title={t('Кнопки')}>
           <ParzToggle className="chk" checked={o.skip} onChange={v => upd({ skip: v })} label={t('Перемотка ±10 с')} />

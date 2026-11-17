@@ -21,4 +21,4 @@ export type { ParzProgressProps, ParzProgressSize, ParzProgressVariant, ParzProg
 export { ParzBadge } from './ParzBadge';
 export type { ParzBadgeProps, ParzBadgeVariant, ParzBadgeSize, ParzBadgePlacement } from './ParzBadge';
 export { ParzVideo, PARZ_VIDEO_LABELS } from './ParzVideo';
-export type { ParzVideoProps, ParzVideoLabels, ParzVideoSource, ParzVideoTrack, ParzVideoChapter, ParzVideoMotion, ParzVideoItem } from './ParzVideo';
+export type { ParzVideoProps, ParzVideoLabels, ParzVideoSource, ParzVideoTrack, ParzVideoChapter, ParzVideoMotion, ParzVideoItem, ParzVideoAudio, ParzVideoButton, ParzVideoState, ParzVideoRememberOptions } from './ParzVideo';
