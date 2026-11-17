@@ -20,6 +20,7 @@ React components with liquid motion — springy, smooth, nothing abrupt. Crafted
 | `ParzRange` | Range slider with 2 to 5 thumbs on one track | [docs](docs/parz-slider.en.md) |
 | `ParzTabs` | Segmented control: the selection pill flows to the new item like a drop | [docs](docs/parz-tabs.en.md) |
 | `ParzExpander` | A section that opens smoothly: the height flows out, the content fades in | [docs](docs/parz-expander.en.md) |
+| `ParzDays` | A strip of days under a still card: the days glide like a wheel and spring onto the date. Supports `ParzProvider` motion presets | [docs](docs/parz-days.en.md) |
 | `AnimoLogo` | Living text logo: letters float in, catch a wave on hover, light up when held | [docs](docs/animologo.en.md) |
 
 ## Installation

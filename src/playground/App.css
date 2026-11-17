@@ -706,3 +706,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 @media (prefers-reduced-motion:reduce){.stage>:is(.tg-stages,.code,.logo-stage){transition:none}}
 
 .clr .clr-a{min-width:0;--pz-sl-accent:var(--acc)}
+.card-demo--days{background:radial-gradient(90% 80% at 20% 15%,#2b1d4d 0%,transparent 60%),radial-gradient(80% 80% at 85% 90%,#1d3d36 0%,transparent 60%),#0b0b0e}
+.card-demo--days .pz-days{max-width:calc(100% - 16px)}
+.days-stage{align-items:stretch;justify-content:center;flex-direction:column}
+.days-stage .pz-days{width:100%}
+.days-segs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}

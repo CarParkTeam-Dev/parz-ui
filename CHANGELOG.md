@@ -15,6 +15,8 @@ npm update @carparkteam/parz-ui
 ### Added
 - **Parz Tabs** — new component: a segmented control whose selection pill flows to the new item like a drop; arrow-key navigation, sizes, full width; badges on items (next to the label or in the corner, with a pulse); when items don’t fit — wrap, a “•••” group with a menu, or scrolling with faded edges and arrows.
 - **Parz Expander** — new component: a section that opens smoothly; controlled and uncontrolled, a card look (`variant="card"`), with a “one open at a time” example.
+- **Parz Days** — new component: a strip of days under a still card; drag, trackpad, inertia and a spring onto the date, `min` / `max`, unavailable days, dot marks, month header and a “Today” button; a month and year picker — `picker="wheels"` (year and month strips slide out above the days, chosen levels shrink) or `picker="compact"` (mini window with a year field); the date comes out as `onChange(date, "YYYY-MM-DD")` and as a form field via `name`; dates are limited to 1900 … 100 years ahead.
+- **ParzProvider** — a shared motion preset (`calm`, `bouncy`, `snappy`) for new components. Supported starting with Parz Days; earlier components don’t read it yet.
 - **Parz Video**: playlists — `playlist` with “previous / next”, a list with thumbnails, an “Up next” card with a countdown and smooth switching between videos; `Shift+N` / `Shift+P`.
 - **Parz Video**: “Auto” quality, on by default (`defaultQuality="auto"`) — picked by player size, screen density and network, and lowered if the video keeps stalling.
 - **Parz Video**: audio in several languages — `audio` with its own file or qualities per language; the button on the bar or in “More”; the choice carries over to the next episodes in a playlist.
