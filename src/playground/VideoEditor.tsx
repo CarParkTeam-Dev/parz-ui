@@ -1,9 +1,15 @@
 import { useMemo, useState } from 'react';
-import { ParzVideo, ParzToggle, ParzSlider, type ParzVideoLabels, type ParzVideoSource, type ParzVideoChapter, type ParzVideoTrack, type ParzVideoMotion } from '../lib';
+import { ParzVideo, ParzToggle, ParzSlider, type ParzVideoItem, type ParzVideoLabels, type ParzVideoSource, type ParzVideoChapter, type ParzVideoTrack, type ParzVideoMotion } from '../lib';
 import { Seg, ColorField, Sec } from './App';
 import { useT } from './i18n';
 import clip from '../../playback.mp4';
 import poster from './assets/playback-poster.jpg';
+import bay from '../../nature.mp4';
+import tulips from '../../nature2-1080p60fps.mp4';
+import clouds from '../../nature3-max720p.mp4';
+import bayPoster from './assets/nature-poster.jpg';
+import tulipsPoster from './assets/nature2-1080p60fps-poster.jpg';
+import cloudsPoster from './assets/nature3-max720p-poster.jpg';
 
 type Ratio = '16 / 9' | '4 / 3' | '1 / 1' | '9 / 16';
 type O = {
@@ -49,7 +55,10 @@ export function useVideoLabels(): Partial<ParzVideoLabels> {
     seek: t('Перемотка'), speed: t('Скорость'), fullscreen: t('Во весь экран'), exitFullscreen: t('Выйти из полного экрана'), pip: t('Картинка в картинке'),
     player: t('Видеоплеер'), normal: t('Обычная'), settings: t('Настройки'), quality: t('Качество'), subtitles: t('Субтитры'), off: t('Выключены'),
     loop: t('По кругу'), back: t('Назад на {n} с'), forward: t('Вперёд на {n} с'), remaining: t('Показать, сколько осталось'),
-    more: t('Ещё'), cast: t('Смотреть на другом устройстве'), on: t('Вкл.'), about: t('О Parz UI'), version: t('Версия')
+    more: t('Ещё'), cast: t('Смотреть на другом устройстве'), on: t('Вкл.'), about: t('О Parz UI'), version: t('Версия'),
+    casting: t('Идёт на другом устройстве'), castBack: t('Смотреть здесь'),
+    pipActive: t('В отдельном окне'), pipBack: t('Вернуть в плеер'),
+    auto: t('Авто'), playlist: t('Плейлист'), previous: t('Предыдущий'), next: t('Следующий'), upNext: t('Далее'), playNow: t('Смотреть сейчас'), cancel: t('Отменить'), nowPlaying: t('Сейчас идёт')
   };
 }
 export const DEMO_CLIP = clip;
@@ -86,11 +95,19 @@ export function VideoEditor() {
   const code = useMemo(() => codeFor(o), [o]);
   const copy = async () => { try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { /* буфер недоступен */ } };
 
-  const panel = (bg: 'dark' | 'light') => (
+  /* плейлист: первый ролик — тот же, что в одиночном плеере (с главами, субтитрами и качеством из настроек), дальше — три ролика с природой */
+  const playlist: ParzVideoItem[] = [
+    { src: clip, sources: o.quality ? DEMO_SOURCES : undefined, title: o.withTitle ? o.title : undefined, poster: o.poster ? posterUrl : undefined,
+      chapters: o.chapters ? demo.chapters : undefined, tracks: o.subs ? demo.tracks : undefined, duration: 63.7 },
+    { src: bay, title: t('Бухта'), poster: bayPoster, duration: 27.4 },
+    { src: tulips, title: t('Тюльпаны'), poster: tulipsPoster, duration: 33.3 },
+    { src: clouds, title: t('Горы в облаках'), poster: cloudsPoster, duration: 24.3 }
+  ];
+  const panel = (bg: 'dark' | 'light', list: boolean) => (
     <div className={`tg-stage tg-stage--${bg} vd-stage`}>
-      <span className="tg-cap">{bg === 'dark' ? t('Тёмный фон') : t('Светлый фон')}</span>
+      <span className="tg-cap">{list ? t('Плейлист') : t('Одиночный плеер')}</span>
       <div className={`vd-box${o.ratio === '9 / 16' ? ' vd-box--tall' : ''}`}>
-        <ParzVideo src={clip} sources={o.quality ? DEMO_SOURCES : undefined} chapters={o.chapters ? demo.chapters : undefined} tracks={o.subs ? demo.tracks : undefined}
+        <ParzVideo playlist={list ? playlist : undefined} src={clip} sources={o.quality ? DEMO_SOURCES : undefined} chapters={o.chapters ? demo.chapters : undefined} tracks={o.subs ? demo.tracks : undefined}
           previews={o.previews} poster={o.poster ? posterUrl : undefined} title={o.withTitle ? o.title : undefined} audioBadge={o.audio && o.audioText ? o.audioText : undefined} aspectRatio={o.ratio} radius={o.radius} motion={o.motion} accent={o.accent} labels={labels}
           showSkip={o.skip} showVolume={o.volume} showSettings={o.settings} showFullscreen={o.fullscreen} showPip={o.pip} loop={o.loop} muted={o.muted} />
       </div>
@@ -118,6 +135,8 @@ export function VideoEditor() {
           <ParzToggle className="chk" checked={o.chapters} onChange={v => upd({ chapters: v })} label={t('Главы')} />
           <ParzToggle className="chk" checked={o.subs} onChange={v => upd({ subs: v })} label={t('Субтитры')} />
           <ParzToggle className="chk" checked={o.previews} onChange={v => upd({ previews: v })} label={t('Кадр при наведении')} />
+          {/* прямой эфир — в работе: тумблер выключен и недоступен */}
+          <ParzToggle className="chk" checked={false} disabled label={`${t('Прямой эфир (LIVE)')} · ${t('скоро')}`} />
         </Sec>
         <Sec title={t('Кнопки')}>
           <ParzToggle className="chk" checked={o.skip} onChange={v => upd({ skip: v })} label={t('Перемотка ±10 с')} />
@@ -137,8 +156,8 @@ export function VideoEditor() {
       </aside>
 
       <section className="stage">
-        <div className="tg-stages vd-stages">{panel('dark')}{panel('light')}</div>
-        <p className="logo-hint">{t('Пробел — пауза, стрелки — перемотка и громкость, 0–9 — переход по ролику, C — субтитры, F — во весь экран. Щелчок по времени показывает, сколько осталось. На телефоне двойное касание по краю перематывает на 10 секунд.')}</p>
+        <div className="tg-stages vd-stages">{panel('light', false)}{panel('dark', true)}</div>
+        <p className="logo-hint">{t('Пробел — пауза, стрелки — перемотка и громкость, 0–9 — переход по ролику, C — субтитры, F — во весь экран. Щелчок по времени показывает, сколько осталось. На телефоне двойное касание по краю перематывает на 10 секунд. В плейлисте Shift+N и Shift+P — следующий и предыдущий ролик.')}</p>
         <div className="code">
           <div className="code-h"><b>{t('Код')}</b><button onClick={copy}>{copied ? t('Скопировано') : t('Скопировать')}</button></div>
           <pre><code>{code}</code></pre>

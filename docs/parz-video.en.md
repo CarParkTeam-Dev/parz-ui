@@ -51,17 +51,72 @@ import '@carparkteam/parz-ui/style.css';
 />
 ```
 
+## Playlist
+
+Pass `playlist` and the player plays the videos one after another. Each item has its own `src` or `sources`, `title`, `poster`, `chapters`, `tracks` and an optional `duration` for the list. In the centre, “previous” and “next” sit on either side of −10 / +10 (on a narrow player they replace them); the list button opens the videos with thumbnails, and the current one is marked. A few seconds before the end, an “Up next” card appears with a countdown ring: click it to start the next video now, or cancel it to let the video simply end. Switching keeps playing and the last frame dissolves into the new video.
+
+```tsx
+<ParzVideo
+  playlist={[
+    { src: '/intro.mp4', title: 'Intro', poster: '/intro.jpg', duration: 64 },
+    { src: '/bay.mp4', title: 'Bay', poster: '/bay.jpg', duration: 27 }
+  ]}
+/>
+```
+
+The data can come from your API: turn each record into a `ParzVideoItem`. Each video keeps its own qualities, subtitles and chapters; with `index` and `onIndexChange` you control which one plays (for example, to remember progress).
+
+```tsx
+import { useEffect, useState } from 'react';
+import { ParzVideo, type ParzVideoItem } from '@carparkteam/parz-ui';
+
+// what your API returns — any shape, here is an example
+type ApiVideo = {
+  id: string; name: string; cover: string; length: number;
+  files: { url: string; height: number }[];
+  subtitles: { url: string; lang: string; name: string }[];
+  parts: { at: number; name: string }[];
+};
+
+const toItem = (v: ApiVideo): ParzVideoItem => ({
+  title: v.name,
+  poster: v.cover,
+  duration: v.length,
+  // every video has its own qualities, subtitles and chapters
+  sources: v.files.sort((a, b) => b.height - a.height).map(f => ({ src: f.url, label: `${f.height}p` })),
+  tracks: v.subtitles.map(s => ({ src: s.url, srclang: s.lang, label: s.name })),
+  chapters: v.parts.map(p => ({ start: p.at, title: p.name }))
+});
+
+export function Course({ id }: { id: string }) {
+  const [items, setItems] = useState<ParzVideoItem[]>([]);
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    fetch(`/api/courses/${id}/videos`).then(r => r.json()).then((list: ApiVideo[]) => setItems(list.map(toItem)));
+  }, [id]);
+  if (!items.length) return null;
+  return (
+    <ParzVideo
+      playlist={items}
+      index={index}
+      onIndexChange={i => { setIndex(i); /* e.g. save progress: fetch('/api/progress', …) */ }}
+      upNextSeconds={10}
+    />
+  );
+}
+```
+
 ## Keys
 
-When the player is focused: `Space` or `K` — pause, `←` / `→` — 5 seconds back and forward, `J` / `L` — by `skipSeconds`, `0`–`9` — jump to 0–90% of the clip, `C` — subtitles, `↑` / `↓` — volume, `M` — sound, `F` — full screen, `Esc` — close the settings menu. On the seek line `Home` / `End` jump to the start and end.
+When the player is focused: `Space` or `K` — pause, `←` / `→` — 5 seconds back and forward, `J` / `L` — by `skipSeconds`, `0`–`9` — jump to 0–90% of the clip, `C` — subtitles, `↑` / `↓` — volume, `M` — sound, `F` — full screen, `Esc` — close the settings menu, `Shift+N` / `Shift+P` — next and previous video in a playlist. On the seek line `Home` / `End` jump to the start and end.
 
 | Prop | Default | What it does |
 |---|---|---|
 | `src` | — | Video URL (optional when `sources` is set) |
 | `sources` | — | Quality options: `{ src, label, type?, badge? }[]`. The mark next to the gear comes from the label: `2160p` and up — **4K**, `720p` and up — **HD**; set your own with `badge`, an empty string hides it |
-| `defaultQuality` | `0` | Which quality to start with |
+| `defaultQuality` | `'auto'` | Which quality to start with: an index in `sources` or `'auto'` — the player picks by its size, screen density and network (data saver, 2g/3g, downlink) and steps down if the video keeps stalling. Picking a quality by hand turns auto off; “Auto” in the menu turns it back on |
 | `chapters` | — | Chapters: `{ start, title }[]`, `start` in seconds |
-| `tracks` | — | WebVTT subtitles: `{ src, label, srclang, default? }[]`. Another domain needs CORS |
+| `tracks` | — | WebVTT subtitles: `{ src, label, srclang, default? }[]`. Subtitles start off; `default` is the track the C key turns on. Another domain needs CORS |
 | `previews` | `true` | Frame above the seek line on hover (loads the video a second time, only the needed frames) |
 | `poster` | — | Poster before playback; fades in softly once the image loads, dissolves once the video starts and returns when it ends (unless `loop`) |
 | `title` | — | Title at the top; hides with the bar |
@@ -79,10 +134,15 @@ When the player is focused: `Space` or `K` — pause, `←` / `→` — 5 second
 | `showPip` | `false` | Picture in picture, if the browser supports it |
 | `speeds` | `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]` | Speeds in the menu |
 | `hideDelay` | `2600` | Ms without movement before the bar hides |
-| `labels` | English | Button labels for screen readers: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` is the step), `remaining`, `more`, `cast`, `on` |
+| `labels` | English | Button labels for screen readers: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` is the step), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
 | `onPlay` / `onPause` / `onEnded` | — | Playback events |
 | `onTimeUpdate` | — | `(time, duration) => void` |
 | `onQualityChange` | — | `(index, source) => void` |
+| `playlist` | — | Videos in a row: `{ src?, sources?, title?, poster?, chapters?, tracks?, audioBadge?, duration? }[]`. The current item's fields replace `src`, `sources`, `title`, `poster`, `chapters` and `tracks` |
+| `index` / `defaultIndex` | `0` | Current video (controlled / initial) |
+| `onIndexChange` | — | `(index, item) => void` — the video changed |
+| `autoAdvance` | `true` | Start the next video when one ends |
+| `upNextSeconds` | `8` | How many seconds before the end the “Up next” card appears; `0` turns it off |
 | `className` / `style` | — | On the root element |
 
 ## CSS variables

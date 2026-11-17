@@ -51,17 +51,72 @@ import '@carparkteam/parz-ui/style.css';
 />
 ```
 
+## Ցանկ
+
+Փոխանցեք `playlist`, և նվագարկիչը տեսանյութերը կխաղա իրար հետևից։ Յուրաքանչյուրն ունի իր `src` կամ `sources`, `title`, `poster`, `chapters`, `tracks` և ոչ պարտադիր `duration` ցանկի համար։ Կենտրոնում −10 / +10-ի կողքերին «նախորդը» և «հաջորդը» են (նեղ նվագարկիչում՝ դրանց փոխարեն). ցանկի կոճակը բացում է տեսանյութերը մանրապատկերներով, ընթացիկը նշված է։ Ավարտից մի քանի վայրկյան առաջ հայտնվում է «Հաջորդը» քարտը հետհաշվարկի օղակով. սեղմեք՝ հաջորդը կսկսվի անմիջապես, չեղարկեք՝ տեսանյութը պարզապես կավարտվի։ Փոխելիս նվագարկումը շարունակվում է, իսկ վերջին կադրը լուծվում է նորի մեջ։
+
+```tsx
+<ParzVideo
+  playlist={[
+    { src: '/intro.mp4', title: 'Ներածություն', poster: '/intro.jpg', duration: 64 },
+    { src: '/bay.mp4', title: 'Ծովախորշ', poster: '/bay.jpg', duration: 27 }
+  ]}
+/>
+```
+
+Տվյալները կարող են գալ ձեր API-ից. յուրաքանչյուր գրառում դարձրեք `ParzVideoItem`։ Յուրաքանչյուր տեսանյութ պահում է իր որակները, ենթագրերը և գլուխները. `index`-ով և `onIndexChange`-ով դուք եք կառավարում, թե որն է խաղում (օրինակ՝ առաջընթացը հիշելու համար)։
+
+```tsx
+import { useEffect, useState } from 'react';
+import { ParzVideo, type ParzVideoItem } from '@carparkteam/parz-ui';
+
+// ինչ է վերադարձնում ձեր API-ն — ձևը ցանկացած է, սա օրինակ է
+type ApiVideo = {
+  id: string; name: string; cover: string; length: number;
+  files: { url: string; height: number }[];
+  subtitles: { url: string; lang: string; name: string }[];
+  parts: { at: number; name: string }[];
+};
+
+const toItem = (v: ApiVideo): ParzVideoItem => ({
+  title: v.name,
+  poster: v.cover,
+  duration: v.length,
+  // յուրաքանչյուր տեսանյութ ունի իր որակները, ենթագրերը և գլուխները
+  sources: v.files.sort((a, b) => b.height - a.height).map(f => ({ src: f.url, label: `${f.height}p` })),
+  tracks: v.subtitles.map(s => ({ src: s.url, srclang: s.lang, label: s.name })),
+  chapters: v.parts.map(p => ({ start: p.at, title: p.name }))
+});
+
+export function Course({ id }: { id: string }) {
+  const [items, setItems] = useState<ParzVideoItem[]>([]);
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    fetch(`/api/courses/${id}/videos`).then(r => r.json()).then((list: ApiVideo[]) => setItems(list.map(toItem)));
+  }, [id]);
+  if (!items.length) return null;
+  return (
+    <ParzVideo
+      playlist={items}
+      index={index}
+      onIndexChange={i => { setIndex(i); /* օրինակ՝ պահել առաջընթացը. fetch('/api/progress', …) */ }}
+      upNextSeconds={10}
+    />
+  );
+}
+```
+
 ## Ստեղներ
 
-Երբ նվագարկիչը ֆոկուսում է. `Բացատ` կամ `K` — դադար, `←` / `→` — 5 վայրկյան հետ և առաջ, `J` / `L` — `skipSeconds` քայլով, `0`–`9` — անցում հոլովակի 0–90%, `C` — ենթագրեր, `↑` / `↓` — ձայն, `M` — ձայնը միացնել/անջատել, `F` — ամբողջ էկրան, `Esc` — փակել կարգավորումների ընտրացանկը։ Ոլորման գծի վրա `Home` / `End` — սկիզբ և վերջ։
+Երբ նվագարկիչը ֆոկուսում է. `Բացատ` կամ `K` — դադար, `←` / `→` — 5 վայրկյան հետ և առաջ, `J` / `L` — `skipSeconds` քայլով, `0`–`9` — անցում հոլովակի 0–90%, `C` — ենթագրեր, `↑` / `↓` — ձայն, `M` — ձայնը միացնել/անջատել, `F` — ամբողջ էկրան, `Esc` — փակել կարգավորումների ընտրացանկը, `Shift+N` / `Shift+P` — ցանկի հաջորդ և նախորդ տեսանյութը։ Ոլորման գծի վրա `Home` / `End` — սկիզբ և վերջ։
 
 | Հատկություն | Լռելյայն | Ինչ է անում |
 |---|---|---|
 | `src` | — | Տեսանյութի հասցեն (կարելի է չնշել, եթե կա `sources`) |
 | `sources` | — | Որակի տարբերակներ՝ `{ src, label, type?, badge? }[]`։ Ատամնանիվի կողքի նշանը որոշվում է պիտակից՝ `2160p` և ավելի — **4K**, `720p` և ավելի — **HD**; սեփականը՝ `badge`, դատարկ տող՝ առանց նշանի |
-| `defaultQuality` | `0` | Որ որակով սկսել |
+| `defaultQuality` | `'auto'` | Որ որակով սկսել. `sources`-ի համարը կամ `'auto'` — նվագարկիչն ինքն է ընտրում ըստ իր չափի, էկրանի խտության և ցանցի (տրաֆիկի խնայում, 2g/3g, արագություն) և իջնում է, եթե տեսանյութը կախվում է։ Ձեռքով ընտրությունն անջատում է ավտոմատը, ընտրացանկի «Ավտո» կետը՝ միացնում |
 | `chapters` | — | Գլուխներ՝ `{ start, title }[]`, `start`-ը վայրկյաններով |
-| `tracks` | — | WebVTT ենթագրեր՝ `{ src, label, srclang, default? }[]`։ Այլ դոմենից պետք է CORS |
+| `tracks` | — | WebVTT ենթագրեր՝ `{ src, label, srclang, default? }[]`։ Սկզբում անջատված են; `default`-ը այն ուղին է, որը միացնում է C ստեղնը։ Այլ դոմենից պետք է CORS |
 | `previews` | `true` | Կադր գծի վերևում (տեսանյութը բեռնում է երկրորդ անգամ, միայն անհրաժեշտ կադրերը) |
 | `poster` | — | Շապիկ մինչև մեկնարկը; մեղմ հայտնվում է նկարը բեռնվելիս, սահուն անհետանում է, երբ տեսանյութը սկսվում է, և վերադառնում է ավարտին (եթե `loop` չկա) |
 | `title` | — | Վերնագիր վերևում; թաքնվում է վահանակի հետ |
@@ -79,10 +134,15 @@ import '@carparkteam/parz-ui/style.css';
 | `showPip` | `false` | «Նկար նկարի մեջ», եթե զննարկիչը աջակցում է |
 | `speeds` | `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]` | Արագություններն ընտրացանկում |
 | `hideDelay` | `2600` | Քանի մվ առանց շարժման հետո թաքցնել վահանակը |
-| `labels` | անգլերեն | Կոճակների պիտակներ էկրանային ընթերցիչների համար՝ `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}`՝ քայլը), `remaining`, `more`, `cast`, `on` |
+| `labels` | անգլերեն | Կոճակների պիտակներ էկրանային ընթերցիչների համար՝ `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}`՝ քայլը), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
 | `onPlay` / `onPause` / `onEnded` | — | Նվագարկման իրադարձություններ |
 | `onTimeUpdate` | — | `(time, duration) => void` |
 | `onQualityChange` | — | `(index, source) => void` |
+| `playlist` | — | Տեսանյութեր իրար հետևից՝ `{ src?, sources?, title?, poster?, chapters?, tracks?, audioBadge?, duration? }[]`։ Ընթացիկի դաշտերը փոխարինում են `src`, `sources`, `title`, `poster`, `chapters` և `tracks` |
+| `index` / `defaultIndex` | `0` | Ընթացիկ տեսանյութը (կառավարվող / սկզբնական) |
+| `onIndexChange` | — | `(index, item) => void` — տեսանյութը փոխվեց |
+| `autoAdvance` | `true` | Ավարտից հետո միացնել հաջորդը |
+| `upNextSeconds` | `8` | Ավարտից քանի վայրկյան առաջ ցույց տալ «Հաջորդը» քարտը; `0`՝ չցույց տալ |
 | `className` / `style` | — | Արմատային տարրի վրա |
 
 ## CSS փոփոխականներ

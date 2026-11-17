@@ -12,6 +12,16 @@ npm update @carparkteam/parz-ui
 
 ## Unreleased
 
+### Added
+- **Parz Video**: playlists — `playlist` with “previous / next”, a list with thumbnails, an “Up next” card with a countdown and smooth switching between videos; `Shift+N` / `Shift+P`.
+- **Parz Video**: “Auto” quality, on by default (`defaultQuality="auto"`) — picked by player size, screen density and network, and lowered if the video keeps stalling.
+
+### Fixed
+- **Parz Video**: on touch screens the controls no longer hide right after a tap; no endless loader in iOS/iPadOS Safari; the iPhone system full screen now keeps the chosen speed and subtitles; a compact layout for very small players; picture-in-picture and AirPlay sit on the left above the timeline; chapters are marked with thin lines on a continuous timeline; calmer, smaller subtitles on phones; while casting, the player shows a placeholder with a “Play here” button instead of a black screen. The same placeholder covers the browser’s black “picture in picture” screen, with a “Back to player” button.
+
+### Changed
+- **Parz Video**: subtitles are off by default even when tracks are given; `default` now picks the track the C key turns on.
+
 ## 1.1.0 — 2026-11-16
 
 ### Added

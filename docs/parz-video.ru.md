@@ -51,17 +51,72 @@ import '@carparkteam/parz-ui/style.css';
 />
 ```
 
+## Плейлист
+
+Передайте `playlist` — плеер играет ролики друг за другом. У каждого ролика свои `src` или `sources`, `title`, `poster`, `chapters`, `tracks` и необязательная `duration` для списка. В центре по краям от −10 / +10 — «предыдущий» и «следующий» (на узком плеере — вместо них); кнопка списка открывает ролики с миниатюрами, текущий отмечен. За несколько секунд до конца появляется карточка «Далее» с кольцом отсчёта: нажмите — следующий ролик начнётся сразу, отмените — ролик просто закончится. При переключении воспроизведение продолжается, а последний кадр растворяется в новом ролике.
+
+```tsx
+<ParzVideo
+  playlist={[
+    { src: '/intro.mp4', title: 'Вступление', poster: '/intro.jpg', duration: 64 },
+    { src: '/bay.mp4', title: 'Бухта', poster: '/bay.jpg', duration: 27 }
+  ]}
+/>
+```
+
+Данные можно брать из своего API: превратите каждую запись в `ParzVideoItem`. У каждого ролика остаются свои качества, субтитры и главы; через `index` и `onIndexChange` вы сами управляете, какой ролик идёт (например, чтобы запоминать прогресс).
+
+```tsx
+import { useEffect, useState } from 'react';
+import { ParzVideo, type ParzVideoItem } from '@carparkteam/parz-ui';
+
+// что отдаёт ваш API — форма любая, здесь пример
+type ApiVideo = {
+  id: string; name: string; cover: string; length: number;
+  files: { url: string; height: number }[];
+  subtitles: { url: string; lang: string; name: string }[];
+  parts: { at: number; name: string }[];
+};
+
+const toItem = (v: ApiVideo): ParzVideoItem => ({
+  title: v.name,
+  poster: v.cover,
+  duration: v.length,
+  // у каждого ролика свои качества, субтитры и главы
+  sources: v.files.sort((a, b) => b.height - a.height).map(f => ({ src: f.url, label: `${f.height}p` })),
+  tracks: v.subtitles.map(s => ({ src: s.url, srclang: s.lang, label: s.name })),
+  chapters: v.parts.map(p => ({ start: p.at, title: p.name }))
+});
+
+export function Course({ id }: { id: string }) {
+  const [items, setItems] = useState<ParzVideoItem[]>([]);
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    fetch(`/api/courses/${id}/videos`).then(r => r.json()).then((list: ApiVideo[]) => setItems(list.map(toItem)));
+  }, [id]);
+  if (!items.length) return null;
+  return (
+    <ParzVideo
+      playlist={items}
+      index={index}
+      onIndexChange={i => { setIndex(i); /* например, сохранить прогресс: fetch('/api/progress', …) */ }}
+      upNextSeconds={10}
+    />
+  );
+}
+```
+
 ## Клавиши
 
-Когда плеер в фокусе: `Пробел` или `K` — пауза, `←` / `→` — 5 секунд назад и вперёд, `J` / `L` — на шаг `skipSeconds`, `0`–`9` — переход к 0–90% ролика, `C` — субтитры, `↑` / `↓` — громкость, `M` — звук, `F` — полный экран, `Esc` — закрыть меню настроек. На полосе перемотки `Home` / `End` — в начало и в конец.
+Когда плеер в фокусе: `Пробел` или `K` — пауза, `←` / `→` — 5 секунд назад и вперёд, `J` / `L` — на шаг `skipSeconds`, `0`–`9` — переход к 0–90% ролика, `C` — субтитры, `↑` / `↓` — громкость, `M` — звук, `F` — полный экран, `Esc` — закрыть меню настроек, `Shift+N` / `Shift+P` — следующий и предыдущий ролик плейлиста. На полосе перемотки `Home` / `End` — в начало и в конец.
 
 | Пропс | По умолчанию | Что делает |
 |---|---|---|
 | `src` | — | Адрес видео (можно не задавать, если есть `sources`) |
 | `sources` | — | Варианты качества: `{ src, label, type?, badge? }[]`. Пометка рядом со шестерёнкой ставится сама по подписи: `2160p` и выше — **4K**, `720p` и выше — **HD**; свою задаёт `badge`, пустая строка — без пометки |
-| `defaultQuality` | `0` | Какое качество взять сначала |
+| `defaultQuality` | `'auto'` | Какое качество взять сначала: номер в `sources` или `'auto'` — плеер сам выбирает по своему размеру, плотности экрана и сети (экономия трафика, 2g/3g, скорость) и опускается ниже, если видео подвисает. Выбор вручную отключает автоматику, пункт «Авто» в меню включает обратно |
 | `chapters` | — | Главы: `{ start, title }[]`, `start` в секундах |
-| `tracks` | — | Субтитры WebVTT: `{ src, label, srclang, default? }[]`. С чужого домена нужен CORS |
+| `tracks` | — | Субтитры WebVTT: `{ src, label, srclang, default? }[]`. Изначально выключены; `default` — дорожка, которую включает клавиша C. С чужого домена нужен CORS |
 | `previews` | `true` | Кадр над полосой при наведении (грузит видео второй раз, только нужные кадры) |
 | `poster` | — | Обложка до запуска; мягко проявляется, когда картинка загрузилась, плавно растворяется, когда видео пошло, и возвращается, когда оно закончилось (если нет `loop`) |
 | `title` | — | Заголовок вверху; прячется вместе с панелью |
@@ -79,10 +134,15 @@ import '@carparkteam/parz-ui/style.css';
 | `showPip` | `false` | «Картинка в картинке», если браузер умеет |
 | `speeds` | `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]` | Скорости в меню |
 | `hideDelay` | `2600` | Через сколько мс без движения прятать панель |
-| `labels` | английские | Подписи кнопок для экранных дикторов: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` — шаг), `remaining`, `more`, `cast`, `on` |
+| `labels` | английские | Подписи кнопок для экранных дикторов: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` — шаг), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
 | `onPlay` / `onPause` / `onEnded` | — | События воспроизведения |
 | `onTimeUpdate` | — | `(time, duration) => void` |
 | `onQualityChange` | — | `(index, source) => void` |
+| `playlist` | — | Ролики подряд: `{ src?, sources?, title?, poster?, chapters?, tracks?, audioBadge?, duration? }[]`. Поля текущего ролика заменяют `src`, `sources`, `title`, `poster`, `chapters` и `tracks` |
+| `index` / `defaultIndex` | `0` | Текущий ролик (управляемый / начальный) |
+| `onIndexChange` | — | `(index, item) => void` — ролик сменился |
+| `autoAdvance` | `true` | Включать следующий ролик, когда текущий закончился |
+| `upNextSeconds` | `8` | За сколько секунд до конца показывать карточку «Далее»; `0` — не показывать |
 | `className` / `style` | — | На корневой элемент |
 
 ## CSS-переменные
