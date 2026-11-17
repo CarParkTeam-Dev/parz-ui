@@ -13,7 +13,7 @@ export interface ParzDaysProps {
   value?: Date;
   /** Начальный день (неуправляемый режим). По умолчанию сегодня. */
   defaultValue?: Date;
-  /** Новый день: Date (полночь по местному времени) и та же дата строкой 'YYYY-MM-DD' — удобно для API. */
+  /** Новый день: Date (по местному времени) и та же дата строкой 'YYYY-MM-DD' — удобно для API. С showTime — Date со временем и строка 'YYYY-MM-DDTHH:mm'. */
   onChange?: (date: Date, iso: string) => void;
   /** Имя поля формы: внутри будет скрытый input со значением 'YYYY-MM-DD', и дата уйдёт вместе с формой. */
   name?: string;
@@ -37,6 +37,10 @@ export interface ParzDaysProps {
   picker?: ParzDaysPicker;
   /** Можно ли менять год в выборе. false — только месяцы. По умолчанию да. */
   pickerYear?: boolean;
+  /** Выбор времени: рядом с месяцем появляется кнопка «14:30», в мини-окне — вертикальные барабаны часов и минут. Дата в onChange приходит со временем. */
+  showTime?: boolean;
+  /** Шаг минут в барабане. По умолчанию 5. */
+  minuteStep?: number;
   /** Подпись кнопки «Сегодня». Кнопка появляется, когда выбран другой день. */
   todayLabel?: string;
   /** По умолчанию 'md'. */
@@ -200,23 +204,31 @@ function Wheel({ value, lo, hi, ok, onCommit, W, spec, disabled, page, home, cel
   };
 
   // колесо и тачпад: только горизонтальная прокрутка (или Shift + колесо), вертикальную страницу не трогаем
+  // таймер фиксации живёт вне эффекта: обработчик переподключается на каждой перерисовке, а фиксация не должна теряться
+  const wt = useRef(0);
+  const late = useRef<() => void>(() => {});
+  useEffect(() => () => clearTimeout(wt.current), []);
   useEffect(() => {
     const el = view.current; if (!el) return;
-    let t = 0;
     const wheel = (e: WheelEvent) => {
       if (disabled) return;
       const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.shiftKey ? e.deltaY : 0;
       if (!d) return;
       e.preventDefault();
-      const s = st.current;
-      s.drag = true; s.moveAt = performance.now();
-      s.x = rubber(s.x + d / pxW); s.v = (d / pxW) * 60;
+      const s = st.current, now = performance.now();
+      // скорость колеса/тачпада — по времени между событиями, сглаженная: от неё тянется «желе» карточки
+      const dt = Math.max(0.008, Math.min(0.1, (now - s.moveAt) / 1000));
+      const inst = s.drag ? (d / pxW) / dt : (d / pxW) * 60;
+      s.v = Math.max(-30, Math.min(30, s.v * 0.4 + inst * 0.6));
+      s.drag = true; s.moveAt = now;
+      s.x = rubber(s.x + d / pxW);
       run();
-      clearTimeout(t);
-      t = window.setTimeout(() => { s.drag = false; onActivate?.(); commit(nearest(Math.round(s.x), d)); }, 130);
+      late.current = () => { s.drag = false; onActivate?.(); commit(nearest(Math.round(s.x), d)); };
+      clearTimeout(wt.current);
+      wt.current = window.setTimeout(() => late.current(), 130);
     };
     el.addEventListener('wheel', wheel, { passive: false });
-    return () => { el.removeEventListener('wheel', wheel); clearTimeout(t); };
+    return () => el.removeEventListener('wheel', wheel);
   });
 
   const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -285,9 +297,125 @@ function Wheel({ value, lo, hi, ok, onCommit, W, spec, disabled, page, home, cel
   );
 }
 
+/* ───────── Барабан ─────────
+   Вертикальное колесо по кругу, как в iOS: строки заворачиваются в 3D, в центре — полоса выбора; инерция и пружина те же, что у ленты. */
+const ROW = 34;
+interface DrumProps { count: number; value: number; onCommit: (i: number) => void; format: (i: number) => string; spec: ParzMotionSpec; ariaLabel: string; disabled: boolean; onJelly?: (j: number) => void }
+function Drum({ count, value, onCommit, format, spec, ariaLabel, disabled, onJelly }: DrumProps) {
+  // j — «желе» полосы выбора: тянется за скоростью барабана и покачивается, когда он встаёт
+  const st = useRef({ x: value, v: 0, target: value, raf: 0, last: 0, drag: false, moveAt: 0, j: 0, jv: 0 });
+  const [, tick] = useState(0);
+  const redraw = () => tick(n => (n + 1) & 0xffff);
+  const el = useRef<HTMLDivElement>(null);
+  const mod = (i: number) => ((Math.round(i) % count) + count) % count;
+  const stop = () => { cancelAnimationFrame(st.current.raf); st.current.raf = 0; };
+  const run = useCallback(() => {
+    const s = st.current;
+    if (reduced()) { if (!s.drag) { stop(); s.x = s.target; s.v = 0; } s.j = s.jv = 0; redraw(); return; }
+    if (s.raf) return;
+    s.last = performance.now();
+    const jk = spec.stiffness * 1.3, jc = spec.damping * 0.45;
+    const step = (t: number) => {
+      const dt = Math.min((t - s.last) / 1000, 1 / 30); s.last = t;
+      if (s.drag && t - s.moveAt > 40) s.v *= Math.exp(-dt * 14);
+      for (let k = 0; k < 2; k++) {
+        const h = dt / 2;
+        if (!s.drag) { const a = -spec.stiffness * 1.2 * (s.x - s.target) - spec.damping * 1.15 * s.v; s.v += a * h; s.x += s.v * h; }
+        const T = Math.max(-1, Math.min(1, s.v / 10)) * spec.squish;
+        const ja = -jk * (s.j - T) - jc * s.jv; s.jv += ja * h; s.j += s.jv * h;
+      }
+      const restX = !s.drag && Math.abs(s.x - s.target) < 0.002 && Math.abs(s.v) < 0.02;
+      if (restX) { s.x = s.target; s.v = 0; }
+      if (restX && Math.abs(s.j) < 0.002 && Math.abs(s.jv) < 0.02) { s.j = s.jv = 0; s.raf = 0; redraw(); return; }
+      redraw(); s.raf = requestAnimationFrame(step);
+    };
+    s.raf = requestAnimationFrame(step);
+  }, [spec]);
+  useEffect(() => stop, []);
+  // значение снаружи: едем к ближайшему такому же индексу по кругу
+  useEffect(() => {
+    const s = st.current; if (mod(s.target) === value) return;
+    let d = value - mod(s.target); if (d > count / 2) d -= count; if (d < -count / 2) d += count;
+    s.target = Math.round(s.target) + d; run();
+  }, [value, count, run]);
+  const commit = (i: number) => { st.current.target = i; run(); if (mod(i) !== value) onCommit(mod(i)); };
+
+  const drag = useRef<{ y0: number; p0: number; moved: boolean; hit: number | null; hist: [number, number][] } | null>(null);
+  const onDown = (e: RPointerEvent<HTMLDivElement>) => {
+    if (disabled || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const c = (e.target as HTMLElement).closest('[data-i]');
+    st.current.drag = true; st.current.moveAt = performance.now(); run();
+    drag.current = { y0: e.clientY, p0: st.current.x, moved: false, hit: c ? Number(c.getAttribute('data-i')) : null, hist: [[performance.now(), st.current.x]] };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onMove = (e: RPointerEvent<HTMLDivElement>) => {
+    const d = drag.current; if (!d) return;
+    const dy = e.clientY - d.y0;
+    if (!d.moved && Math.abs(dy) < 4) return;
+    d.moved = true;
+    const s = st.current, now = performance.now();
+    s.moveAt = now; s.x = d.p0 - dy / ROW;
+    d.hist.push([now, s.x]); while (d.hist.length > 2 && now - d.hist[0][0] > 90) d.hist.shift();
+    const [t0, x0] = d.hist[0]; s.v = now - t0 > 0 ? (s.x - x0) / ((now - t0) / 1000) : 0;
+    redraw();
+  };
+  const onUp = () => {
+    const d = drag.current; if (!d) return; drag.current = null;
+    const s = st.current; s.drag = false;
+    if (!d.moved) { if (d.hit !== null) commit(d.hit); else run(); return; }
+    if (performance.now() - d.hist[d.hist.length - 1][0] > 80) s.v = 0;
+    const v = Math.max(-30, Math.min(30, s.v)); s.v = v;
+    commit(Math.round(s.x + v * 0.2));
+  };
+  // колесо мыши и тачпад: внутри маленького окна вертикальная прокрутка крутит барабан
+  const wt = useRef(0);
+  const late = useRef<() => void>(() => {});
+  useEffect(() => () => clearTimeout(wt.current), []);
+  useEffect(() => {
+    const node = el.current; if (!node) return;
+    const wheel = (e: WheelEvent) => {
+      if (disabled) return;
+      e.preventDefault();
+      const s = st.current, now = performance.now();
+      // одно деление колеса мыши — примерно одна строка; тачпад даёт мелкие шаги и крутит плавно
+      const step = Math.max(-1.2, Math.min(1.2, e.deltaY / ROW / 2.4));
+      const dt = Math.max(0.008, Math.min(0.1, (now - s.moveAt) / 1000));
+      const inst = s.drag ? step / dt : step * 30;
+      s.v = Math.max(-25, Math.min(25, s.v * 0.4 + inst * 0.6));
+      s.drag = true; s.moveAt = now;
+      s.x += step; run();
+      late.current = () => { s.drag = false; commit(Math.round(s.x)); };
+      clearTimeout(wt.current); wt.current = window.setTimeout(() => late.current(), 120);
+    };
+    node.addEventListener('wheel', wheel, { passive: false });
+    return () => node.removeEventListener('wheel', wheel);
+  });
+  const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const k = e.key, cur = st.current.target;
+    const n = k === 'ArrowDown' ? cur + 1 : k === 'ArrowUp' ? cur - 1 : k === 'PageDown' ? cur + 5 : k === 'PageUp' ? cur - 5 : null;
+    if (n === null || disabled) return;
+    e.preventDefault(); commit(n);
+  };
+
+  const s = st.current, x = s.x, c0 = Math.round(x), rows = [];
+  useLayoutEffect(() => { onJelly?.(s.j); });
+  for (let i = c0 - 3; i <= c0 + 3; i++) {
+    const d = i - x, ad = Math.abs(d);
+    if (ad > 3) continue;
+    // строки уходят по цилиндру: поворот, сдвиг в глубину и затухание к краям
+    const ang = Math.max(-80, Math.min(80, d * 22));
+    rows.push(<div key={i} data-i={i} className={`pz-days-dr-r${ad < 0.5 ? ' is-on' : ''}`} aria-hidden="true"
+      style={{ transform: `translateY(${d * ROW * (1 - ad * 0.06)}px) rotateX(${-ang}deg)`, opacity: Math.max(0, 1 - ad * 0.3) }}>{format(mod(i))}</div>);
+  }
+  return (
+    <div ref={el} className="pz-days-dr" tabIndex={disabled ? -1 : 0} role="spinbutton" aria-label={ariaLabel} aria-valuenow={mod(s.target)} aria-valuetext={format(mod(s.target))}
+      aria-valuemin={0} aria-valuemax={count - 1} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onKeyDown={onKey}>{rows}</div>
+  );
+}
+
 /* ───────── Parz Days ───────── */
 export function ParzDays({
-  value, defaultValue, onChange, name, min, max, isDisabled, disabledDates, marks, locale, weekday = 'narrow', showMonth = false, picker, pickerYear = true, todayLabel,
+  value, defaultValue, onChange, name, min, max, isDisabled, disabledDates, marks, locale, weekday = 'narrow', showMonth = false, picker, pickerYear = true, showTime = false, minuteStep = 5, todayLabel,
   size = 'md', theme = 'light', motion, cardColor, color, weekdayColor, markColor, highlightToday = true, todayColor, highlightSunday = true, sundayColor, highlightCurrent = true, currentColor, ariaLabel, disabled = false, id, className, style
 }: ParzDaysProps) {
   const spec = useParzMotion(motion);
@@ -315,10 +443,27 @@ export function ParzDays({
     return i;
   }, [lo, hi, ok]);
 
+  // время в минутах от полуночи; шаг — minuteStep
+  const stepM = Math.max(1, Math.min(30, Math.round(minuteStep)));
+  const snapM = (m: number) => (Math.round(m / stepM) * stepM) % 1440;
+  const [innerT, setInnerT] = useState(() => {
+    const d = value ?? defaultValue;
+    if (d) return snapM(d.getHours() * 60 + d.getMinutes());
+    const n = new Date(); return (Math.ceil((n.getHours() * 60 + n.getMinutes()) / stepM) * stepM) % 1440;
+  });
+  const tMin = value && showTime ? snapM(value.getHours() * 60 + value.getMinutes()) : innerT;
+  const withTime = (i: number, t: number) => { const d = fromIdx(i); if (showTime) d.setHours(Math.floor(t / 60), t % 60, 0, 0); return d; };
+  const isoOf = (d: Date) => showTime ? `${toISODate(d)}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : toISODate(d);
+  const emit = (i: number, t: number) => { const d = withTime(i, t); onChange?.(d, isoOf(d)); };
   const setDay = (i: number) => {
     if (i === valIdx) return;
     if (!value) setInner(i);
-    const d = fromIdx(i); onChange?.(d, toISODate(d));
+    emit(i, tMin);
+  };
+  const setTime = (t: number) => {
+    if (t === tMin) return;
+    if (!value || !showTime) setInnerT(t);
+    emit(valIdx, t);
   };
   // границы поменялись и текущий день стал недоступен — переезжаем на ближайший
   useEffect(() => { const n = nearest(valIdx); if (n !== valIdx) setDay(n); }, [lo, hi, isDisabled, offSet]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -346,7 +491,16 @@ export function ParzDays({
   // после выбора уровень сжимается, и фокус переходит ниже — с паузой, чтобы можно было докрутить
   const advance = (to: Level) => { clearTimeout(adv.current); adv.current = window.setTimeout(() => setLevel(to), reduced() ? 0 : 650); };
   useEffect(() => () => clearTimeout(adv.current), []);
+  const [tOpen, setTOpen] = useState(false);
+  useEffect(() => {
+    if (!tOpen) return;
+    const key = (e: globalThis.KeyboardEvent) => { if (e.key === 'Escape') { setTOpen(false); (root.current?.querySelector('.pz-days-tbtn') as HTMLElement | null)?.focus(); } };
+    const down = (e: PointerEvent) => { if (!root.current?.querySelector('.pz-days-tgrp')?.contains(e.target as Node)) setTOpen(false); };
+    document.addEventListener('keydown', key); document.addEventListener('pointerdown', down);
+    return () => { document.removeEventListener('keydown', key); document.removeEventListener('pointerdown', down); };
+  }, [tOpen]);
   const toggle = () => {
+    setTOpen(false);
     if (open) { setOpen(false); setLevel('day'); clearTimeout(adv.current); return; }
     setOpen(true);
     if (picker === 'wheels') setLevel(pickerYear ? 'year' : 'month');
@@ -400,6 +554,32 @@ export function ParzDays({
   if (currentColor) vars['--pz-days-cur'] = currentColor;
   const nowD = new Date(), nowMi = nowD.getFullYear() * 12 + nowD.getMonth();
 
+  // полоса выбора времени — жидкая: тянется по вертикали в сторону прокрутки, чуть сужается, отстаёт и покачивается
+  const band = useRef<HTMLSpanElement>(null);
+  const jl = useRef([0, 0]);
+  const jelly = (k: number, j: number) => {
+    jl.current[k] = j;
+    const el = band.current; if (!el) return;
+    const v = Math.max(-1.4, Math.min(1.4, jl.current[0] + jl.current[1])), a = Math.abs(v);
+    el.style.transform = `translateY(${-v * 5}px) scale(${1 - 0.05 * a},${1 + 0.42 * a})`;
+    el.style.borderRadius = `${10 + 8 * a}px`;
+  };
+  const hh = String(Math.floor(tMin / 60)).padStart(2, '0'), mm = String(tMin % 60).padStart(2, '0');
+  const timeGroup = showTime && (
+    <span className="pz-days-tgrp">
+      <button type="button" className="pz-days-mbtn pz-days-tbtn" aria-expanded={tOpen} aria-haspopup="dialog" disabled={disabled}
+        onClick={() => { if (!tOpen && wheels) { setOpen(false); setLevel('day'); } else if (!tOpen) setOpen(false); setTOpen(v => !v); }}>
+        <span className="pz-days-m pz-days-tm">{hh}:{mm}</span>
+        <svg className="pz-days-chev" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" /></svg>
+      </button>
+      <div role="dialog" aria-label={`${hh}:${mm}`} className={`pz-days-pk pz-days-tp${tOpen ? ' is-open' : ''}`} {...(tOpen ? {} : { inert: '' }) as object}>
+        <span ref={band} className="pz-days-band" aria-hidden="true" />
+        <Drum count={24} value={Math.floor(tMin / 60)} onJelly={j => jelly(0, j)} onCommit={h => setTime(h * 60 + (tMin % 60))} format={i => String(i).padStart(2, '0')} spec={spec} ariaLabel="hours" disabled={disabled} />
+        <span className="pz-days-colon" aria-hidden="true">:</span>
+        <Drum count={60 / stepM | 0 || 1} value={Math.floor((tMin % 60) / stepM)} onJelly={j => jelly(1, j)} onCommit={k => setTime(Math.floor(tMin / 60) * 60 + k * stepM)} format={i => String(i * stepM).padStart(2, '0')} spec={spec} ariaLabel="minutes" disabled={disabled} />
+      </div>
+    </span>
+  );
   const label = <span className="pz-days-m"><span key={mKey} className={mDir.current > 0 ? 'pz-days-roll-up' : 'pz-days-roll-down'}>{monthYear(cur)}</span></span>;
   const dayWheel = (
     <Wheel kind="day" value={valIdx} lo={lo} hi={hi} ok={ok} onCommit={setDay} W={G.d} spec={spec} disabled={disabled} page={7} home={() => today}
@@ -419,14 +599,15 @@ export function ParzDays({
 
   return (
     <div ref={root} id={id} className={['pz-days', `pz-days--${size}`, `pz-days--${theme}`, open && 'is-open', disabled && 'is-disabled', className].filter(Boolean).join(' ')} style={{ ...vars, ...style } as CSSProperties}>
-      {(hasMonth || todayLabel) && (
+      {(hasMonth || todayLabel || showTime) && (
         <div className={`pz-days-h${open ? ' is-open' : ''}`}>
           {picker ? (
             <button type="button" className="pz-days-mbtn" aria-expanded={open} aria-haspopup={picker === 'compact' ? 'dialog' : undefined} disabled={disabled} onClick={toggle}>
               {label}
               <svg className="pz-days-chev" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" /></svg>
             </button>
-          ) : hasMonth ? <span aria-hidden="true">{label}</span> : <span />}
+          ) : hasMonth ? <span aria-hidden="true">{label}</span> : null}
+          {timeGroup}
           {todayLabel && <button type="button" className={`pz-days-today${showToday ? ' is-shown' : ''}`} tabIndex={showToday ? 0 : -1} aria-hidden={!showToday}
             disabled={disabled} onClick={() => setDay(nearest(today))}>{todayLabel}</button>}
 
@@ -474,7 +655,7 @@ export function ParzDays({
           {dayWheel}
         </div>
       ) : dayWheel}
-      {name && <input type="hidden" name={name} value={toISODate(cur)} disabled={disabled} />}
+      {name && <input type="hidden" name={name} value={isoOf(withTime(valIdx, tMin))} disabled={disabled} />}
     </div>
   );
 }

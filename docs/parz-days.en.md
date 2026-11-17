@@ -37,6 +37,8 @@ const [day, setDay] = useState(new Date());
 | `showMonth` | `false` | Month and year above the strip; they roll when they change |
 | `picker` | — | Month and year picker on tapping the month: `'wheels'` slides year and month strips above the days, chosen levels shrink; `'compact'` is a mini window with months and a year field |
 | `pickerYear` | `true` | The picker can change years; `false` shows only the current year’s months |
+| `showTime` | `false` | Time button next to the month; a mini window with iOS-style hour and minute drums. `onChange` gives `'YYYY-MM-DDTHH:mm'` |
+| `minuteStep` | `5` | Minute step in the drum |
 | `todayLabel` | — | “Today” button label; the button shows when another day is selected |
 | `size` | `'md'` | `'sm'`, `'md'`, `'lg'` |
 | `theme` | `'light'` | `'light'` or `'dark'` |

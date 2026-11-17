@@ -1,10 +1,10 @@
 import { useContext, useMemo, useState } from 'react';
-import { ParzDays, ParzProvider, ParzToggle, type ParzMotionPreset, type ParzDaysSize } from '../lib';
+import { ParzDays, ParzProvider, ParzToggle, ParzButton, type ParzMotionPreset, type ParzDaysSize } from '../lib';
 import { ColorField, Sec, Seg } from './App';
 import { useT, LangCtx } from './i18n';
 
-type O = { size: ParzDaysSize; motion: ParzMotionPreset; weekday: 'narrow' | 'short'; month: boolean; today: boolean; marks: boolean; limit: boolean; weekends: boolean; disabled: boolean; todayHi: boolean; todayClr: string; sunHi: boolean; sunClr: string; picker: 'none' | 'wheels' | 'compact'; pYear: boolean; curHi: boolean; curClr: string };
-const O0: O = { size: 'md', motion: 'bouncy', weekday: 'narrow', month: true, today: true, marks: true, limit: false, weekends: false, disabled: false, todayHi: true, todayClr: '#34d27b', sunHi: true, sunClr: '#ff453a', picker: 'wheels', pYear: true, curHi: true, curClr: '#34d27b' };
+type O = { size: ParzDaysSize; motion: ParzMotionPreset; weekday: 'narrow' | 'short'; month: boolean; today: boolean; marks: boolean; limit: boolean; weekends: boolean; disabled: boolean; todayHi: boolean; todayClr: string; sunHi: boolean; sunClr: string; picker: 'none' | 'wheels' | 'compact'; pYear: boolean; curHi: boolean; curClr: string; time: boolean; step: '1' | '5' | '15' };
+const O0: O = { size: 'md', motion: 'bouncy', weekday: 'narrow', month: true, today: true, marks: true, limit: false, weekends: false, disabled: false, todayHi: true, todayClr: '#34d27b', sunHi: true, sunClr: '#ff453a', picker: 'wheels', pYear: true, curHi: true, curClr: '#34d27b', time: false, step: '5' };
 const LOC: Record<string, string> = { ru: 'ru-RU', en: 'en-US', hy: 'hy-AM' };
 const addDays = (n: number) => { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + n); return d; };
 const mark = (d: Date) => (d.getDate() % 5 === 0 ? true : d.getDate() % 7 === 0 ? '#4d9bff' : undefined);
@@ -15,6 +15,7 @@ function codeFor(o: O, todayLabel: string, off: Date[]) {
   const a: string[] = ['value={day}', 'onChange={(date, iso) => { setDay(date); fetch(`/api/slots?date=${iso}`); }}', `name='date'`];
   if (o.size !== 'md') a.push(`size='${o.size}'`);
   if (o.weekday !== 'narrow') a.push(`weekday='short'`);
+  if (o.time) { a.push('showTime'); if (o.step !== '5') a.push(`minuteStep={${o.step}}`); }
   if (o.picker !== 'none') { a.push(`picker='${o.picker}'`); if (!o.pYear) a.push('pickerYear={false}'); }
   else if (o.month) a.push('showMonth');
   if (o.today) a.push(`todayLabel='${todayLabel}'`);
@@ -37,7 +38,8 @@ export function DaysEditor() {
   const t = useT();
   const lang = useContext(LangCtx);
   const [o, setO] = useState<O>(O0);
-  const [day, setDay] = useState(() => addDays(0));
+  const [day, setDay] = useState(() => { const d = new Date(); d.setSeconds(0, 0); d.setMinutes(Math.ceil(d.getMinutes() / 5) * 5); return d; });
+  const [iso, setIso] = useState('');
   const [copied, setCopied] = useState(false);
   const upd = (p: Partial<O>) => setO(x => ({ ...x, ...p }));
   const [off, setOff] = useState<Date[]>([]);
@@ -49,9 +51,9 @@ export function DaysEditor() {
   const panel = (bg: 'dark' | 'light') => (
     <div className={`tg-stage tg-stage--${bg} days-stage`}>
       <span className="tg-cap">{bg === 'light' ? t('Светлый фон') : t('Тёмный фон')}</span>
-      <ParzDays value={day} onChange={setDay} theme={bg} size={o.size} weekday={o.weekday} locale={LOC[lang]} showMonth={o.month}
+      <ParzDays value={day} onChange={(d, s) => { setDay(d); setIso(s); }} theme={bg} size={o.size} weekday={o.weekday} locale={LOC[lang]} showMonth={o.month}
         todayLabel={o.today ? t('Сегодня') : undefined} marks={o.marks ? mark : undefined} min={min} max={max}
-        isDisabled={o.weekends ? weekend : undefined} disabled={o.disabled} picker={o.picker === 'none' ? undefined : o.picker} pickerYear={o.pYear} highlightToday={o.todayHi} todayColor={o.todayClr !== O0.todayClr ? o.todayClr : undefined}
+        isDisabled={o.weekends ? weekend : undefined} disabled={o.disabled} showTime={o.time} minuteStep={Number(o.step)} picker={o.picker === 'none' ? undefined : o.picker} pickerYear={o.pYear} highlightToday={o.todayHi} todayColor={o.todayClr !== O0.todayClr ? o.todayClr : undefined}
         highlightCurrent={o.curHi} currentColor={o.curClr !== O0.curClr ? o.curClr : undefined} highlightSunday={o.sunHi} sundayColor={o.sunClr !== O0.sunClr ? o.sunClr : undefined} disabledDates={off} ariaLabel={t('Дата')} />
     </div>
   );
@@ -68,10 +70,24 @@ export function DaysEditor() {
             <Seg label={t('День недели')} value={o.weekday} options={[['narrow', t('Буква')], ['short', t('Коротко')]]} onChange={x => upd({ weekday: x as O['weekday'] })} />
             <Seg label={t('Выбор месяца и года')} value={o.picker} options={[['wheels', t('Ленты')], ['compact', t('Мини-окно')], ['none', t('Нет')]]} onChange={x => upd({ picker: x as O['picker'] })} />
           </div>
+          <ParzToggle className="chk" checked={o.time} onChange={x => upd({ time: x })} label={t('Выбор времени')} />
+          {o.time && <div className="days-segs"><Seg label={t('Шаг минут')} value={o.step} options={[['1', '1'], ['5', '5'], ['15', '15']]} onChange={x => upd({ step: x as O['step'] })} /></div>}
           {o.picker !== 'none' && <ParzToggle className="chk" checked={o.pYear} onChange={x => upd({ pYear: x })} label={t('Можно менять год')} />}
           {o.picker === 'none' && <ParzToggle className="chk" checked={o.month} onChange={x => upd({ month: x })} label={t('Месяц над лентой')} />}
           <ParzToggle className="chk" checked={o.today} onChange={x => upd({ today: x })} label={t('Кнопка «Сегодня»')} />
           <ParzToggle className="chk" checked={o.marks} onChange={x => upd({ marks: x })} label={t('Точки-метки')} />
+        </Sec>
+        <Sec title={t('Поведение')}>
+          <ParzToggle className="chk" checked={o.limit} onChange={x => upd({ limit: x })} label={t('Только ближайшие 2 недели')} />
+          <ParzToggle className="chk" checked={o.weekends} onChange={x => upd({ weekends: x })} label={t('Выходные недоступны')} />
+          <ParzToggle className="chk" checked={o.disabled} onChange={x => upd({ disabled: x })} label={t('Отключён')} />
+          <div className="days-btns">
+            <ParzButton size="sm" variant="soft" accent="#ff5a5f" icon="ms:event_busy" onClick={offDay}>{t('Отключить выбранный день')}</ParzButton>
+            {off.length > 0 && <ParzButton size="sm" variant="ghost" icon="ms:undo" onClick={() => setOff([])}>{t('Вернуть дни')} ({off.length})</ParzButton>}
+          </div>
+          <div className="days-btns"><ParzButton size="sm" variant="outline" icon="ms:restart_alt" onClick={() => { setO(O0); setOff([]); }}>{t('По умолчанию')}</ParzButton></div>
+        </Sec>
+        <Sec title={t('Цвета')}>
           <ParzToggle className="chk" checked={o.todayHi} onChange={x => upd({ todayHi: x })} label={t('Выделять сегодня цветом')} />
           {o.todayHi && <div className="clrs"><ColorField label={t('Цвет «сегодня»')} value={o.todayClr} onChange={x => upd({ todayClr: x })} /></div>}
           {o.picker === 'wheels' && <ParzToggle className="chk" checked={o.curHi} onChange={x => upd({ curHi: x })} label={t('Выделять текущий год и месяц')} />}
@@ -79,20 +95,13 @@ export function DaysEditor() {
           <ParzToggle className="chk" checked={o.sunHi} onChange={x => upd({ sunHi: x })} label={t('Выделять воскресенье цветом')} />
           {o.sunHi && <div className="clrs"><ColorField label={t('Цвет воскресенья')} value={o.sunClr} onChange={x => upd({ sunClr: x })} /></div>}
         </Sec>
-        <Sec title={t('Поведение')}>
-          <ParzToggle className="chk" checked={o.limit} onChange={x => upd({ limit: x })} label={t('Только ближайшие 2 недели')} />
-          <ParzToggle className="chk" checked={o.weekends} onChange={x => upd({ weekends: x })} label={t('Выходные недоступны')} />
-          <ParzToggle className="chk" checked={o.disabled} onChange={x => upd({ disabled: x })} label={t('Отключён')} />
-          <div className="btns"><button onClick={offDay}>{t('Отключить выбранный день')}</button>{off.length > 0 && <button onClick={() => setOff([])}>{t('Вернуть дни')} ({off.length})</button>}</div>
-          <div className="btns"><button onClick={() => { setO(O0); setOff([]); }}>{t('По умолчанию')}</button></div>
-        </Sec>
       </aside>
 
       <section className="stage">
         <ParzProvider motion={o.motion}>
           <div className="tg-stages">{panel('dark')}{panel('light')}</div>
         </ParzProvider>
-        <p className="logo-hint days-api">onChange → <code>{`${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`}</code></p>
+        <p className="logo-hint days-api">onChange → <code>{iso || '—'}</code></p>
         <p className="logo-hint">{t('Потяните ленту, покрутите тачпадом или нажмите день — лента пружинит под карточку.')}</p>
         <div className="code">
           <div className="code-h"><b>{t('Код')}</b><button onClick={copy}>{copied ? t('Скопировано') : t('Скопировать')}</button></div>

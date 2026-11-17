@@ -711,3 +711,4 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .days-stage{align-items:stretch;justify-content:center;flex-direction:column}
 .days-stage .pz-days{width:100%}
 .days-segs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
+.days-btns{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
