@@ -56,6 +56,11 @@ import '@carparkteam/parz-ui/style.css';
 />
 ```
 
+> [!NOTE]
+> **Coming soon**
+> - **Live streams** — the player will play live broadcasts: a LIVE mark, a jump to the live edge and rewinding within the available window.
+> - **Ads** — pre-roll ads before the video starts and mid-roll ads during playback.
+
 ## Audio in several languages
 
 For series and dubbing, pass `audio`: each language is its own version of the video — one file or its own qualities. Switching keeps the time and pause, and the frame dissolves just like a quality change; “Auto” quality works inside the chosen language. In a playlist the viewer's choice carries over to the next episodes (by `lang`, otherwise by label). The button sits on the bar next to subtitles; `buttons={{ audio: 'more' }}` moves it into “More” (on a narrow player it is always there).

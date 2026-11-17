@@ -51,6 +51,21 @@ export function Markdown({ source }: { source: string }) {
       );
       continue;
     }
+    /* заметка в стиле GitHub: «> [!NOTE] Заголовок», дальше строки с «> » — выделенный блок со своим содержимым */
+    if (l.startsWith('>')) {
+      const buf: string[] = [];
+      while (i < lines.length && lines[i].startsWith('>')) buf.push(lines[i++].replace(/^>\s?/, ''));
+      const m = /^\[!(\w+)\]\s*(.*)$/.exec(buf[0] ?? '');
+      const kind = m ? m[1].toLowerCase() : 'note', title = m ? m[2] : '';
+      if (m) buf.shift();
+      blocks.push(
+        <aside key={k++} className={`md-note md-note--${kind}`}>
+          {title && <div className="md-note-t">{inline(title, 0)}</div>}
+          <Markdown source={buf.join('\n')} />
+        </aside>
+      );
+      continue;
+    }
     if (/^- /.test(l)) {
       const items: string[] = [];
       while (i < lines.length && /^- /.test(lines[i])) items.push(lines[i++].slice(2));
@@ -58,7 +73,7 @@ export function Markdown({ source }: { source: string }) {
       continue;
     }
     const buf: string[] = [];
-    while (i < lines.length && lines[i].trim() && !/^(#|```|\||- )/.test(lines[i])) buf.push(lines[i++]);
+    while (i < lines.length && lines[i].trim() && !/^(#|```|\||- |>)/.test(lines[i])) buf.push(lines[i++]);
     blocks.push(<p key={k++}>{buf.map((t, j) => <Fragment key={j}>{j ? ' ' : ''}{inline(t, j)}</Fragment>)}</p>);
   }
   return <div className="md">{blocks}</div>;
