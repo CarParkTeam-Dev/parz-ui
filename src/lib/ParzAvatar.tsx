@@ -294,6 +294,7 @@ export const ParzAvatar = forwardRef<HTMLElement, ParzAvatarProps>(function Parz
       p.onUploadError?.(err, f);
     }
   };
+  const groupTip = !!g?.tooltip && p.tooltip === undefined;
   const tip = p.tooltip === undefined ? (g?.tooltip ? name || undefined : undefined) : p.tooltip === true ? name || undefined : p.tooltip || undefined;
 
   const vars = {
@@ -339,11 +340,11 @@ export const ParzAvatar = forwardRef<HTMLElement, ParzAvatarProps>(function Parz
           <ParzBadge count={p.count} max={p.countMax} size={s >= 56 ? 'md' : 'sm'} />
         </span>
       )}
-      {tip != null && <span className="pz-av-tip" aria-hidden="true">{tip}</span>}
+      {tip != null && !groupTip && <span className="pz-av-tip" aria-hidden="true">{tip}</span>}
     </>
   );
 
-  const common = { className: cls, style: { ...vars, ...p.style }, ref: root as never, ...press };
+  const common = { className: cls, style: { ...vars, ...p.style }, ref: root as never, ...press, ...(groupTip && typeof tip === 'string' ? { 'data-pz-tip': tip } : {}) };
   if (editable) {
     const onIni = !shownSrc && !up;
     return (
@@ -452,6 +453,37 @@ export function ParzAvatarGroup({ children, max, total, size = 'md', shape = 'ci
     return () => ro.disconnect();
   }, [n, s, spacing]);
 
+  // одна общая подсказка: при переходе к соседу не гаснет, а переезжает к нему и меняет имя
+  const tipEl = useRef<HTMLSpanElement>(null), tipOn = useRef<HTMLElement | null>(null), tipX = useRef<number | null>(null), tipRaf = useRef(0);
+  const [tipText, setTipText] = useState<string | null>(null);
+  const [tipShow, setTipShow] = useState(false);
+  const follow = () => {
+    const el = tipOn.current, b = box.current, t = tipEl.current;
+    if (!b || !t) return;
+    if (el) {
+      const r = el.getBoundingClientRect(), gb = b.getBoundingClientRect();
+      const target = r.left + r.width / 2 - gb.left;
+      const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      tipX.current = tipX.current == null || still ? target : tipX.current + (target - tipX.current) * 0.22;
+      t.style.left = `${tipX.current}px`;
+      if (Math.abs(target - tipX.current) < 0.3) { tipX.current = target; t.style.left = `${target}px`; }
+    }
+    tipRaf.current = requestAnimationFrame(follow);
+  };
+  useEffect(() => () => cancelAnimationFrame(tipRaf.current), []);
+  const tipAt = (target: EventTarget | null) => {
+    if (!tooltips) return;
+    const el = (target as HTMLElement | null)?.closest?.('[data-pz-tip]') as HTMLElement | null;
+    if (!el || !box.current?.contains(el)) return;
+    if (!tipShow) tipX.current = null; // первый показ — сразу на месте, без подъезда
+    tipOn.current = el;
+    setTipText(el.getAttribute('data-pz-tip'));
+    setTipShow(true);
+    if (!tipRaf.current) tipRaf.current = requestAnimationFrame(follow);
+  };
+  const tipHide = () => { setTipShow(false); window.setTimeout(() => { if (!tipOnRefShown.current) { cancelAnimationFrame(tipRaf.current); tipRaf.current = 0; tipOn.current = null; } }, 250); };
+  const tipOnRefShown = useRef(false); tipOnRefShown.current = tipShow;
+
   const vars = { ...motionVars, '--pz-av-s': `${s}px`, '--pz-avg-ov': fit ?? OVERLAP[spacing], '--pz-avg-sp': sp, '--pz-av-surface': surfaceColor ?? SURFACE[theme] } as CSSProperties;
   const ctx = (i: number): GroupCtx => ({ size, shape, theme, surfaceColor, motion, tooltip: tooltips, index: i });
   const moreText = `+${rest > 999 ? '999' : rest}`;
@@ -461,11 +493,14 @@ export function ParzAvatarGroup({ children, max, total, size = 'md', shape = 'ci
   const moreFace = <span className="pz-av-face" aria-hidden="true"><span className="pz-av-fb"><span key={bump} className={`pz-av-ini${bump ? ' is-bump' : ''}`}>{moreText}</span></span></span>;
 
   return (
-    <div ref={box} className={`pz-avg${spread && fit == null && sp > -OVERLAP[spacing] + 0.04 ? ' is-spread' : ''}${className ? ` ${className}` : ''}`} role="group" aria-label={ariaLabel} style={{ ...vars, ...style }}>
+    <div ref={box} className={`pz-avg${spread && fit == null && sp > -OVERLAP[spacing] + 0.04 ? ' is-spread' : ''}${className ? ` ${className}` : ''}`} role="group" aria-label={ariaLabel} style={{ ...vars, ...style }}
+      onPointerOver={e => { if (e.pointerType === 'mouse') tipAt(e.target); }} onPointerLeave={tipHide}
+      onFocus={e => { if ((e.target as HTMLElement).matches?.(':focus-visible')) tipAt(e.target); }} onBlur={e => { if (!box.current?.contains(e.relatedTarget as Node)) tipHide(); }}>
       {shown.map((c, i) => <GCtx.Provider key={c.key ?? i} value={ctx(i)}>{c}</GCtx.Provider>)}
       {rest > 0 && (onMoreClick
         ? <button type="button" className={moreCls} style={moreVars} onClick={onMoreClick} aria-label={moreAria}>{moreFace}</button>
         : <span className={moreCls} style={moreVars} role="img" aria-label={moreAria}>{moreFace}</span>)}
+      {tooltips && <span ref={tipEl} className={`pz-avg-tip pz-avg-tip--${theme}${tipShow && tipText ? ' is-shown' : ''}`} aria-hidden="true">{tipText}</span>}
     </div>
   );
 }

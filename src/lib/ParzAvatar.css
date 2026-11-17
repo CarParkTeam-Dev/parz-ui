@@ -224,3 +224,13 @@
   .pz-av-pk.is-open .pz-av-pk-o,.pz-av-up>img{animation:none}
   .pz-av-dots>i{animation:pzAvCalm 1.6s ease-in-out infinite;transform:none}
 }
+
+/* общая подсказка группы: одна на всех — при переходе к соседу переезжает к нему, а не гаснет и не появляется заново */
+.pz-avg-tip{position:absolute;z-index:8;left:0;bottom:calc(100% + 8px + var(--pz-av-s) * .16);padding:6px 9px;border-radius:8px;
+  background:#f3f4f7;color:#16161b;font-size:12px;font-weight:600;line-height:1;white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.28);
+  opacity:0;transform:translateX(-50%) translateY(4px) scale(.82);transform-origin:50% 100%;
+  transition:opacity .14s ease,transform .2s ease}
+.pz-avg-tip--light{background:#16161b;color:#fff}
+.pz-avg-tip.is-shown{opacity:1;transform:translateX(-50%);transition:opacity .16s ease,transform var(--pz-av-dur) var(--pz-av-ease)}
+@media (prefers-reduced-motion:reduce){.pz-avg-tip,.pz-avg-tip.is-shown{transition-duration:.01ms}}
+.pz-avg>.pz-avg-tip{margin:0}
