@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ParzMenu, AnimoLogo, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, ParzButton, ParzProgress, ParzBadge, ParzVideo, ParzTabs, ParzExpander, ParzDays, type TabItem } from '../lib';
+import { ParzMenu, AnimoLogo, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, ParzButton, ParzProgress, ParzBadge, ParzVideo, ParzTabs, ParzExpander, ParzDays, ParzAvatar, ParzAvatarGroup, type TabItem } from '../lib';
 import { MenuEditor, Seg } from './App';
 import { LogoEditor } from './LogoEditor';
 import { ToggleEditor } from './ToggleEditor';
@@ -11,6 +11,7 @@ import { SliderEditor } from './SliderEditor';
 import { TabsEditor } from './TabsEditor';
 import { ExpanderEditor } from './ExpanderEditor';
 import { DaysEditor } from './DaysEditor';
+import { AvatarEditor } from './AvatarEditor';
 import { VideoEditor, DEMO_CLIP, useVideoLabels, usePoster } from './VideoEditor';
 import { Markdown } from './Markdown';
 import { ChangelogPage } from './Changelog';
@@ -53,20 +54,23 @@ import expHy from '../../docs/parz-expander.hy.md?raw';
 import daysEn from '../../docs/parz-days.en.md?raw';
 import daysRu from '../../docs/parz-days.ru.md?raw';
 import daysHy from '../../docs/parz-days.hy.md?raw';
+import avatarEn from '../../docs/parz-avatar.en.md?raw';
+import avatarRu from '../../docs/parz-avatar.ru.md?raw';
+import avatarHy from '../../docs/parz-avatar.hy.md?raw';
 import changesEn from '../../CHANGELOG.md?raw';
 import changesRu from '../../CHANGELOG.ru.md?raw';
 import changesHy from '../../CHANGELOG.hy.md?raw';
 import pkg from '../../package.json';
 
-type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander' | 'days' | 'brand' | 'changelog';
-type Cmp = 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander' | 'days';
-const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', toggle: 'Parz Toggle', check: 'Parz Checkbox', button: 'Parz Button', progress: 'Parz Progress', badge: 'Parz Badge', video: 'Parz Video', slider: 'Parz Slider', range: 'Parz Range', tabs: 'Parz Tabs', expander: 'Parz Expander', days: 'Parz Days' };
+type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander' | 'days' | 'avatar' | 'brand' | 'changelog';
+type Cmp = 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander' | 'days' | 'avatar';
+const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', toggle: 'Parz Toggle', check: 'Parz Checkbox', button: 'Parz Button', progress: 'Parz Progress', badge: 'Parz Badge', video: 'Parz Video', slider: 'Parz Slider', range: 'Parz Range', tabs: 'Parz Tabs', expander: 'Parz Expander', days: 'Parz Days', avatar: 'Parz Avatar' };
 const isCmp = (p: Page): p is Cmp => p in CMP_TITLE;
 type View = 'editor' | 'docs';
 type Route = { page: Page; view: View };
 export type Go = (p: Page, v?: View) => void;
 export type { Page, Lang };
-const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', button: 'parz-button', progress: 'parz-progress', badge: 'parz-badge', video: 'parz-video', slider: 'parz-slider', range: 'parz-range', tabs: 'parz-tabs', expander: 'parz-expander', days: 'parz-days', brand: 'brand', changelog: 'changelog' };
+const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', button: 'parz-button', progress: 'parz-progress', badge: 'parz-badge', video: 'parz-video', slider: 'parz-slider', range: 'parz-range', tabs: 'parz-tabs', expander: 'parz-expander', days: 'parz-days', avatar: 'parz-avatar', brand: 'brand', changelog: 'changelog' };
 const DOCS: Record<Cmp, Record<Lang, string>> = {
   menu: { en: menuEn, ru: menuRu, hy: menuHy },
   animo: { en: logoEn, ru: logoRu, hy: logoHy },
@@ -80,7 +84,8 @@ const DOCS: Record<Cmp, Record<Lang, string>> = {
   range: { en: sliderEn, ru: sliderRu, hy: sliderHy },
   tabs: { en: tabsEn, ru: tabsRu, hy: tabsHy },
   expander: { en: expEn, ru: expRu, hy: expHy },
-  days: { en: daysEn, ru: daysRu, hy: daysHy }
+  days: { en: daysEn, ru: daysRu, hy: daysHy },
+  avatar: { en: avatarEn, ru: avatarRu, hy: avatarHy }
 };
 const LANG_KEY = 'ltb-lang';
 const WIDE_KEY = 'pz-wide';
@@ -121,6 +126,8 @@ const INDEX: Omit<Hit, 'sub'>[] = [
   { page: 'expander', view: 'docs', title: 'Parz Expander', icon: 'description', words: 'parz expander accordion docs props api документация пропсы экспандер аккордеон ծալվող փաստաթղթեր' },
   { page: 'days', view: 'editor', title: 'Parz Days', icon: 'calendar_month', words: 'parz days date picker calendar day strip week schedule дата день дни календарь лента неделя выбор даты расписание ամսաթիվ օր օրեր օրացույց շաբաթ' },
   { page: 'days', view: 'docs', title: 'Parz Days', icon: 'description', words: 'parz days date docs props api документация пропсы дата календарь ամսաթիվ փաստաթղթեր' },
+  { page: 'avatar', view: 'editor', title: 'Parz Avatar', icon: 'account_circle', words: 'parz avatar avatars user profile photo picture initials status online group team stack story ring аватар аватарка пользователь профиль фото инициалы статус в сети группа команда история кольцо ավատար օգտատեր պրոֆիլ լուսանկար սկզբնատառեր կարգավիճակ խումբ թիմ' },
+  { page: 'avatar', view: 'docs', title: 'Parz Avatar', icon: 'description', words: 'parz avatar group docs props api документация пропсы аватар группа ավատար փաստաթղթեր' },
   { page: 'changelog', view: 'editor', title: 'Changelog', icon: 'history', words: 'changelog what is new whats new release releases update version history что нового изменения обновление версия выпуск история ինչ նոր կա փոփոխություններ թարմացում տարբերակ' },
   { page: 'brand', view: 'editor', title: 'Parz UI', icon: 'palette', words: 'parz logos brand svg zip pack логотипы бренд логопак լոգոներ' }
 ];
@@ -269,7 +276,7 @@ export function Site({ extras = {} }: { extras?: SiteExtras }) {
               </div>
             </div>
             {v === 'editor'
-              ? (page === 'menu' ? <MenuEditor lang={lang} /> : page === 'animo' ? <LogoEditor /> : page === 'toggle' ? <ToggleEditor /> : page === 'check' ? <CheckboxEditor /> : page === 'button' ? <ButtonEditor /> : page === 'progress' ? <ProgressEditor /> : page === 'badge' ? <BadgeEditor /> : page === 'video' ? <VideoEditor /> : page === 'tabs' ? <TabsEditor /> : page === 'expander' ? <ExpanderEditor /> : page === 'days' ? <DaysEditor /> : <SliderEditor key={page} kind={page as 'slider' | 'range'} />)
+              ? (page === 'menu' ? <MenuEditor lang={lang} /> : page === 'animo' ? <LogoEditor /> : page === 'toggle' ? <ToggleEditor /> : page === 'check' ? <CheckboxEditor /> : page === 'button' ? <ButtonEditor /> : page === 'progress' ? <ProgressEditor /> : page === 'badge' ? <BadgeEditor /> : page === 'video' ? <VideoEditor /> : page === 'tabs' ? <TabsEditor /> : page === 'expander' ? <ExpanderEditor /> : page === 'days' ? <DaysEditor /> : page === 'avatar' ? <AvatarEditor /> : <SliderEditor key={page} kind={page as 'slider' | 'range'} />)
               : <main className="docs page"><Markdown key={lang + page} source={DOCS[page][lang]} /></main>}
           </div>
         )}
@@ -485,6 +492,19 @@ function ExpanderDemo({ lang }: { lang: Lang }) {
     </div>
   );
 }
+const DEMO_TEAM = ['Ani Petrosyan', 'Mark Lee', 'Elena Sokolova', 'David Hakobyan', 'Sara Kim', 'Aram Grigoryan', 'Lina Park'];
+function AvatarDemo({ lang }: { lang: Lang }) {
+  const t = (k: string) => tr(lang, k);
+  const [st, setSt] = useState<'online' | 'away' | 'busy'>('online');
+  useEffect(() => { const id = window.setInterval(() => setSt(s => (s === 'online' ? 'away' : s === 'away' ? 'busy' : 'online')), 1800); return () => window.clearInterval(id); }, []);
+  return (
+    <div className="card-demo card-demo--avatar">
+      <ParzAvatar name="Ani Petrosyan" size="lg" status={st} ring ringSpin />
+      <ParzAvatarGroup max={4} ariaLabel={t('Команда')}>{DEMO_TEAM.map(n => <ParzAvatar key={n} name={n} />)}</ParzAvatarGroup>
+      <small>{t('Наведите на группу')}</small>
+    </div>
+  );
+}
 function DaysDemo({ lang }: { lang: Lang }) {
   const t = (k: string) => tr(lang, k);
   return (
@@ -559,6 +579,11 @@ export const CATALOG: Entry[] = [
     id: 'days', title: 'Parz Days', cat: 'forms', tags: ['Forms', 'Date', 'Motion'],
     desc: 'Лента дней под неподвижной карточкой: дни едут под ней, как колесо, по инерции, и пружинят на выбранную дату.',
     demo: lang => <DaysDemo lang={lang} />
+  },
+  {
+    id: 'avatar', title: 'Parz Avatar', cat: 'media', tags: ['Profile', 'Group', 'Motion'],
+    desc: 'Аватар с фото, инициалами или значком: фото проявляется мягко, статус появляется с пружиной, есть кольцо «историй». Группа стопкой раздвигается при наведении.',
+    demo: lang => <AvatarDemo lang={lang} />
   }
 ];
 export function ComponentCard({ e, lang, go, i, reveal }: { e: Entry; lang: Lang; go: Go; i: number; reveal?: boolean }) {

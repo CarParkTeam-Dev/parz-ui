@@ -30,3 +30,6 @@ export { ParzProvider, useParzMotion, PARZ_MOTION_PRESETS } from './ParzProvider
 export type { ParzProviderProps, ParzMotionPreset, ParzMotionSpec } from './ParzProvider';
 export { ParzDays, toISODate, PARZ_DAYS_MIN_YEAR, PARZ_DAYS_MAX_YEARS_AHEAD } from './ParzDays';
 export type { ParzDaysProps, ParzDaysSize, ParzDaysTheme, ParzDaysPicker } from './ParzDays';
+export { ParzAvatar, ParzAvatarGroup } from './ParzAvatar';
+export { PARZ_AVATAR_PRESETS } from './ParzAvatarPresets';
+export type { ParzAvatarChange, ParzAvatarLabels, ParzAvatarProps, ParzAvatarGroupProps, ParzAvatarSize, ParzAvatarShape, ParzAvatarStatus, ParzAvatarTheme } from './ParzAvatar';

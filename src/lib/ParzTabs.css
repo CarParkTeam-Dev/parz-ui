@@ -12,11 +12,11 @@
 .pz-tabs--full{display:flex;width:100%}
 .pz-tabs--full .pz-tabs-in{flex:1 1 auto}
 .pz-tabs--full:not(.pz-tabs--wrap) .pz-tabs-in{flex-wrap:nowrap}
-.pz-tabs--full .pz-tabs-b{flex:1 1 0;min-width:0}
+.pz-tabs.pz-tabs--full .pz-tabs-b{flex:1 1 0;min-width:0}
 /* на всю ширину + перенос: пункты делят строку поровну, но не сжимаются меньше своего текста — лишние уходят на следующую строку */
-.pz-tabs--full.pz-tabs--wrap .pz-tabs-b{min-width:max-content}
-.pz-tabs--full .pz-tabs-b.pz-tabs-more{flex:none}
-.pz-tabs--full.pz-tabs--scroll .pz-tabs-b{flex:1 0 auto}
+.pz-tabs.pz-tabs--full.pz-tabs--wrap .pz-tabs-b{min-width:max-content}
+.pz-tabs.pz-tabs--full .pz-tabs-b.pz-tabs-more{flex:none}
+.pz-tabs.pz-tabs--full.pz-tabs--scroll .pz-tabs-b{flex:1 0 auto}
 .pz-tabs.is-disabled{opacity:.45}
 .pz-tabs .pz-tabs-b{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:6px;box-sizing:border-box;flex:none;
   margin:0;border:0;background:none;color:var(--pz-tabs-fg);border-radius:999px;font:inherit;font-weight:600;line-height:1.2;white-space:nowrap;cursor:pointer;

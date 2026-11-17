@@ -1,0 +1,226 @@
+/* Parz UI · Parz Avatar */
+@property --pz-av-a{syntax:'<angle>';inherits:false;initial-value:0deg}
+
+.pz-av{--pz-av-s:40px;--pz-av-fs:16px;--pz-av-fg:#fff;--pz-av-ease:cubic-bezier(.34,1.3,.64,1);--pz-av-dur:.5s;--_r:50%;
+  position:relative;display:inline-grid;flex:none;box-sizing:border-box;vertical-align:middle;
+  width:var(--pz-av-s);height:var(--pz-av-s);margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-decoration:none;
+  -webkit-tap-highlight-color:transparent;transition:transform var(--pz-av-dur) var(--pz-av-ease)}
+.pz-av--rounded{--_r:calc(var(--pz-av-s) * .28)}
+.pz-av--square{--_r:calc(var(--pz-av-s) * .12)}
+.pz-av.has-ring{margin:calc(var(--pz-av-rw) + var(--pz-av-rg))}
+
+.pz-av-face{position:relative;display:grid;width:100%;height:100%;border-radius:var(--_r);overflow:hidden;isolation:isolate;
+  background:var(--pz-av-bg);transition:box-shadow .3s ease}
+.pz-av.is-anon .pz-av-face{background:linear-gradient(135deg,#5b5b66,#3a3a43)}
+.pz-av--light.is-anon .pz-av-face{background:linear-gradient(135deg,#d4d5dd,#b3b5c1)}
+
+/* запасной слой: инициалы или значок; когда фото проявилось — тихо гаснет */
+.pz-av-fb{grid-area:1/1;display:grid;place-items:center;color:var(--pz-av-fg);transition:opacity .45s ease .35s}
+.pz-av.has-photo .pz-av-fb{opacity:0}
+/* инициалы — блок, обрезанный по высоте заглавных: центрируется сама буква, а не строка с запасом */
+.pz-av-ini{display:block;font-size:var(--pz-av-fs);font-weight:650;line-height:1;letter-spacing:.01em;white-space:nowrap;
+  text-box:trim-both cap alphabetic;text-shadow:0 1px 2px rgba(0,0,0,.14);user-select:none}
+@supports not (text-box:trim-both cap alphabetic){.pz-av-ini{transform:translateY(.04em)}}
+.pz-av-ico{display:grid;place-items:center;width:58%;height:58%;--ltb-icon:100%}
+.pz-av-ico .ltb-icon{width:100%;height:100%;display:grid;place-items:center}
+.pz-av-ico .ltb-ms,.pz-av-ico .ltb-mi{font-size:calc(var(--pz-av-s) * .58);width:1em;height:1em;line-height:1;display:block;overflow:hidden}
+.pz-av-ico .ltb-s{display:none}
+.pz-av-sil{width:100%;height:100%;display:block;opacity:.92}
+
+/* фото: проявляется из лёгкого размытия и чуть крупнее; новое — поверх старого */
+.pz-av-img{grid-area:1/1;width:100%;height:100%;object-fit:cover;display:block;user-select:none;-webkit-user-drag:none}
+.pz-av-img.is-top{animation:pzAvPhoto .7s cubic-bezier(.2,.7,.2,1) backwards}
+@keyframes pzAvPhoto{from{opacity:0;transform:scale(1.08);filter:blur(6px)}}
+
+/* пока фото грузится — мягкий блик по инициалам */
+.pz-av.is-loading .pz-av-face::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);background-size:250% 100%;
+  animation:pzAvShine 1.3s ease-in-out infinite}
+@keyframes pzAvShine{from{background-position:120% 0}to{background-position:-20% 0}}
+
+/* статус: точка с обводкой цветом фона; при смене — появляется заново с пружиной */
+.pz-av-st{position:absolute;z-index:2;right:var(--pz-av-st-in);bottom:var(--pz-av-st-in);width:var(--pz-av-dot);height:var(--pz-av-dot);
+  border-radius:50%;background:var(--pz-av-st);box-shadow:0 0 0 max(1.5px,calc(var(--pz-av-s) * .045)) var(--pz-av-surface,#0c0c0f);
+  animation:pzAvPop var(--pz-av-dur) var(--pz-av-ease) backwards}
+@keyframes pzAvPop{from{transform:scale(0)}}
+.pz-av-st::before{content:'';position:absolute;border-radius:inherit}
+/* нет на месте — полумесяц */
+.pz-av-st--away::before{width:62%;height:62%;left:-6%;top:-6%;background:var(--pz-av-surface,#0c0c0f)}
+.pz-av-st--away{overflow:hidden}
+/* не беспокоить — белая черта */
+.pz-av-st--busy::before{left:22%;right:22%;top:calc(50% - 9%);height:18%;border-radius:99px;background:#fff}
+/* не в сети — кольцо */
+.pz-av-st--offline::before{width:var(--pz-av-hole);height:var(--pz-av-hole);left:calc((var(--pz-av-dot) - var(--pz-av-hole)) / 2);top:calc((var(--pz-av-dot) - var(--pz-av-hole)) / 2);background:var(--pz-av-surface,#0c0c0f)}
+/* в сети — мягкий пульс */
+.pz-av-st.is-pulse::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--pz-av-st);opacity:0;pointer-events:none;
+  animation:pzAvPulse 2s cubic-bezier(.2,.6,.35,1) infinite}
+@keyframes pzAvPulse{0%{transform:scale(1);opacity:.5}100%{transform:scale(2.3);opacity:0}}
+
+/* кольцо «историй»: градиент, вырезанный маской в кольцо — зазор до фото прозрачный, подходит к любому фону */
+.pz-av-ring{position:absolute;z-index:0;inset:calc((var(--pz-av-rw) + var(--pz-av-rg)) * -1);pointer-events:none;box-sizing:border-box;
+  border-radius:calc(var(--_r) + var(--pz-av-rw) + var(--pz-av-rg));padding:var(--pz-av-rw);
+  background:var(--pz-av-ring,conic-gradient(from var(--pz-av-a),#ff8a3d,#ff4d73,#e046c4,#8a5cff,#e046c4,#ff4d73,#ff8a3d));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  animation:pzAvRing var(--pz-av-dur) var(--pz-av-ease) backwards}
+.pz-av--circle .pz-av-ring{border-radius:50%;padding:0;
+  /* у круга — кольцо вырезается радиальной маской: край гладкий и толщина одинаковая по всей окружности */
+  -webkit-mask:radial-gradient(closest-side,transparent calc(100% - var(--pz-av-rw) - .6px),#000 calc(100% - var(--pz-av-rw)),#000 calc(100% - .6px),transparent 100%);
+  mask:radial-gradient(closest-side,transparent calc(100% - var(--pz-av-rw) - .6px),#000 calc(100% - var(--pz-av-rw)),#000 calc(100% - .6px),transparent 100%)}
+.pz-av.is-seen .pz-av-ring{background:rgba(255,255,255,.26)}
+.pz-av--light.is-seen .pz-av-ring{background:rgba(22,22,27,.2)}
+/* «есть история»: градиент течёт по кругу — само кольцо не крутится, поэтому у скруглённого квадрата края не «гуляют» */
+.pz-av.is-spin .pz-av-ring{animation:pzAvRing var(--pz-av-dur) var(--pz-av-ease) backwards,pzAvSpin 3.2s linear infinite}
+@keyframes pzAvRing{from{transform:scale(.86);opacity:0}}
+@keyframes pzAvSpin{to{--pz-av-a:360deg}}
+
+/* кнопка или ссылка: при наведении мягко подрастает с пружиной, при нажатии поджимается */
+.pz-av.is-int{cursor:pointer}
+@media (hover:hover){.pz-av.is-int:hover{transform:scale(1.07)}}
+.pz-av.is-int{transition:transform var(--pz-av-dur) var(--pz-av-ease),scale .16s cubic-bezier(.3,0,.3,1)}
+.pz-av.is-press{scale:.9 .88}
+/* капля от точки касания — светлое пятно растекается по аватару и тает */
+.pz-av-drop{position:absolute;z-index:2;width:240%;aspect-ratio:1;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.42) 0%,rgba(255,255,255,.18) 38%,transparent 62%);
+  transform:translate(-50%,-50%) scale(0);animation:pzAvDrop .65s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes pzAvDrop{60%{opacity:1}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.pz-av.is-int:focus-visible{outline:none}
+.pz-av.is-int:focus-visible .pz-av-face{box-shadow:0 0 0 2px var(--pz-av-surface,#0c0c0f),0 0 0 4px #7aa7ff}
+.pz-av.is-disabled{opacity:.45;cursor:not-allowed}
+
+/* подсказка с именем */
+.pz-av-tip{position:absolute;z-index:5;left:50%;bottom:calc(100% + 8px);padding:6px 9px;border-radius:8px;
+  background:#f3f4f7;color:#16161b;font-size:12px;font-weight:600;line-height:1;white-space:nowrap;pointer-events:none;
+  box-shadow:0 6px 18px rgba(0,0,0,.28);opacity:0;transform:translateX(-50%) translateY(4px) scale(.82);transform-origin:50% 100%;
+  display:none;transition:opacity .1s ease,transform .2s ease,display .1s allow-discrete}
+/* скрытая подсказка — display:none, чтобы у края экрана не давать прокрутку вбок; появляется с короткой задержкой —
+   при переходе к соседу старая успевает уйти, и они не накладываются */
+.pz-av:focus-visible>.pz-av-tip{display:block;opacity:1;transform:translateX(-50%);
+  transition:opacity .16s ease .09s,transform var(--pz-av-dur) var(--pz-av-ease) .09s,display 0s allow-discrete}
+@media (hover:hover){.pz-av:hover>.pz-av-tip{display:block;opacity:1;transform:translateX(-50%);
+  transition:opacity .16s ease .09s,transform var(--pz-av-dur) var(--pz-av-ease) .09s,display 0s allow-discrete}}
+@starting-style{.pz-av:hover>.pz-av-tip,.pz-av:focus-visible>.pz-av-tip{opacity:0;transform:translateX(-50%) translateY(4px) scale(.82)}}
+.pz-av--light .pz-av-tip{background:#16161b;color:#fff}
+
+/* счётчик */
+.pz-av-count{position:absolute;z-index:3;top:0;right:0;display:flex;transform:translate(30%,-30%);pointer-events:none}
+.pz-av--circle .pz-av-count{transform:translate(18%,-18%)}
+.pz-av-count .pz-bd{box-shadow:inset 0 0 0 1.5px var(--_bd),0 0 0 2px var(--pz-bd-ring,#0c0c0f)}
+
+/* ---------- группа ---------- */
+.pz-avg{--pz-avg-ov:.26;position:relative;display:inline-flex;align-items:center;vertical-align:middle;isolation:isolate}
+/* группа — свой слой; при наведении и фокусе поднимаем её, чтобы подсказка была поверх соседних аватаров и их статусов */
+.pz-avg:hover,.pz-avg:focus-within,.pz-av:hover,.pz-av:focus-visible{z-index:6}
+.pz-avg>*+*{margin-inline-start:calc(var(--pz-av-s) * var(--pz-avg-ov) * -1);transition:margin-inline-start var(--pz-av-dur) var(--pz-av-ease)}
+/* раздвигается от мыши и от клавиатуры; на сенсорных экранах наведение «залипает» после касания — там не раздвигаем */
+.pz-avg.is-spread:has(:focus-visible)>*+*{margin-inline-start:calc(var(--pz-av-s) * var(--pz-avg-sp, .08))}
+@media (hover:hover){.pz-avg.is-spread:hover>*+*{margin-inline-start:calc(var(--pz-av-s) * var(--pz-avg-sp, .08))}}
+.pz-av--in-group .pz-av-face{box-shadow:0 0 0 2px var(--pz-av-surface,#0c0c0f)}
+.pz-av--in-group{animation:pzAvIn var(--pz-av-dur) var(--pz-av-ease) backwards;animation-delay:calc(var(--i, 0) * 45ms)}
+.pz-avg>:hover,.pz-avg>:focus-visible,.pz-avg>:focus-within{z-index:3}
+/* подъём при наведении — волной: аватар под курсором выше всех, соседи чуть-чуть, следующие едва заметно.
+   Поднимается содержимое, а не сам аватар: область наведения остаётся на месте, и у нижнего края нет дрожания «поднялся-опустился» */
+.pz-avg .pz-av>:not(.pz-av-tip){transition:transform var(--pz-av-dur) var(--pz-av-ease)}
+@media (hover:hover){
+  .pz-avg .pz-av.is-int:hover{transform:none}
+  .pz-avg>:hover .pz-av>:not(.pz-av-tip),.pz-avg>.pz-av:hover>:not(.pz-av-tip){transform:translateY(round(calc(var(--pz-av-s) * -.16), 1px))}
+  .pz-avg>.pz-av.is-int:hover>:not(.pz-av-tip){transform:translateY(round(calc(var(--pz-av-s) * -.16), 1px)) scale(1.05)}
+  .pz-avg>:has(+ :hover)>:not(.pz-av-tip),.pz-avg>:hover+*>:not(.pz-av-tip),
+  .pz-avg>:has(+ :hover) .pz-av>:not(.pz-av-tip),.pz-avg>:hover+* .pz-av>:not(.pz-av-tip){transform:translateY(round(calc(var(--pz-av-s) * -.08), 1px))}
+  .pz-avg>:has(+ * + :hover)>:not(.pz-av-tip),.pz-avg>:hover+*+*>:not(.pz-av-tip),
+  .pz-avg>:has(+ * + :hover) .pz-av>:not(.pz-av-tip),.pz-avg>:hover+*+* .pz-av>:not(.pz-av-tip){transform:translateY(round(calc(var(--pz-av-s) * -.03), 1px))}
+  /* подсказка встаёт над поднятым аватаром */
+  .pz-avg .pz-av:hover>.pz-av-tip{bottom:calc(100% + 8px + var(--pz-av-s) * .16)}
+}
+@keyframes pzAvIn{from{transform:scale(.4);opacity:0}}
+/* «+N» */
+.pz-av--more .pz-av-face{background:rgba(255,255,255,.12);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.pz-av--more .pz-av-fb{color:#fff}
+.pz-av--more.pz-av--light .pz-av-face{background:rgba(22,22,27,.09)}
+.pz-av--more.pz-av--light .pz-av-fb{color:#16161b}
+.pz-av--more .pz-av-ini{font-weight:700;text-shadow:none}
+.pz-av-ini.is-bump{animation:pzAvBump var(--pz-av-dur) var(--pz-av-ease)}
+@keyframes pzAvBump{from{transform:scale(.6);opacity:.2}}
+
+@media (prefers-reduced-motion:reduce){
+  .pz-av,.pz-avg>*+*,.pz-av-tip{transition-duration:.01ms}
+  .pz-av-img.is-top,.pz-av-drop,.pz-av-st,.pz-av-ring,.pz-av.is-spin .pz-av-ring,.pz-av--in-group,.pz-av-ini.is-bump{animation:none}
+  .pz-av.is-loading .pz-av-face::after{animation:none;background:rgba(255,255,255,.12)}
+  .pz-av-st.is-pulse::after{animation:pzAvCalm 2s ease-in-out infinite;transform:none}
+  .pz-av-fb{transition-duration:.01ms;transition-delay:0s}
+  .pz-av.is-int:hover,.pz-av--in-group:hover,.pz-av--in-group.is-int:hover{transform:none}
+}
+@keyframes pzAvCalm{0%,100%{opacity:0}50%{opacity:.25}}
+
+/* ---------- смена аватара ---------- */
+.pz-av-edit{position:relative;display:inline-flex;vertical-align:middle;flex:none}
+.pz-av-edit.is-open{z-index:30}
+/* при наведении на изменяемый аватар — мягкое затемнение и значок камеры */
+.pz-av-cam{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:rgba(10,10,14,.42);opacity:0;pointer-events:none;
+  transition:opacity .25s ease}
+.pz-av-cam svg{width:38%;height:38%;fill:none;stroke:#fff;stroke-width:1.8;stroke-linejoin:round;transform:scale(.8);transition:transform var(--pz-av-dur) var(--pz-av-ease)}
+.pz-av.is-editable:focus-visible .pz-av-cam,.pz-av.is-editable.is-open .pz-av-cam{opacity:1}
+.pz-av.is-editable:focus-visible .pz-av-cam svg,.pz-av.is-editable.is-open .pz-av-cam svg{transform:none}
+@media (hover:hover){.pz-av.is-editable:hover .pz-av-cam{opacity:1}.pz-av.is-editable:hover .pz-av-cam svg{transform:none}}
+
+/* загрузка: выбранное фото сразу видно, но размыто; по нему бегут точки. Готовое фото проявляется из-под него, превью тает */
+.pz-av-up{position:absolute;inset:0;z-index:2;display:grid;place-items:center;overflow:hidden;border-radius:inherit;transition:opacity .6s ease}
+.pz-av-up>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(calc(var(--pz-av-s) * .07)) saturate(1.1);transform:scale(1.15);
+  animation:pzAvUpIn var(--pz-av-dur) var(--pz-av-ease) backwards}
+.pz-av-up::after{content:'';position:absolute;inset:0;background:rgba(8,8,12,.28)}
+.pz-av-up.is-done{opacity:0}
+@keyframes pzAvUpIn{from{opacity:0;transform:scale(1.3)}}
+.pz-av-dots{position:relative;z-index:1;display:flex;gap:calc(var(--pz-av-s) * .06);transition:opacity .3s ease}
+.pz-av-up.is-done .pz-av-dots{opacity:0}
+.pz-av-dots>i{width:max(4px,calc(var(--pz-av-s) * .085));aspect-ratio:1;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.25);
+  animation:pzAvDot 1.05s cubic-bezier(.45,0,.55,1) infinite}
+.pz-av-dots>i:nth-child(2){animation-delay:.14s}
+.pz-av-dots>i:nth-child(3){animation-delay:.28s}
+@keyframes pzAvDot{0%,60%,100%{transform:translateY(0);opacity:.55}30%{transform:translateY(-55%);opacity:1}}
+
+/* окно выбора: стекло, как мини-окно Parz Days, вырастает каплей из аватара */
+.pz-av-pk{--pz-av-pk-bg:rgba(30,30,36,.62);--pz-av-pk-fg:#f4f4f6;--pz-av-pk-sub:rgba(244,244,246,.6);--pz-av-pk-hover:rgba(255,255,255,.1);--pz-av-pk-on:#fff;
+  position:fixed;z-index:1000;left:var(--pz-av-pk-x);top:var(--pz-av-pk-y);width:min(300px,calc(100vw - 16px));box-sizing:border-box;padding:12px;border-radius:22px;
+  background:var(--pz-av-pk-bg);color:var(--pz-av-pk-fg);-webkit-backdrop-filter:blur(14px) saturate(1.8);backdrop-filter:blur(14px) saturate(1.8);
+  box-shadow:0 18px 40px -12px rgba(0,0,0,.5),0 0 0 1px rgba(127,127,140,.2),inset 0 1px 0 rgba(255,255,255,.12);font-size:13px;text-align:left;
+  opacity:0;visibility:hidden;pointer-events:none;transform-origin:var(--pz-av-pk-ox) -10px;
+  transform:translateX(-50%) translateY(-8px) scale(.8,.66);
+  transition:opacity .18s cubic-bezier(.4,0,1,1),transform .24s cubic-bezier(.4,0,1,1),visibility 0s .24s}
+.pz-av-pk.is-up{transform-origin:var(--pz-av-pk-ox) calc(100% + 10px);transform:translateX(-50%) translateY(8px) scale(.8,.66)}
+.pz-av-pk.is-open{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%);
+  transition:opacity .22s cubic-bezier(.2,0,0,1),transform var(--pz-av-dur) var(--pz-av-ease),visibility 0s}
+.pz-av-pk--light{--pz-av-pk-bg:rgba(255,255,255,.72);--pz-av-pk-fg:#16161b;--pz-av-pk-sub:rgba(22,22,27,.55);--pz-av-pk-hover:rgba(22,22,27,.07);--pz-av-pk-on:#16161b;
+  box-shadow:0 18px 40px -14px rgba(20,20,40,.3),0 0 0 1px rgba(22,22,27,.1),inset 0 1px 0 rgba(255,255,255,.8)}
+.pz-av-pk-t{padding:2px 4px 10px;font-weight:700;font-size:13px;color:var(--pz-av-pk-sub);letter-spacing:.01em}
+.pz-av-pk-g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pz-av-pk .pz-av-pk-o{position:relative;display:grid;place-items:center;aspect-ratio:1;margin:0;padding:0;border:0;border-radius:50%;background:none;cursor:pointer;
+  transition:transform calc(var(--pz-av-dur) * .45) var(--pz-av-ease)}
+.pz-av-pk-o>img,.pz-av-pk-ini{width:100%;height:100%;border-radius:50%;object-fit:cover;display:grid;place-items:center;user-select:none}
+.pz-av-pk-ini{color:#fff;font-size:18px}
+.pz-av-pk-ini>b{display:block;font-weight:650;line-height:1;text-box:trim-both cap alphabetic}
+.pz-av-pk-ini.is-anon{background:linear-gradient(135deg,#5b5b66,#3a3a43)}
+.pz-av-pk-ini svg{width:58%;height:58%;fill:rgba(255,255,255,.92)}
+/* выбранный — кольцо с зазором */
+.pz-av-pk-o::after{content:'';position:absolute;inset:-4px;border-radius:50%;box-shadow:0 0 0 2px var(--pz-av-pk-on);opacity:0;transform:scale(.85);
+  transition:opacity .2s ease,transform calc(var(--pz-av-dur) * .45) var(--pz-av-ease)}
+.pz-av-pk-o.is-on::after{opacity:1;transform:none}
+@media (hover:hover){.pz-av-pk .pz-av-pk-o:hover{transform:scale(1.07)}}
+.pz-av-pk .pz-av-pk-o:active{transform:scale(.92);transition-duration:.1s}
+.pz-av-pk .pz-av-pk-o:focus-visible{outline:none}
+.pz-av-pk .pz-av-pk-o:focus-visible::after{opacity:1;transform:none;box-shadow:0 0 0 2px #7aa7ff}
+.pz-av-pk.is-open .pz-av-pk-o{animation:pzAvPkPop var(--pz-av-dur) var(--pz-av-ease) backwards;animation-delay:calc(var(--i) * 22ms + 40ms)}
+@keyframes pzAvPkPop{from{opacity:0;transform:scale(.55)}}
+.pz-av-pk .pz-av-pk-up{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:12px 0 0;padding:11px 12px;border:0;border-radius:14px;
+  background:var(--pz-av-pk-hover);color:var(--pz-av-pk-fg);font:inherit;font-weight:650;font-size:14px;line-height:1;cursor:pointer;
+  transition:background-color .2s,transform calc(var(--pz-av-dur) * .45) var(--pz-av-ease)}
+.pz-av-pk-up svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pz-av-pk-up span{display:block;text-box:trim-both cap alphabetic}
+@media (hover:hover){.pz-av-pk .pz-av-pk-up:hover{background:color-mix(in srgb,var(--pz-av-pk-fg) 16%,transparent)}}
+.pz-av-pk .pz-av-pk-up:active{transform:scale(.97);transition-duration:.1s}
+.pz-av-pk .pz-av-pk-up:focus-visible{outline:2px solid #7aa7ff;outline-offset:2px}
+
+@media (prefers-reduced-motion:reduce){
+  .pz-av-pk,.pz-av-pk.is-open{transition-duration:.01ms}
+  .pz-av-pk.is-open .pz-av-pk-o,.pz-av-up>img{animation:none}
+  .pz-av-dots>i{animation:pzAvCalm 1.6s ease-in-out infinite;transform:none}
+}

@@ -708,3 +708,11 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .days-stage .pz-days{width:100%}
 .days-segs{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
 .days-btns{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+/* Parz Avatar */
+.av-stage{gap:22px;align-items:flex-start}
+.av-stage.tg-stage--dark{--pz-av-surface:#0c0c0f}
+.av-main{min-height:96px;display:flex;align-items:center;padding:8px 8px 0}
+.av-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.av-stage .pz-avg{padding-top:4px;max-width:100%}
+.av-acts{align-items:center}
+.card-demo--avatar{background:radial-gradient(90% 80% at 25% 20%,#3a1d4d 0%,transparent 60%),radial-gradient(80% 80% at 85% 85%,#1d3a4d 0%,transparent 60%),#0b0b0e;gap:18px}
