@@ -2,36 +2,41 @@
 
 `ParzVideo` is the Parz UI video player. The control bar is liquid glass that floats over the video and gently hides while you watch. Nothing abrupt.
 
-- **seeking** — the seek line flows every frame instead of jumping four times a second; on hover it thickens and shows a knob and a time tooltip;
-- **center** — like the Apple player: a glass play/pause button with −10 and +10 on the sides (on a narrow player ±10 sit in the bar); shows together with the bar;
-- **poster** — `poster` lies over the video and dissolves when playback starts;
-- **audio badge** — `audioBadge="Dolby Atmos"` shows the Dolby Atmos mark, `"Spatial Audio"` a spatial audio icon, any other text a waves icon;
-- **icons** — play, pause and replay, volume and full screen morph into each other;
-- **bar** — fades away after `hideDelay` without mouse movement and is always visible while paused;
-- **volume** — the slider opens when you hover the sound button, its width flows;
-- **settings** — the gear opens a glass menu: quality, speed, subtitles and loop. Pages slide in from the side, the menu height flows, no modal windows;
-- **quality** — switching keeps the time and pause state, and the last frame dissolves into the new one;
-- **chapters** — the seek line splits into segments, the chapter name shows in the tooltip and next to the time;
-- **frame preview** — a frame from the hovered point appears above the seek line;
-- **subtitles** — WebVTT in the player's style; the line lifts gently while the bar is visible;
-- **±10 seconds** — skip buttons; click the time to see what is left;
-- **hints** — pause, seeking and volume changes show a soft icon in the center;
-- **waiting** — before the start, while the buffer fills, dots run inside the center button on dark blurred glass; if the video stalls during playback, an arc spins in the center;
-- **phone** — a tap shows or hides the bar, a double-tap on an edge skips 10 seconds; on a narrow player volume is just a button;
-- **right click** — a custom menu at the cursor: the Parz UI mark, “by CarPark Team”, the version and “About” (opens dev.carpark.am/parz-ui in a new tab);
-- **reduced motion** — with `prefers-reduced-motion` transitions are nearly instant.
+- **seek line** — the bar flows every frame; on hover it thickens and shows the knob and a tip with the time, chapter and a frame from that spot;
+- **centre** — like Apple's player: a glass play/pause button with −10 and +10 on either side, and “previous” / “next” in a playlist;
+- **poster** — `poster` lies over the video, dissolves when playback starts and comes back at the end;
+- **audio badge** — `audioBadge="Dolby Atmos"` shows the Dolby Atmos mark, `"Spatial Audio"` a spatial-audio icon, any other text a waves icon;
+- **settings buttons** — quality, audio, subtitles and speed sit on the bar as separate buttons (`buttons` moves audio, subtitles and speed into “More”); “More” holds loop and Share; the menu is a glass window, pages slide in from the side and its height flows;
+- **button tips** — on mouse hover the button's name appears above it and glides to the neighbouring button without blinking;
+- **quality** — “Auto” by default: the player picks the file by its size, screen density and network and steps down if the video stalls; on a change the frame dissolves and time and pause are kept;
+- **audio** — several languages (`audio`), switched like quality;
+- **chapters** — thin marks on a continuous line; a passed mark takes the accent colour;
+- **subtitles** — WebVTT in the player's style, off by default; smaller on phones, and they softly fade while the bar is shown;
+- **playlist** — `playlist`: a strip of videos from the bottom, an “Up next” card with a countdown, smooth switching;
+- **remember** — `remember`: the place, episode and the viewer's settings; next time “Continue · 15:12”;
+- **volume** — starts at 70% on a computer and opens into a slider on hover; on phones the device controls the sound;
+- **casting and picture in picture** — instead of a black screen, a placeholder with the poster and a button to bring the video back;
+- **centre hints** — seek and volume icons flash briefly, text (“Link copied”, quality) stays for about two seconds;
+- **waiting** — before start dots run in the centre button, while buffering during playback an arc spins; no endless loading in iOS Safari;
+- **phone** — a tap shows or hides the bar (lifting the finger does not hide it), a double tap on an edge skips 10 seconds; iPhone's system full screen keeps speed and subtitles;
+- **right click** — its own menu at the cursor: the Parz UI mark, “by CarPark Team”, the version and “About Parz UI” (opens dev.carpark.am/parz-ui in a new tab);
+- **two animation styles** — `motion="liquid"` (elements appear and hide like drops, hiding is the exact reverse) and `motion="fade"`;
+- **reduced motion** — with `prefers-reduced-motion` transitions are almost instant.
 
 ## Layout
 
-Everything over the video is a separate borderless glass capsule; a crisp outer shadow gives depth. They show and hide together.
+Everything over the video is a separate borderless glass capsule; a sharp outer shadow gives depth. They appear and hide together.
 
 - **top left** — title, quality mark (4K / HD) and the current chapter;
-- **top right** — audio format badge and volume: on desktop a round sound button, the track opens on hover;
-- **center** — play/pause with −10 / +10, like the Apple player;
-- **above the timeline on the right** — quality, subtitles, speed and “more” (loop), next to them picture in picture, cast and full screen;
-- **bottom** — the timeline in its own capsule: time, line, time left (click for total length).
+- **top right** — audio format badge and volume: on a computer a round sound button, the slider opens on hover;
+- **centre** — play/pause and −10 / +10 (plus “previous” and “next” in a playlist);
+- **above the line, left** — picture in picture and casting;
+- **above the line, right** — settings buttons (at most 5: quality, audio, subtitles, speed, playlist) and “More”, then full screen;
+- **bottom** — the seek line in its own capsule: time, line, time left (click for the total).
 
-**Narrow player (up to 460 px, phone):** top left — picture in picture and cast; top right — the sound button (mute / unmute only); bottom right — the “…” button with full screen to its right; the “…” menu has icons: quality, speed, subtitles, loop. On a short player the title hides.
+**Narrow player (up to 460 px, phone):** top right — the sound button (mute / unmute only); above the line on the left — picture in picture and casting, on the right — “…” and full screen; “…” lists with icons: playlist, quality, audio, subtitles, speed, Share, loop; in a playlist “previous / next” replace ±10.
+
+**Very small player (narrow and up to 230 px tall):** the right buttons line up with the seek line, the centre gets smaller, picture in picture and casting move into “…”, the menu may cover the line; if the player is at most 280 px wide, only the current time stays in the bottom capsule.
 
 ```tsx
 import { ParzVideo } from '@carparkteam/parz-ui';
@@ -177,7 +182,7 @@ When the player is focused: `Space` or `K` — pause, `←` / `→` — 5 second
 | `showPip` | `false` | Picture in picture, if the browser supports it |
 | `speeds` | `[0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]` | Speeds in the menu |
 | `hideDelay` | `2600` | Ms without movement before the bar hides |
-| `labels` | English | Button labels for screen readers: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` is the step), `remaining`, `more`, `cast`, `on`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `resume`, `startOver`, `episode`, `audioTrack`, `share`, `copyLink`, `linkCopied`, `shareOther`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
+| `labels` | English | Button labels for screen readers: `play`, `pause`, `replay`, `mute`, `unmute`, `volume`, `seek`, `speed`, `fullscreen`, `exitFullscreen`, `pip`, `player`, `normal`, `settings`, `quality`, `subtitles`, `off`, `loop`, `back`, `forward` (`{n}` is the step), `remaining`, `more`, `cast`, `on`, `about`, `version`, `casting`, `castBack`, `pipActive`, `pipBack`, `auto`, `resume`, `startOver`, `episode`, `audioTrack`, `share`, `copyLink`, `linkCopied`, `shareOther`, `playlist`, `previous`, `next`, `upNext`, `playNow`, `cancel`, `nowPlaying` |
 | `onPlay` / `onPause` / `onEnded` | — | Playback events |
 | `onTimeUpdate` | — | `(time, duration) => void` |
 | `onQualityChange` | — | `(index, source) => void` |
