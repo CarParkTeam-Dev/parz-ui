@@ -123,7 +123,7 @@ export function ParzTabs<T extends string = string>({
         // дробные координаты (offsetLeft округляет до целых — плашка и текст в ней расходились на полпикселя)
         const er = el.getBoundingClientRect(), br = b.getBoundingClientRect();
         const l = br.left - er.left - el.clientLeft + el.scrollLeft, t = br.top - er.top - el.clientTop + el.scrollTop;
-        const n = { l, r: l + br.width, t, h: br.height, iw: el.clientWidth };
+        const n = { l, r: l + br.width, t, h: br.height, iw: er.width };
         if (p && p.l === n.l && p.r === n.r && p.t === n.t && p.h === n.h && p.iw === n.iw) return p;
         // плашка перетекает, только когда выбор переехал; если меняется ширина или размер — идёт за пунктом кадр в кадр, без опоздания
         // пока плашка ещё едет к новому пункту (~0.5 с), замеры не обрывают её переезд
