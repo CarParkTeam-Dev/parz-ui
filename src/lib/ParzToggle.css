@@ -1,6 +1,6 @@
 /* Parz UI · Parz Toggle */
 .pz-tg{--pz-tg-accent:#6ee7a0;--pz-tg-track:#2a2a30;--pz-tg-knob:#fff;--pz-tg-reject:#ff5c5c;
-  display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;vertical-align:middle}
+  display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;vertical-align:middle}
 .pz-tg--start{flex-direction:row-reverse}
 .pz-tg.is-disabled{cursor:default;opacity:.45}
 .pz-tg-track{position:relative;flex:none;display:block;width:var(--pz-tg-w);height:var(--pz-tg-h);border-radius:999px;
@@ -85,3 +85,5 @@
   .pz-tg.is-press .pz-tg-core,.pz-tg.is-drag .pz-tg-core{background-color:var(--pz-tg-knob);box-shadow:var(--_sh)}
   .pz-tg.is-moved .pz-tg-core,.pz-tg.is-moved.is-on .pz-tg-core,.pz-tg.is-reject .pz-tg-core{animation:none}
 }
+/* телефон: удержание бегунка не должно запускать выделение текста, лупу и меню «Скопировать» */
+.pz-tg,.pz-tg *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}

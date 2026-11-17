@@ -583,3 +583,18 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .btns--pick button{transition:background-color .35s cubic-bezier(.33,0,.15,1),border-color .35s cubic-bezier(.33,0,.15,1),color .35s cubic-bezier(.33,0,.15,1)}
 .btns.btns--pick button:first-child{background:none;border-color:#2a2a2f;color:inherit}
 .btns.btns--pick button.on{background:var(--acc);border-color:var(--acc);color:#04130a}
+
+/* ---------- звезда на GitHub (только полный сайт) ---------- */
+.hero-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px 10px;margin-top:12px}
+.hero-row .hero-ver{margin:0}
+.pz-star{display:inline-flex;align-items:center;gap:7px;padding:4px 10px 4px 4px;border-radius:99px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);backdrop-filter:blur(10px);color:var(--mut);font:500 13px Inter,system-ui,sans-serif;text-decoration:none;transition:color .3s,background .3s,border-color .3s,transform .45s cubic-bezier(.3,1.5,.5,1)}
+.pz-star-i{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(250,204,21,.14)}
+.pz-star-i .material-symbols-rounded{font-size:15px;color:#facc15;transition:transform .5s cubic-bezier(.3,1.6,.5,1),font-variation-settings .3s}
+.pz-star-n{padding-left:7px;border-left:1px solid rgba(255,255,255,.12);color:var(--txt);font-weight:600;font-variant-numeric:tabular-nums}
+.pz-star:hover,.pz-star:focus-visible{color:var(--txt);background:rgba(250,204,21,.08);border-color:rgba(250,204,21,.25)}
+.pz-star:hover .pz-star-i .material-symbols-rounded{transform:scale(1.2) rotate(72deg);font-variation-settings:'FILL' 1}
+.pz-star:active{transform:scale(.96)}
+.hero-star-note{margin:8px auto 0!important;color:var(--mut);font-size:12.5px!important;opacity:.8}
+.pz-star-card{display:flex;flex-direction:column;align-items:center;gap:8px;margin:18px auto 0}
+.cl-hero .pz-star-card p{margin:0;color:var(--mut);font-size:12.5px;opacity:.85}
+.pz-star-card .pz-star{padding:6px 14px 6px 6px;font-size:14px}

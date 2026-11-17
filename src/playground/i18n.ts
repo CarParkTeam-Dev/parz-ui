@@ -303,6 +303,8 @@ const D: Record<string, [string, string]> = {
   'Каждый бегунок двигается сам по себе и не перепрыгивает соседей. Нажмите на дорожку — подъедет ближайший.': ['Each thumb moves on its own and never jumps over its neighbours. Tap the track and the nearest one slides over.', 'Յուրաքանչյուր սահնակ շարժվում է ինքնուրույն և չի անցնում հարևաններից։ Սեղմեք ուղուն՝ մոտական կմոտենա։'],
   // Что нового
   'Что нового': ['What’s new', 'Ինչ նոր կա'],
+  'Звезда на GitHub': ['Star on GitHub', 'Աստղ GitHub-ում'],
+  'Звезда помогает Parz UI оставаться бесплатной и развиваться': ['A star helps Parz UI stay free and keep growing', 'Աստղը օգնում է, որ Parz UI-ն մնա անվճար և զարգանա'],
   'В следующем обновлении': ['Coming in the next update', 'Հաջորդ թարմացման մեջ'],
   // Changelog и плашка о переводе
   'Изменения': ['Changelog', 'Փոփոխություններ'],

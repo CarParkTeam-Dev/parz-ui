@@ -145,6 +145,8 @@ export type SiteExtras = {
   brand?: (c: SiteCtx) => ReactNode;
   /** Проверка обновлений на странице «Что нового». Нужна в площадке у пользователей; на нашем сайте выключаем — он всегда свежий. */
   updateCheck?: boolean;
+  /** Блок в шапке «Что нового» вместо проверки обновлений (на нашем сайте — звезда на GitHub). */
+  changelogTop?: (lang: Lang) => ReactNode;
 };
 
 export function Site({ extras = {} }: { extras?: SiteExtras }) {
@@ -198,7 +200,7 @@ export function Site({ extras = {} }: { extras?: SiteExtras }) {
         {page === 'home' && extras.home?.({ lang, go, revealed })}
         {page === 'components' && <ComponentsPage lang={lang} go={go} />}
         {page === 'brand' && extras.brand?.({ lang, go, revealed })}
-        {page === 'changelog' && <ChangelogPage lang={lang} source={CHANGES[lang]} install={<InstallCmd lang={lang} cmd={UPDATE} />} check={extras.updateCheck === false ? undefined : <UpdateCheck lang={lang} current={pkg.version} />} footer={<Footer lang={lang} />} official={extras.updateCheck === false} />}
+        {page === 'changelog' && <ChangelogPage lang={lang} source={CHANGES[lang]} install={<InstallCmd lang={lang} cmd={UPDATE} />} check={extras.updateCheck === false ? extras.changelogTop?.(lang) : <UpdateCheck lang={lang} current={pkg.version} />} footer={<Footer lang={lang} />} official={extras.updateCheck === false} />}
         {isCmp(page) && (
           <div className="cmp">
             <div className="cmp-bar">

@@ -166,7 +166,7 @@ export function ParzToggle({
     .filter(Boolean).join(' ');
 
   return (
-    <label className={cls} style={vars} onClick={click} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onLostPointerCapture={() => { if (d.current?.moved) settle(); }}>
+    <label className={cls} style={vars} onClick={click} onContextMenu={e => e.preventDefault()} onDragStart={e => e.preventDefault()} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up} onLostPointerCapture={() => { if (d.current?.moved) settle(); }}>
       <span className="pz-tg-track" ref={track}>
         <input type="checkbox" role="switch" className="pz-tg-in" checked={on} aria-checked={on} disabled={disabled} aria-label={ariaLabel}
           name={name} id={id} onChange={e => set(e.target.checked)} onKeyDown={key} />
