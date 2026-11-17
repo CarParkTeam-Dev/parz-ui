@@ -140,8 +140,29 @@ function codeFor(o: { lang: Lang; mSearch: boolean; desk: Desk; more: boolean; m
 
 /* ---------- мелкие контролы ---------- */
 export function Seg<T extends string>({ value, options, onChange, label }: { value: T; options: [T, string][]; onChange: (v: T) => void; label: string }) {
+  // плашка выбора перетекает к новому значению: ведущий край уходит первым, хвост догоняет — как капля в меню
+  const box = useRef<HTMLDivElement>(null);
+  const [pill, setPill] = useState<{ l: number; t: number; w: number; h: number; dir: 1 | -1; ready: boolean } | null>(null);
+  const idx = options.findIndex(([v]) => v === value);
+  useLayoutEffect(() => {
+    const el = box.current; if (!el) return;
+    const place = () => {
+      const b = el.children[idx + 1] as HTMLElement | undefined; // [0] — сама плашка
+      if (!b) { setPill(null); return; }
+      setPill(p => {
+        const n = { l: b.offsetLeft, t: b.offsetTop, w: b.offsetWidth, h: b.offsetHeight };
+        if (p && p.l === n.l && p.t === n.t && p.w === n.w && p.h === n.h) return p;
+        return { ...n, dir: p && n.l < p.l ? -1 : 1, ready: !!p };
+      });
+    };
+    place();
+    const ro = new ResizeObserver(place); ro.observe(el);
+    return () => ro.disconnect();
+  }, [idx, options.length]);
+  const st = pill ? { '--l': `${pill.l}px`, '--r': `calc(100% - ${pill.l + pill.w}px)`, '--t': `${pill.t}px`, '--h': `${pill.h}px` } as React.CSSProperties : undefined;
   return (
-    <div className="seg" role="radiogroup" aria-label={label}>
+    <div ref={box} className={`seg${pill?.ready ? ' is-ready' : ''}${pill?.dir === -1 ? ' to-left' : ''}`} role="radiogroup" aria-label={label} style={st}>
+      <span className="seg-pill" aria-hidden="true" style={{ opacity: pill ? 1 : 0 }} />
       {options.map(([v, t]) => <button key={v} role="radio" aria-checked={v === value} className={v === value ? 'on' : ''} onClick={() => onChange(v)}>{t}</button>)}
     </div>
   );
@@ -166,7 +187,15 @@ export function ColorField({ label, value, onChange }: { label: string; value: s
   );
 }
 export function Sec({ title, children, open = true }: { title: string; children: React.ReactNode; open?: boolean }) {
-  return <details className="sec" open={open}><summary>{title}</summary><div className="sec-b">{children}</div></details>;
+  // раскрытие — через grid-rows 0fr→1fr (браузер сам считает высоту, без замеров и рывков), содержимое проявляется плавно
+  const [on, setOn] = useState(open);
+  const id = useRef(`sec-${Math.random().toString(36).slice(2, 8)}`).current;
+  return (
+    <section className={`sec${on ? ' is-open' : ''}`}>
+      <button type="button" className="sec-h1" aria-expanded={on} aria-controls={id} onClick={() => setOn(v => !v)}>{title}</button>
+      <div className="sec-w" id={id} {...(on ? {} : { inert: '' }) as object}><div className="sec-c"><div className="sec-b">{children}</div></div></div>
+    </section>
+  );
 }
 
 /* ---------- редактор ---------- */

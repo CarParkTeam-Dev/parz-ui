@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react';
 import { ParzVideo, ParzToggle, ParzSlider, type ParzVideoItem, type ParzVideoAudio, type ParzVideoButton, type ParzVideoLabels, type ParzVideoSource, type ParzVideoChapter, type ParzVideoTrack, type ParzVideoMotion } from '../lib';
 import { Seg, ColorField, Sec } from './App';
 import { useT } from './i18n';
+
+const PRESET_AUDIO = ['Dolby Atmos', 'Spatial Audio'];
 import clip from '../../playback.mp4';
 import poster from './assets/playback-poster.jpg';
 import bay from '../../nature.mp4';
@@ -95,6 +97,7 @@ export function VideoEditor() {
   const [o, setO] = useState<O>(O0);
   const [copied, setCopied] = useState(false);
   const upd = (p: Partial<O>) => setO(x => ({ ...x, ...p }));
+  const [audioMode, setAudioMode] = useState<string>(() => (PRESET_AUDIO.includes(O0.audioText) ? O0.audioText : 'custom'));
   const code = useMemo(() => codeFor(o), [o]);
   const copy = async () => { try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { /* буфер недоступен */ } };
 
@@ -132,8 +135,11 @@ export function VideoEditor() {
           <ParzToggle className="chk" checked={o.withTitle} onChange={v => upd({ withTitle: v })} label={t('Показывать заголовок')} />
           {o.withTitle && <label className="row"><span>{t('Текст заголовка')}</span><input className="txt" value={o.title} maxLength={60} onChange={e => upd({ title: e.target.value })} /></label>}
           <ParzToggle className="chk" checked={o.audio} onChange={v => upd({ audio: v })} label={t('Значок формата звука')} />
-          {o.audio && <label className="row"><span>{t('Текст значка')}</span><input className="txt" value={o.audioText} maxLength={24} onChange={e => upd({ audioText: e.target.value })} /></label>}
-          {o.audio && <div className="btns btns--pick">{['Dolby Atmos', 'Spatial Audio', '5.1', '7.1'].map(x => <button key={x} className={o.audioText === x ? 'on' : ''} aria-pressed={o.audioText === x} onClick={() => upd({ audioText: x })}>{x}</button>)}</div>}
+          {o.audio && <Seg label={t('Формат звука')} value={audioMode} onChange={m => { setAudioMode(m); if (m !== 'custom') upd({ audioText: m }); else if (PRESET_AUDIO.includes(o.audioText)) upd({ audioText: '' }); }}
+            options={[['Dolby Atmos', 'Dolby Atmos'], ['Spatial Audio', 'Spatial Audio'], ['custom', t('Свой текст')]]} />}
+          <div className={`reveal${o.audio && audioMode === 'custom' ? ' is-open' : ''}`} {...(o.audio && audioMode === 'custom' ? {} : { inert: '' }) as object}><div>
+            <label className="row"><span>{t('Текст значка')}</span><input className="txt" value={o.audioText} maxLength={24} placeholder="5.1" onChange={e => upd({ audioText: e.target.value })} /></label>
+          </div></div>
         </Sec>
         <Sec title={t('Вид')}>
           <div className="row"><span>{t('Соотношение сторон')}</span><Seg label={t('Соотношение сторон')} value={o.ratio} options={[['16 / 9', '16:9'], ['4 / 3', '4:3'], ['1 / 1', '1:1'], ['9 / 16', '9:16']]} onChange={v => upd({ ratio: v })} /></div>
