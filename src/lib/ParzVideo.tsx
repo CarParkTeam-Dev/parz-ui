@@ -378,6 +378,8 @@ function Player({
   const [nested, setNested] = useState(false);
   const [narrow, setNarrow] = useState(false);
   const [tiny, setTiny] = useState(false);
+  /* невысокий широкий плеер: центр не помещается между названием и рядом кнопок — поднимаем его в середину свободного места */
+  const [short, setShort] = useState(false);
   const [castOk, setCastOk] = useState(false);
   /* идёт трансляция: браузер больше не рисует кадры — вместо чёрного экрана заглушка */
   const [remote, setRemote] = useState(false);
@@ -596,6 +598,7 @@ function Player({
       setNarrow(w > 0 && w <= 460);
       /* совсем маленький плеер: кнопки встают в ряд со шкалой, а «картинка в картинке» и трансляция уходят в «…» */
       setTiny(w > 0 && w <= 460 && h <= 230);
+      setShort(w > 460 && h > 0 && h <= 340);
     };
     check();
     window.addEventListener('resize', check);
@@ -932,7 +935,7 @@ function Player({
     return () => window.clearTimeout(id);
   }, [visible]);
   const vars = { '--_tn': (showSettings ? 1 : 0) + (showFullscreen ? 1 : 0), ...(accent && { '--pz-vd-accent': accent }), ...(radius != null && { '--pz-vd-r': `${radius}px` }), aspectRatio, ...style } as CSSProperties;
-  const cls = ['pz-vd', `pz-vd--${motion}`, playing && 'is-playing', visible ? 'is-shown' : 'is-hidden', drag && 'is-drag', fs && 'is-fs', !started && 'is-idle', menuOpen && 'is-menu', aStay && 'is-astay', narrow && 'is-narrow', tiny && 'is-tiny', offer != null && 'is-offer', (remote || pipOn) && 'is-remote', unOn && 'is-un', listOpen && 'is-sheet', className].filter(Boolean).join(' ');
+  const cls = ['pz-vd', `pz-vd--${motion}`, playing && 'is-playing', visible ? 'is-shown' : 'is-hidden', drag && 'is-drag', fs && 'is-fs', !started && 'is-idle', menuOpen && 'is-menu', aStay && 'is-astay', narrow && 'is-narrow', tiny && 'is-tiny', short && 'is-short', offer != null && 'is-offer', (remote || pipOn) && 'is-remote', unOn && 'is-un', listOpen && 'is-sheet', className].filter(Boolean).join(' ');
   const rateTxt = (s: number) => (s === 1 ? L.normal : `${s}×`);
   const cur = sources?.[Math.min(q, sources.length - 1)];
   const hasQ = !!sources && sources.length > 1;

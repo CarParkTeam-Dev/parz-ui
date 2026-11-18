@@ -647,3 +647,20 @@ button.pz-vd-mh{padding-left:10px;opacity:.8}
 .pz-vd.is-tiny .pz-vd-resume-i{width:30px;height:30px}
 .pz-vd.is-tiny .pz-vd-resume{gap:4px;margin-top:4px}
 .pz-vd.is-tiny .pz-vd-resume-0{height:22px;padding:0 10px;font-size:11px}
+
+/* телефон: дорожки громкости нет — касание кнопки звука (фокус, «залипший» hover) не должно раскрывать капсулу
+   и запускать её пружину; капсула остаётся ровным кругом */
+.pz-vd .pz-vd-vol:not(:has(.pz-vd-vrail)),.pz-vd .pz-vd-vol:not(:has(.pz-vd-vrail)):is(:hover,:focus-within,.is-drag){padding-left:calc((var(--_cap) - 36px) / 2);padding-right:calc((var(--_cap) - 36px) / 2)}
+.pz-vd.is-narrow .pz-vd-vol:not(:has(.pz-vd-vrail)),.pz-vd.is-narrow .pz-vd-vol:not(:has(.pz-vd-vrail)):is(:hover,:focus-within,.is-drag){padding-left:3px;padding-right:3px}
+.pz-vd .pz-vd-vol:not(:has(.pz-vd-vrail)) .pz-vd-btn{animation:none!important}
+
+/* невысокий широкий плеер (шире 460 px, не выше 340 px): центр по середине экрана упирался в ряд кнопок над шкалой —
+   ставим его в середину свободного места между названием сверху и рядом кнопок; ниже 290 px — кнопки центра поменьше */
+.pz-vd.is-short .pz-vd-center{top:calc((58px + 100cqh - var(--_m) - var(--_cap) * 2 - var(--_gap) * 2) / 2)}
+@container (max-height:290px){
+  .pz-vd.is-short .pz-vd-center{gap:22px}
+  .pz-vd.is-short .pz-vd-cplay{width:62px;height:62px}
+  .pz-vd.is-short .pz-vd-cplay svg{width:32px;height:32px}
+  .pz-vd.is-short .pz-vd-cskip{width:46px;height:46px}
+  .pz-vd.is-short .pz-vd-cskip svg{width:24px;height:24px}
+}

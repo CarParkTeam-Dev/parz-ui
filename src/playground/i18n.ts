@@ -421,7 +421,7 @@ const D: Record<string, [string, string]> = {
   'Соотношение сторон': ['Aspect ratio', 'Կողմերի հարաբերություն'],
   'Кнопки': ['Buttons', 'Կոճակներ'],
   'Воспроизведение': ['Playback', 'Նվագարկում'],
-  'По кругу': ['Loop', 'Շրջանաձև'],
+  'По кругу': ['Loop', 'Կրկնել'],
   'Без звука при запуске': ['Muted at start', 'Առանց ձայնի մեկնարկին'],
   'Пробел — пауза, стрелки — перемотка и громкость, 0–9 — переход по ролику, C — субтитры, F — во весь экран. Щелчок по времени показывает, сколько осталось. На телефоне двойное касание по краю перематывает на 10 секунд. В плейлисте Shift+N и Shift+P — следующий и предыдущий ролик.': ['Space pauses, arrows seek and change volume, 0–9 jump through the clip, C toggles subtitles, F goes full screen. Click the time to see what is left. On a phone, double-tap an edge to skip 10 seconds. In the playlist, Shift+N and Shift+P go to the next and previous video.', 'Բացատ՝ դադար, սլաքներ՝ ոլորում և ձայն, 0–9՝ անցում հոլովակով, C՝ ենթագրեր, F՝ ամբողջ էկրան։ Ժամանակի վրա սեղմելը ցույց է տալիս, թե որքան է մնացել։ Հեռախոսում եզրին կրկնակի հպումը ոլորում է 10 վայրկյան։ Ցանկում Shift+N և Shift+P՝ հաջորդ և նախորդ տեսանյութը։'],
   'Настройки': ['Settings', 'Կարգավորումներ'],
