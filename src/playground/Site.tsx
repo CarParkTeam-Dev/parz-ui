@@ -269,7 +269,7 @@ export function Site({ extras = {} }: { extras?: SiteExtras }) {
         {page === 'home' && extras.home?.({ lang, go, revealed })}
         {page === 'components' && <ComponentsPage lang={lang} go={go} />}
         {page === 'brand' && extras.brand?.({ lang, go, revealed })}
-        {page === 'changelog' && <ChangelogPage lang={lang} source={CHANGES[lang]} install={<InstallCmd lang={lang} cmd={UPDATE} />} check={extras.updateCheck === false ? extras.changelogTop?.(lang) : <UpdateCheck lang={lang} current={pkg.version} />} footer={<Footer lang={lang} />} official={extras.updateCheck === false} />}
+        {page === 'changelog' && <ChangelogPage lang={lang} source={CHANGES[lang]} install={<InstallCmd lang={lang} cmd={UPDATE} />} beta={IS_BETA ? <BetaInstall lang={lang} /> : undefined} check={extras.updateCheck === false ? extras.changelogTop?.(lang) : <UpdateCheck lang={lang} current={pkg.version} />} footer={<Footer lang={lang} />} official={extras.updateCheck === false} />}
         {isCmp(page) && (
           <div className={`cmp${wide ? ' is-wide' : ''}`}>
             <div className="cmp-bar">
@@ -661,6 +661,35 @@ export function Footer({ lang }: { lang: Lang }) {
 
 const INSTALL = 'npm install @carparkteam/parz-ui';
 const UPDATE = 'npm update @carparkteam/parz-ui';
+const BETA_CMD = 'npm install @carparkteam/parz-ui@next';
+/** Сейчас пробная версия (1.2.0-beta.0 и т. п.) — показываем, как её поставить. */
+export const IS_BETA = pkg.version.includes('-');
+
+/** Блок «Попробовать бету»: команда с меткой next и подсказка, что обычная установка даёт стабильную версию. */
+export function BetaInstall({ lang }: { lang: Lang }) {
+  const t = (k: string, v?: Record<string, string | number>) => tr(lang, k, v);
+  return (
+    <div className="pz-beta">
+      <div className="pz-beta-h"><span className="pz-beta-tag">Beta</span><b>{t('Попробуйте {v} уже сейчас', { v: pkg.version })}</b></div>
+      <InstallCmd lang={lang} cmd={BETA_CMD} />
+      <p>{t('Обычная установка по-прежнему ставит стабильную версию. Вернуться на неё:')} <code>npm install @carparkteam/parz-ui@latest</code></p>
+    </div>
+  );
+}
+
+/** Команда установки с переключателем «Стабильная / Бета» (пока есть пробная версия). */
+export function InstallSwitch({ lang }: { lang: Lang }) {
+  const [ch, setCh] = useState<'stable' | 'beta'>('stable');
+  if (!IS_BETA) return <InstallCmd lang={lang} />;
+  return (
+    <div className="pz-inst">
+      <ParzTabs size="sm" value={ch} onChange={setCh} ariaLabel={tr(lang, 'Версия для установки')}
+        options={[{ value: 'stable', label: tr(lang, 'Стабильная') }, { value: 'beta', label: `Beta ${pkg.version.split('-')[0]}` }]} />
+      <InstallCmd lang={lang} cmd={ch === 'beta' ? BETA_CMD : INSTALL} />
+      {ch === 'beta' && <p className="pz-inst-note">{tr(lang, 'Пробная версия: новые компоненты и большое обновление Parz Video. Обычная установка по-прежнему ставит стабильную.')}</p>}
+    </div>
+  );
+}
 export function InstallCmd({ lang, cmd = INSTALL }: { lang: Lang; cmd?: string }) {
   const [copied, setCopied] = useState(false);
   const t = useRef(0);

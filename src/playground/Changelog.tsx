@@ -56,7 +56,7 @@ function bumpOf(v: string, prev?: string): 'first' | 'major' | 'minor' | 'patch'
 const BUMP_LABEL = { first: 'Первый выпуск', major: 'Крупное обновление', minor: 'Новые возможности', patch: 'Исправления' };
 
 
-export function ChangelogPage({ lang, source, install, check, footer, official = false }: { lang: Lang; source: string; install: ReactNode; check?: ReactNode; footer: ReactNode; official?: boolean }) {
+export function ChangelogPage({ lang, source, install, check, beta, footer, official = false }: { lang: Lang; source: string; install: ReactNode; check?: ReactNode; beta?: ReactNode; footer: ReactNode; official?: boolean }) {
   const t = (k: string, v?: Record<string, string | number>) => tr(lang, k, v);
   const { title, intro, releases } = parseChangelog(source);
   const shipped = releases.filter(r => !r.next);
@@ -99,6 +99,7 @@ export function ChangelogPage({ lang, source, install, check, footer, official =
                     {r.date && <time dateTime={r.date}>{fmtDate(r.date, lang)}</time>}
                   </div>
                 </header>
+                {r.next && beta}
                 {r.text.length > 0 && <p className="cl-text">{inline(r.text.join(' '))}</p>}
                 {r.groups.filter(g => g.items.length).map(g => (
                   <section key={g.title} className={`cl-g cl-g--${g.kind}`}>

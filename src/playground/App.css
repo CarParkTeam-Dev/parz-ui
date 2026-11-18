@@ -720,3 +720,15 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .cp-stage{align-items:center}
 .cp-segs{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin:6px 0 12px}
 .card-demo--color{background:radial-gradient(90% 80% at 20% 20%,#4d1d3a 0%,transparent 60%),radial-gradient(80% 80% at 85% 85%,#1d2f4d 0%,transparent 60%),#0b0b0e}
+
+/* Пробная версия: переключатель Стабильная / Бета у команды установки и блок в changelog */
+.pz-inst{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:100%}
+.pz-inst-note{margin:0;max-width:440px;font-size:13px;line-height:1.45;color:#8b8b95;text-align:center}
+.pz-beta{display:flex;flex-direction:column;gap:12px;align-items:flex-start;margin:4px 0 18px;padding:16px 18px;border-radius:18px;
+  background:rgba(110,231,160,.06);border:1px solid rgba(110,231,160,.22)}
+.pz-beta-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pz-beta-h b{font-size:15px}
+.pz-beta-tag{padding:3px 10px;border-radius:99px;background:#6ee7a0;color:#04130a;font-size:11.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.pz-beta p{margin:0;font-size:13px;line-height:1.5;color:#8b8b95}
+.pz-beta p code{font-size:12px;white-space:nowrap}
+.pz-beta .hero-cmd{max-width:100%}

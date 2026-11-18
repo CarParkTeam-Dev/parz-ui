@@ -3,6 +3,13 @@
   <img alt="Parz UI — React components with liquid motion" src=".github/banner-light.svg" width="100%">
 </picture>
 
+<p align="center"><a href="https://github.com/CarParkTeam-Dev/parz-ui/releases/tag/v1.2.0-beta.0"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/beta-1.2-dark.svg">
+  <img alt="Parz UI 1.2 beta: npm i @carparkteam/parz-ui@next" src=".github/beta-1.2-light.svg" width="100%">
+</picture></a></p>
+
+> **1.2 beta is out** — Parz Tabs, Expander, Days, Color Picker, Avatar and a big Parz Video upgrade. Try it: `npm i @carparkteam/parz-ui@next` · [what’s new](https://github.com/CarParkTeam-Dev/parz-ui/releases/tag/v1.2.0-beta.0) · a regular install still gives the stable 1.1.0.
+
 <p align="center"><b>English</b> · <a href="README.hy.md">Հայերեն</a> · <a href="README.ru.md">Русский</a></p>
 
 React components with liquid motion — springy, smooth, nothing abrupt. Crafted by **CarPark Team** & **Dev.CarPark**.

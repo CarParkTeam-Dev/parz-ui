@@ -3,6 +3,13 @@
   <img alt="Parz UI — React-компоненты с жидкой анимацией" src=".github/banner-light.svg" width="100%">
 </picture>
 
+<p align="center"><a href="https://github.com/CarParkTeam-Dev/parz-ui/releases/tag/v1.2.0-beta.0"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/beta-1.2-dark.svg">
+  <img alt="Parz UI 1.2 beta: npm i @carparkteam/parz-ui@next" src=".github/beta-1.2-light.svg" width="100%">
+</picture></a></p>
+
+> **Вышла бета 1.2** — Parz Tabs, Expander, Days, Color Picker, Avatar и большое обновление Parz Video. Попробовать: `npm i @carparkteam/parz-ui@next` · [что нового](https://github.com/CarParkTeam-Dev/parz-ui/releases/tag/v1.2.0-beta.0) · обычная установка по-прежнему ставит стабильную 1.1.0.
+
 <p align="center"><a href="README.md">English</a> · <a href="README.hy.md">Հայերեն</a> · <b>Русский</b></p>
 
 React-компоненты с жидкой анимацией — упругие, плавные, ничего резкого. Сделано командой **CarPark Team** и **Dev.CarPark**.

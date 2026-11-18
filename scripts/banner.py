@@ -255,8 +255,9 @@ def banner(t):
 '''
 
 
-os.makedirs(OUT, exist_ok=True)
-for t in THEMES:
-    p = os.path.join(OUT, f'banner-{t}.svg')
-    open(p, 'w', encoding='utf8', newline='\n').write(banner(t))
-    print(p, os.path.getsize(p))
+if __name__ == '__main__':
+    os.makedirs(OUT, exist_ok=True)
+    for t in THEMES:
+        p = os.path.join(OUT, f'banner-{t}.svg')
+        open(p, 'w', encoding='utf8', newline='\n').write(banner(t))
+        print(p, os.path.getsize(p))
