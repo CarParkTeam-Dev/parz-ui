@@ -25,10 +25,21 @@ React components with liquid motion — springy, smooth, nothing abrupt. Crafted
 | `ParzVideo` | Video player with a liquid-glass control bar: quality switching, settings menu, chapters, frame preview on the seek line, subtitles and keyboard shortcuts | [docs](docs/parz-video.en.md) |
 | `ParzSlider` | Slider whose thumb stretches with the speed of your drag | [docs](docs/parz-slider.en.md) |
 | `ParzRange` | Range slider with 2 to 5 thumbs on one track | [docs](docs/parz-slider.en.md) |
+| `AnimoLogo` | Living text logo: letters float in, catch a wave on hover, light up when held | [docs](docs/animologo.en.md) |
+
+### New in 1.2 beta
+
+Not in the stable 1.1.0 yet — install the pre-release to use them: `npm i @carparkteam/parz-ui@next`.
+
+| Component | What it is | Docs |
+|---|---|---|
 | `ParzTabs` | Segmented control: the selection pill flows to the new item like a drop | [docs](docs/parz-tabs.en.md) |
 | `ParzExpander` | A section that opens smoothly: the height flows out, the content fades in | [docs](docs/parz-expander.en.md) |
 | `ParzDays` | A strip of days under a still card: the days glide like a wheel and spring onto the date. Supports `ParzProvider` motion presets | [docs](docs/parz-days.en.md) |
-| `AnimoLogo` | Living text logo: letters float in, catch a wave on hover, light up when held | [docs](docs/animologo.en.md) |
+| `ParzColorPicker` | Color picker: a liquid thumb on the saturation field, hue and opacity, HEX / RGB / HSL input, swatches, eyedropper; inline or in a popover | [docs](docs/parz-color-picker.en.md) |
+| `ParzAvatar` | Avatar: photo, initials or icon, status dot with a spring, “stories” ring, avatar change with upload. `ParzAvatarGroup` — a stack with “+N” that spreads on hover | [docs](docs/parz-avatar.en.md) |
+| `ParzProvider` | Shared motion preset (`calm`, `bouncy`, `snappy`) for the new components | — |
+| `ParzVideo` (update) | **Big upgrade in the beta:** playlists with “Up next”, auto quality, audio in several languages, remembered progress, share — see the [changelog](CHANGELOG.md). | [docs](docs/parz-video.en.md) |
 
 ## Installation
 
