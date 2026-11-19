@@ -1,0 +1,93 @@
+/* Parz UI · Parz Title Tabs */
+.pz-tt{--pz-tt-fg:#f4f4f6;--pz-tt-sub:rgba(244,244,246,.5);--pz-tt-fs:34px;--pz-tt-ic:32px;--pz-tt-is:18px;--pz-tt-plus:14px;
+  display:flex;align-items:center;gap:10px;width:100%;max-width:100%;box-sizing:border-box;color:var(--pz-tt-fg);touch-action:pan-y;user-select:none;-webkit-user-select:none;overflow:hidden}
+.pz-tt--light{--pz-tt-fg:#16161b;--pz-tt-sub:rgba(22,22,27,.5)}
+.pz-tt--md{--pz-tt-fs:22px;--pz-tt-ic:24px;--pz-tt-is:14px;--pz-tt-plus:10px;gap:8px}
+
+/* кружок со значком; когда тянут — он сжимается и гаснет, появляется «+», а вокруг рисуется дуга до полного круга на пороге */
+.pz-tt-icon{--pz-tt-pull:0;--pz-tt-a:0;position:relative;flex:0 0 auto;width:var(--pz-tt-ic);height:var(--pz-tt-ic);border-radius:50%;display:grid;place-items:center}
+.pz-tt-icon::before{content:'';grid-area:1/1;width:100%;height:100%;border-radius:50%;background:var(--parz-accent,#8b8b96);
+  transform:scale(calc(1 - var(--pz-tt-a) * .45));opacity:calc(1 - var(--pz-tt-a))}
+/* дуга: обводка 2px, открытая по кругу маской — по часовой от верха */
+.pz-tt-icon::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px var(--pz-tt-fg);
+  -webkit-mask:conic-gradient(#000 calc(var(--pz-tt-pull) * 1turn),transparent 0);mask:conic-gradient(#000 calc(var(--pz-tt-pull) * 1turn),transparent 0)}
+.pz-tt-glyph{grid-area:1/1;position:relative;display:grid;place-items:center;font-size:var(--pz-tt-is);line-height:1;
+  opacity:calc(1 - var(--pz-tt-a));scale:calc(1 - var(--pz-tt-a) * .6);animation:pz-tt-pop var(--pz-tt-dur,.5s) var(--pz-tt-ease,ease) both}
+.pz-tt-glyph .ltb-icon,.pz-tt-glyph .material-symbols-rounded,.pz-tt-glyph .material-icons{font-size:var(--pz-tt-is);width:auto;height:auto}
+@keyframes pz-tt-pop{from{transform:scale(.4);opacity:0}to{transform:scale(1)}}
+.pz-tt-plus{grid-area:1/1;position:relative;display:block;width:var(--pz-tt-plus);height:var(--pz-tt-plus);color:var(--pz-tt-fg);opacity:var(--pz-tt-a);transform:scale(calc(.5 + var(--pz-tt-a) * .5))}
+
+/* «добавить» выезжает слева */
+.pz-tt-add{flex:0 0 auto;overflow:hidden;width:0;opacity:0;font-size:var(--pz-tt-fs);font-weight:700;line-height:1.2;white-space:nowrap;margin-right:-10px}
+.pz-tt-add-in{display:inline-block;padding-right:12px}
+
+/* справа — всегда мягкий край; слева — только пока лента едет (--pz-tt-lf), в покое первая буква не гаснет */
+.pz-tt-view{--pz-tt-lf:0px;flex:1;min-width:0;overflow:hidden;-webkit-mask:linear-gradient(90deg,transparent,#000 var(--pz-tt-lf),#000 70%,transparent);mask:linear-gradient(90deg,transparent,#000 var(--pz-tt-lf),#000 70%,transparent)}
+.pz-tt-strip{display:flex;gap:8px;width:max-content;will-change:transform}
+.pz-tt-item{all:unset;box-sizing:border-box;transform-origin:0 80%;will-change:transform;display:inline-flex;align-items:baseline;gap:.18em;padding:2px 10px 2px 0;cursor:pointer;font-size:var(--pz-tt-fs);font-weight:700;line-height:1.2;
+  letter-spacing:-.01em;white-space:nowrap;color:var(--pz-tt-fg);border-radius:10px}
+.pz-tt-item:focus,.pz-tt-item:focus-visible{outline:none}
+.pz-tt-count{font-size:.42em;font-weight:600;color:var(--pz-tt-sub)}
+.pz-tt-sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0}
+.pz-tt-sr:focus-visible{position:static;width:auto;height:auto;margin:0;clip:auto;font-size:13px}
+@media (prefers-reduced-motion:reduce){.pz-tt-glyph{animation:none}}
+
+/* ---------- список поверх контейнера ---------- */
+.pz-tt-list{--pz-tt-fg:#f4f4f6;--pz-tt-sub:rgba(244,244,246,.5);--pz-tt-bg:rgba(8,8,11,.72);--pz-tt-solid:#202027;--pz-tt-rs:26px;--pz-tt-ri:30px;
+  position:absolute;inset:0;z-index:30;border-radius:inherit;overflow:hidden;box-sizing:border-box;color:var(--pz-tt-fg);container-type:size;
+  background:var(--pz-tt-bg);-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);opacity:0;transition:opacity .22s ease}
+.pz-tt-list--light{--pz-tt-fg:#16161b;--pz-tt-sub:rgba(22,22,27,.5);--pz-tt-bg:rgba(246,246,249,.78);--pz-tt-solid:#fff}
+.pz-tt-list--md{--pz-tt-rs:19px;--pz-tt-ri:24px}
+.pz-tt-list.is-open{opacity:1}
+/* прокручивается только слой со строками: полосы нет, сверху и снизу затенение, если правда есть что прокручивать */
+.pz-tt-list-in{--pz-tt-ft:0px;--pz-tt-fb:0px;position:absolute;inset:0;overflow:hidden;overscroll-behavior:contain;scrollbar-width:none;
+  display:flex;flex-direction:column;gap:4px;padding:20px 16px;box-sizing:border-box;
+  -webkit-mask:linear-gradient(180deg,transparent,#000 var(--pz-tt-ft),#000 calc(100% - var(--pz-tt-fb)),transparent);
+  mask:linear-gradient(180deg,transparent,#000 var(--pz-tt-ft),#000 calc(100% - var(--pz-tt-fb)),transparent)}
+.pz-tt-list-in::-webkit-scrollbar{display:none}
+.pz-tt-list-in > *{flex:0 0 auto}
+.pz-tt-list-gap{height:14px;flex:0 0 auto}
+/* строки появляются по очереди, каплей сверху; закрываются быстро и все сразу */
+.pz-tt-row{position:relative;display:flex;align-items:center;gap:8px;opacity:0;filter:blur(4px);transform:translateY(-10px);
+  transition:opacity .16s ease,filter .16s ease,transform .18s ease;touch-action:none}
+.pz-tt-list.is-open .pz-tt-row{opacity:1;filter:none;transform:none;
+  transition:opacity .28s ease calc(var(--i) * 28ms),filter .28s ease calc(var(--i) * 28ms),transform var(--pz-tt-dur,.5s) var(--pz-tt-ease,ease) calc(var(--i) * 28ms)}
+.pz-tt-row-main{all:unset;box-sizing:border-box;flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:8px 8px;border-radius:14px;cursor:pointer;
+  font-size:clamp(15px,min(7.5cqw,6cqh),var(--pz-tt-rs));font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.pz-tt-row--act .pz-tt-row-main{flex:0 1 auto}
+.pz-tt-row-main:hover{background:color-mix(in srgb,var(--pz-tt-fg) 7%,transparent)}
+.pz-tt-row-main:active{scale:.98}
+.pz-tt-row-main:focus-visible,.pz-tt-more:focus-visible{outline:2px solid color-mix(in srgb,var(--pz-tt-fg) 40%,transparent);outline-offset:0}
+.pz-tt-row.is-cur .pz-tt-row-main{background:color-mix(in srgb,var(--pz-tt-fg) 9%,transparent)}
+.pz-tt-row-ic{flex:0 0 auto;width:1.16em;height:1.16em;border-radius:50%;display:grid;place-items:center;font-size:1em}
+.pz-tt-row-ic .ltb-icon,.pz-tt-row-ic .material-symbols-rounded,.pz-tt-row-ic .material-icons{font-size:.62em}
+.pz-tt-row-ic svg{display:block}
+.pz-tt-row-ic--act{color:var(--pz-tt-sub)}
+.pz-tt-row-l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pz-tt-row-n{font-size:.5em;font-weight:600;color:var(--pz-tt-sub);align-self:flex-end;margin-bottom:.35em;font-variant-numeric:tabular-nums}
+.pz-tt-row--act.is-on{color:var(--parz-accent,var(--pz-tt-fg))}
+.pz-tt-more{all:unset;box-sizing:border-box;flex:0 0 auto;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--pz-tt-sub);fill:currentColor}
+.pz-tt-more:hover{background:color-mix(in srgb,var(--pz-tt-fg) 8%,transparent);color:var(--pz-tt-fg)}
+.pz-tt-more svg{display:block}
+.pz-tt-grip{flex:0 0 auto;width:40px;height:40px;display:grid;place-items:center;color:var(--pz-tt-sub)}
+.pz-tt-grip svg{display:block}
+/* «Порядок»: строки тянутся, остальные расступаются пружиной */
+.pz-tt-list.is-reorder .pz-tt-row-main{cursor:grab}
+.pz-tt-list.is-open.is-reorder .pz-tt-row{transition:transform var(--pz-tt-dur,.5s) var(--pz-tt-ease,ease)}
+.pz-tt-row.is-drag{z-index:2;transition:none!important}
+/* перетаскиваемая строка плотная — закрывает строки под собой, текст не просвечивает */
+.pz-tt-row.is-drag .pz-tt-row-main{cursor:grabbing;scale:1.03;background:var(--pz-tt-solid);box-shadow:0 14px 30px -12px rgba(0,0,0,.55),0 0 0 1px color-mix(in srgb,var(--pz-tt-fg) 10%,transparent)}
+@media (prefers-reduced-motion:reduce){.pz-tt-list,.pz-tt-row,.pz-tt-list.is-open .pz-tt-row{transition:none}}
+
+/* жидкое нажатие строки: сплющивается, отпускание — желе и капля от точки касания */
+.pz-tt-row-main{position:relative;overflow:hidden;transition:scale .16s cubic-bezier(.3,0,.3,1)}
+.pz-tt-row-main.is-press{scale:.97 .92}
+.pz-tt-row-main:active{scale:none}
+.pz-tt-row-main.is-press:active{scale:.97 .92}
+.pz-tt-drop{position:absolute;z-index:0;width:260px;aspect-ratio:1;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,color-mix(in srgb,var(--pz-tt-fg) 22%,transparent) 0%,color-mix(in srgb,var(--pz-tt-fg) 8%,transparent) 38%,transparent 62%);
+  transform:translate(-50%,-50%) scale(0);animation:pzTtDrop .65s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes pzTtDrop{60%{opacity:1}to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+.pz-tt-row-main > :not(.pz-tt-drop){position:relative;z-index:1}
+.pz-tt-list.is-reorder .pz-tt-row-main.is-press{scale:none}
+@media (prefers-reduced-motion:reduce){.pz-tt-drop{display:none}}

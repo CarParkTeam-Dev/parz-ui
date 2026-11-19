@@ -146,7 +146,7 @@ export function ParzButton({
     const held = pid.current !== null ? smooth(Math.min(1, Math.max(0, (now - holdStart.current - 160) / 700))) : 0;
     holdLv.current += (held - holdLv.current) * (1 - Math.exp(-dt * (pid.current !== null ? 7 : 5)));
     if (Math.abs(held - holdLv.current) < 0.002) holdLv.current = held;
-    if (holdEl.current) holdEl.current.style.opacity = holdLv.current.toFixed(3);
+    if (holdEl.current) { holdEl.current.style.opacity = holdLv.current.toFixed(3); holdEl.current.style.animationPlayState = holdLv.current > 0.002 ? 'running' : 'paused'; }
 
     const springRest = Math.abs(s.x - target) < 1e-4 && Math.abs(s.v) < 1e-3 && pid.current === null;
     if (springRest && drops.current.length === 0 && holdLv.current === 0) { s.x = target; if (el) el.style.transform = ''; raf.current = 0; last.current = 0; return; }

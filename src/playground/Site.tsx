@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ParzMenu, AnimoLogo, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, ParzButton, ParzProgress, ParzBadge, ParzVideo, ParzTabs, ParzExpander, ParzDays, ParzAvatar, ParzAvatarGroup, ParzColorPicker, type TabItem } from '../lib';
+import { ParzMenu, AnimoLogo, ParzToggle, ParzCheckbox, ParzSlider, ParzRange, ParzButton, ParzProgress, ParzBadge, ParzVideo, ParzTabs, ParzExpander, ParzDays, ParzAvatar, ParzAvatarGroup, ParzColorPicker, ParzNumberFlow, ParzRuler, ParzTitleTabs, ParzPager, Icon, type TabItem } from '../lib';
 import { MenuEditor, Seg } from './App';
 import { LogoEditor } from './LogoEditor';
 import { ToggleEditor } from './ToggleEditor';
@@ -13,6 +13,10 @@ import { ExpanderEditor } from './ExpanderEditor';
 import { DaysEditor } from './DaysEditor';
 import { AvatarEditor } from './AvatarEditor';
 import { ColorEditor } from './ColorEditor';
+import { NumberFlowEditor } from './NumberFlowEditor';
+import { RulerEditor, hhmm } from './RulerEditor';
+import { TitleTabsEditor } from './TitleTabsEditor';
+import { PagerEditor } from './PagerEditor';
 import { VideoEditor, DEMO_CLIP, useVideoLabels, usePoster } from './VideoEditor';
 import { Markdown } from './Markdown';
 import { ChangelogPage } from './Changelog';
@@ -61,20 +65,32 @@ import avatarHy from '../../docs/parz-avatar.hy.md?raw';
 import colorEn from '../../docs/parz-color-picker.en.md?raw';
 import colorRu from '../../docs/parz-color-picker.ru.md?raw';
 import colorHy from '../../docs/parz-color-picker.hy.md?raw';
+import flowEn from '../../docs/parz-number-flow.en.md?raw';
+import flowRu from '../../docs/parz-number-flow.ru.md?raw';
+import flowHy from '../../docs/parz-number-flow.hy.md?raw';
+import rulerEn from '../../docs/parz-ruler.en.md?raw';
+import rulerRu from '../../docs/parz-ruler.ru.md?raw';
+import rulerHy from '../../docs/parz-ruler.hy.md?raw';
+import ttEn from '../../docs/parz-title-tabs.en.md?raw';
+import ttRu from '../../docs/parz-title-tabs.ru.md?raw';
+import ttHy from '../../docs/parz-title-tabs.hy.md?raw';
+import pagerEn from '../../docs/parz-pager.en.md?raw';
+import pagerRu from '../../docs/parz-pager.ru.md?raw';
+import pagerHy from '../../docs/parz-pager.hy.md?raw';
 import changesEn from '../../CHANGELOG.md?raw';
 import changesRu from '../../CHANGELOG.ru.md?raw';
 import changesHy from '../../CHANGELOG.hy.md?raw';
 import pkg from '../../package.json';
 
-type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander' | 'days' | 'avatar' | 'color' | 'brand' | 'changelog';
-type Cmp = 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander' | 'days' | 'avatar' | 'color';
-const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', toggle: 'Parz Toggle', check: 'Parz Checkbox', button: 'Parz Button', progress: 'Parz Progress', badge: 'Parz Badge', video: 'Parz Video', slider: 'Parz Slider', range: 'Parz Range', tabs: 'Parz Tabs', expander: 'Parz Expander', days: 'Parz Days', avatar: 'Parz Avatar', color: 'Parz Color Picker' };
+type Page = 'home' | 'components' | 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander' | 'days' | 'avatar' | 'color' | 'flow' | 'ruler' | 'titletabs' | 'pager' | 'brand' | 'changelog';
+type Cmp = 'menu' | 'animo' | 'toggle' | 'check' | 'button' | 'progress' | 'badge' | 'video' | 'slider' | 'range' | 'tabs' | 'expander' | 'days' | 'avatar' | 'color' | 'flow' | 'ruler' | 'titletabs' | 'pager';
+const CMP_TITLE: Record<Cmp, string> = { menu: 'Parz Menu', animo: 'AnimoLogo', toggle: 'Parz Toggle', check: 'Parz Checkbox', button: 'Parz Button', progress: 'Parz Progress', badge: 'Parz Badge', video: 'Parz Video', slider: 'Parz Slider', range: 'Parz Range', tabs: 'Parz Tabs', expander: 'Parz Expander', days: 'Parz Days', avatar: 'Parz Avatar', color: 'Parz Color Picker', flow: 'Parz Number Flow', ruler: 'Parz Ruler', titletabs: 'Parz Title Tabs', pager: 'Parz Pager' };
 const isCmp = (p: Page): p is Cmp => p in CMP_TITLE;
 type View = 'editor' | 'docs';
 type Route = { page: Page; view: View };
 export type Go = (p: Page, v?: View) => void;
 export type { Page, Lang };
-const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', button: 'parz-button', progress: 'parz-progress', badge: 'parz-badge', video: 'parz-video', slider: 'parz-slider', range: 'parz-range', tabs: 'parz-tabs', expander: 'parz-expander', days: 'parz-days', avatar: 'parz-avatar', color: 'parz-color-picker', brand: 'brand', changelog: 'changelog' };
+const SLUG: Record<Page, string> = { home: '', components: 'components', menu: 'parz-menu', animo: 'animologo', toggle: 'parz-toggle', check: 'parz-checkbox', button: 'parz-button', progress: 'parz-progress', badge: 'parz-badge', video: 'parz-video', slider: 'parz-slider', range: 'parz-range', tabs: 'parz-tabs', expander: 'parz-expander', days: 'parz-days', avatar: 'parz-avatar', color: 'parz-color-picker', flow: 'parz-number-flow', ruler: 'parz-ruler', titletabs: 'parz-title-tabs', pager: 'parz-pager', brand: 'brand', changelog: 'changelog' };
 const DOCS: Record<Cmp, Record<Lang, string>> = {
   menu: { en: menuEn, ru: menuRu, hy: menuHy },
   animo: { en: logoEn, ru: logoRu, hy: logoHy },
@@ -90,7 +106,11 @@ const DOCS: Record<Cmp, Record<Lang, string>> = {
   expander: { en: expEn, ru: expRu, hy: expHy },
   days: { en: daysEn, ru: daysRu, hy: daysHy },
   avatar: { en: avatarEn, ru: avatarRu, hy: avatarHy },
-  color: { en: colorEn, ru: colorRu, hy: colorHy }
+  color: { en: colorEn, ru: colorRu, hy: colorHy },
+  flow: { en: flowEn, ru: flowRu, hy: flowHy },
+  ruler: { en: rulerEn, ru: rulerRu, hy: rulerHy },
+  titletabs: { en: ttEn, ru: ttRu, hy: ttHy },
+  pager: { en: pagerEn, ru: pagerRu, hy: pagerHy }
 };
 const LANG_KEY = 'ltb-lang';
 const WIDE_KEY = 'pz-wide';
@@ -135,6 +155,14 @@ const INDEX: Omit<Hit, 'sub'>[] = [
   { page: 'avatar', view: 'docs', title: 'Parz Avatar', icon: 'description', words: 'parz avatar group docs props api документация пропсы аватар группа ավատար փաստաթղթեր' },
   { page: 'color', view: 'editor', title: 'Parz Color Picker', icon: 'palette', words: 'parz color colour picker palette hue saturation alpha opacity hex rgb hsl eyedropper swatch цвет выбор цвета палитра оттенок насыщенность прозрачность пипетка образцы գույն գունապնակ երանգ թափանցիկություն' },
   { page: 'color', view: 'docs', title: 'Parz Color Picker', icon: 'description', words: 'parz color picker docs props api документация пропсы цвет գույն փաստաթղթեր' },
+  { page: 'flow', view: 'editor', title: 'Parz Number Flow', icon: 'pin', words: 'parz number flow counter digits animated number ticker odometer price clock timer count число цифры счётчик анимация цены часы таймер թիվ թվանշաններ հաշվիչ գին ժամացույց' },
+  { page: 'flow', view: 'docs', title: 'Parz Number Flow', icon: 'description', words: 'parz number flow docs props api документация пропсы число թիվ փաստաթղթեր' },
+  { page: 'ruler', view: 'editor', title: 'Parz Ruler', icon: 'straighten', words: 'parz ruler scale ticks slider wheel picker time dial inertia шкала линейка засечки ползунок время выбор инерция սանդղակ քանոն ժամ ընտրիչ' },
+  { page: 'titletabs', view: 'editor', title: 'Parz Title Tabs', icon: 'view_carousel', words: 'parz title tabs large titles header lists projects swipe pull to add accent color icon заголовки вкладки списки проекты свайп потянуть добавить цвет значок վերնագրեր ներդիրներ ցուցակներ նախագծեր ավելացնել' },
+  { page: 'titletabs', view: 'docs', title: 'Parz Title Tabs', icon: 'description', words: 'parz title tabs docs props api документация пропсы заголовки փաստաթղթեր' },
+  { page: 'pager', view: 'editor', title: 'Parz Pager', icon: 'swipe', words: 'parz pager carousel slider slides pages swipe onboarding gallery карусель слайды страницы свайп листать онбординг галерея կարուսել սլայդներ էջեր' },
+  { page: 'pager', view: 'docs', title: 'Parz Pager', icon: 'description', words: 'parz pager docs props api документация пропсы карусель փաստաթղթեր' },
+  { page: 'ruler', view: 'docs', title: 'Parz Ruler', icon: 'description', words: 'parz ruler docs props api документация пропсы шкала սանդղակ փաստաթղթեր' },
   { page: 'changelog', view: 'editor', title: 'Changelog', icon: 'history', words: 'changelog what is new whats new release releases update version history что нового изменения обновление версия выпуск история ինչ նոր կա փոփոխություններ թարմացում տարբերակ' },
   { page: 'brand', view: 'editor', title: 'Parz UI', icon: 'palette', words: 'parz logos brand svg zip pack логотипы бренд логопак լոգոներ' }
 ];
@@ -283,7 +311,7 @@ export function Site({ extras = {} }: { extras?: SiteExtras }) {
               </div>
             </div>
             {v === 'editor'
-              ? (page === 'menu' ? <MenuEditor lang={lang} /> : page === 'animo' ? <LogoEditor /> : page === 'toggle' ? <ToggleEditor /> : page === 'check' ? <CheckboxEditor /> : page === 'button' ? <ButtonEditor /> : page === 'progress' ? <ProgressEditor /> : page === 'badge' ? <BadgeEditor /> : page === 'video' ? <VideoEditor /> : page === 'tabs' ? <TabsEditor /> : page === 'expander' ? <ExpanderEditor /> : page === 'days' ? <DaysEditor /> : page === 'avatar' ? <AvatarEditor /> : page === 'color' ? <ColorEditor /> : <SliderEditor key={page} kind={page as 'slider' | 'range'} />)
+              ? (page === 'menu' ? <MenuEditor lang={lang} /> : page === 'animo' ? <LogoEditor /> : page === 'toggle' ? <ToggleEditor /> : page === 'check' ? <CheckboxEditor /> : page === 'button' ? <ButtonEditor /> : page === 'progress' ? <ProgressEditor /> : page === 'badge' ? <BadgeEditor /> : page === 'video' ? <VideoEditor /> : page === 'tabs' ? <TabsEditor /> : page === 'expander' ? <ExpanderEditor /> : page === 'days' ? <DaysEditor /> : page === 'avatar' ? <AvatarEditor /> : page === 'color' ? <ColorEditor /> : page === 'flow' ? <NumberFlowEditor /> : page === 'ruler' ? <RulerEditor /> : page === 'titletabs' ? <TitleTabsEditor /> : page === 'pager' ? <PagerEditor /> : <SliderEditor key={page} kind={page as 'slider' | 'range'} />)
               : <main className="docs page"><Markdown key={lang + page} source={DOCS[page][lang]} /></main>}
           </div>
         )}
@@ -361,6 +389,8 @@ function Skeleton({ route }: { route: Route }) {
 /* ---------- каталог: из него собираются и главная, и страница Components ---------- */
 type Cat = 'nav' | 'forms' | 'feedback' | 'media' | 'brand';
 type Entry = { id: Cmp; title: string; cat: Cat; desc: string; tags: string[]; demo: (lang: Lang) => ReactNode };
+/* кто поддерживает ParzProvider — у них на карточке метка, в каталоге фильтр */
+export const PROVIDER = new Set<Cmp>(['days', 'avatar', 'color', 'flow', 'ruler', 'titletabs', 'pager']);
 /* категории каталога: у каждого компонента одна */
 const CATS: [Cat, string][] = [['nav', 'Навигация'], ['forms', 'Формы'], ['feedback', 'Статус'], ['media', 'Медиа'], ['brand', 'Бренд']];
 function MenuDemo({ lang }: { lang: Lang }) {
@@ -512,6 +542,39 @@ function AvatarDemo({ lang }: { lang: Lang }) {
     </div>
   );
 }
+const TT_DEMO = [{ label: 'Today', count: 3, icon: 'ms:star', color: '#e8b923', iconColor: '#2a2205' }, { label: 'Work', count: 2, icon: 'ms:work', color: '#4d9bff' }, { label: 'Ideas', count: 5, icon: 'ms:local_fire_department', color: '#f07a2a' }];
+function TitleTabsDemo({ lang }: { lang: Lang }) {
+  const [i, setI] = useState(0);
+  return <div className="card-demo card-demo--tt"><ParzTitleTabs items={TT_DEMO} index={i} onIndexChange={setI} size="md" ariaLabel={tr(lang, 'Списки')} /><small>{tr(lang, 'Листайте заголовки')}</small></div>;
+}
+const PAGER_DEMO = [{ a: '#7a5cff', b: '#3b1d8f', icon: 'ms:swipe' }, { a: '#13c2c2', b: '#0a4f6b', icon: 'ms:speed' }, { a: '#f07a2a', b: '#8a2a12', icon: 'ms:waves' }, { a: '#d64fc8', b: '#5a1a6e', icon: 'ms:mouse' }];
+function PagerDemo() {
+  return (
+    <div className="card-demo card-demo--pager">
+      <ParzPager effect="scale" pageWidth={220} gap={12} dots loop autoplay={2500}>
+        {PAGER_DEMO.map((c, k) => (
+          <div key={c.a} className="pgr-card pgr-card--sm" style={{ background: `radial-gradient(120% 90% at 0% 0%, ${c.a}, ${c.b})`, boxShadow: `0 14px 28px -14px ${c.b}, 0 4px 10px -4px rgba(0,0,0,.35)` }}>
+            <span className="pgr-card-ic"><Icon icon={c.icon} /></span>
+            <span className="pgr-card-n">0{k + 1}</span>
+          </div>
+        ))}
+      </ParzPager>
+    </div>
+  );
+}
+function FlowDemo() {
+  const [n, setN] = useState(1280);
+  useEffect(() => { const id = window.setInterval(() => setN(x => x + Math.round((Math.random() - 0.35) * 400)), 1600); return () => window.clearInterval(id); }, []);
+  return <div className="card-demo card-demo--flow"><ParzNumberFlow value={n} /></div>;
+}
+function RulerDemo({ lang }: { lang: Lang }) {
+  const [m, setM] = useState(430);
+  return (
+    <div className="card-demo card-demo--ruler">
+      <ParzRuler value={m} onChange={setM} min={0} max={1430} step={10} formatValue={hhmm} ariaLabel={tr(lang, 'Время')} />
+    </div>
+  );
+}
 function ColorDemo({ lang }: { lang: Lang }) {
   const [c, setC] = useState('#7a5cff');
   return (
@@ -605,6 +668,26 @@ export const CATALOG: Entry[] = [
     id: 'color', title: 'Parz Color Picker', cat: 'forms', tags: ['Forms', 'Color', 'Motion'],
     desc: 'Выбор цвета с жидким бегунком: на скорости он вытягивается, а при нажатии перелетает пружиной. Оттенок, прозрачность, HEX / RGB / HSL, образцы и пипетка — на странице или во всплывающем окне.',
     demo: lang => <ColorDemo lang={lang} />
+  },
+  {
+    id: 'flow', title: 'Parz Number Flow', cat: 'feedback', tags: ['Numbers', 'Counter', 'Motion'],
+    desc: 'Число, где каждая цифра меняется отдельно: старая уезжает с размытием, новая въезжает на пружине. Для счётчиков, цен и часов.',
+    demo: () => <FlowDemo />
+  },
+  {
+    id: 'ruler', title: 'Parz Ruler', cat: 'forms', tags: ['Forms', 'Scale', 'Motion'],
+    desc: 'Шкала с засечками под неподвижным указателем: тянется пальцем, едет по инерции и пружинит на засечку, а число над ней перелистывается.',
+    demo: lang => <RulerDemo lang={lang} />
+  },
+  {
+    id: 'titletabs', title: 'Parz Title Tabs', cat: 'nav', tags: ['Navigation', 'Header', 'Motion'],
+    desc: 'Крупные заголовки-вкладки: листаются пальцем, цвет и значок перетекают, а если потянуть за первый — выезжает «Добавить». Вместе с Parz Pager едут за свайпом страниц.',
+    demo: lang => <TitleTabsDemo lang={lang} />
+  },
+  {
+    id: 'pager', title: 'Parz Pager', cat: 'media', tags: ['Carousel', 'Swipe', 'Motion'],
+    desc: 'Страницы, которые листаются свайпом: едут ровно за пальцем, после броска встают на место пружиной, за краем тянутся с сопротивлением.',
+    demo: () => <PagerDemo />
   }
 ];
 export function ComponentCard({ e, lang, go, i, reveal }: { e: Entry; lang: Lang; go: Go; i: number; reveal?: boolean }) {
@@ -613,6 +696,10 @@ export function ComponentCard({ e, lang, go, i, reveal }: { e: Entry; lang: Lang
     <article className={`card-c${reveal ? ' rv' : ''}`} style={{ '--i': i } as React.CSSProperties}>
       {e.demo(lang)}
       <div className="card-b">
+        {PROVIDER.has(e.id) && <span className="card-prov" title={t('Поддерживает ParzProvider: общий пресет движения calm / bouncy / snappy')}>
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M1 9c1.5 0 1.5-4 3-4s1.5 4 3 4 1.5-4 3-4 1.5 4 3 4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+          <span>ParzProvider</span>
+        </span>}
         <div className="card-tags">{e.tags.map(x => <span key={x}>{x}</span>)}</div>
         <h2>{e.title}</h2>
         <p>{t(e.desc)}</p>
@@ -678,15 +765,19 @@ export function BetaInstall({ lang }: { lang: Lang }) {
 }
 
 /** Команда установки с переключателем «Стабильная / Бета» (пока есть пробная версия). */
-export function InstallSwitch({ lang }: { lang: Lang }) {
-  const [ch, setCh] = useState<'stable' | 'beta'>('stable');
+export function InstallSwitch({ lang, onChannel }: { lang: Lang; onChannel?: (ch: 'stable' | 'beta') => void }) {
+  const [ch, setChState] = useState<'stable' | 'beta'>('stable');
+  const setCh = (v: 'stable' | 'beta') => { setChState(v); onChannel?.(v); };
   if (!IS_BETA) return <InstallCmd lang={lang} />;
   return (
     <div className="pz-inst">
       <ParzTabs size="sm" value={ch} onChange={setCh} ariaLabel={tr(lang, 'Версия для установки')}
         options={[{ value: 'stable', label: tr(lang, 'Стабильная') }, { value: 'beta', label: `Beta ${pkg.version.split('-')[0]}` }]} />
       <InstallCmd lang={lang} cmd={ch === 'beta' ? BETA_CMD : INSTALL} />
-      {ch === 'beta' && <p className="pz-inst-note">{tr(lang, 'Пробная версия: новые компоненты и большое обновление Parz Video. Обычная установка по-прежнему ставит стабильную.')}</p>}
+      {/* пояснение раскрывается и сворачивается плавно */}
+      <div className={`pz-inst-note-w${ch === 'beta' ? ' is-on' : ''}`} aria-hidden={ch !== 'beta'}>
+        <p className="pz-inst-note">{tr(lang, 'Пробная версия: новые компоненты и большое обновление Parz Video. Обычная установка по-прежнему ставит стабильную.')}</p>
+      </div>
     </div>
   );
 }
@@ -706,7 +797,8 @@ export function InstallCmd({ lang, cmd = INSTALL }: { lang: Lang; cmd?: string }
   };
   return (
     <div className="hero-cmd">
-      <code><span aria-hidden="true">$</span> {cmd}</code>
+      {/* команда перетекает кусками при смене версии; рамка плавно меняет ширину */}
+      <code><span aria-hidden="true">$</span> <ParzNumberFlow value={cmd} tabular={false} blur={4} words="chunks" /></code>
       <button onClick={copy} className={copied ? 'is-done' : ''} aria-label={tr(lang, 'Скопировать')}>
         <span className="material-symbols-rounded" aria-hidden="true">{copied ? 'check' : 'content_copy'}</span>
         <span className="hero-cmd-l">{copied ? tr(lang, 'Скопировано') : tr(lang, 'Скопировать')}</span>
@@ -718,8 +810,13 @@ export function InstallCmd({ lang, cmd = INSTALL }: { lang: Lang; cmd?: string }
 function ComponentsPage({ lang, go }: { lang: Lang; go: Go }) {
   const t = (k: string, v?: Record<string, string | number>) => tr(lang, k, v);
   const [cat, setCat] = useState<'all' | Cat>('all');
+  // каталог записан по порядку выхода: «Новые» — с конца
+  const [sort, setSort] = useState<'new' | 'old'>('new');
+  const [prov, setProv] = useState(false);
   const cats = CATS.filter(([c]) => CATALOG.some(e => e.cat === c));
-  const list = cat === 'all' ? CATALOG : CATALOG.filter(e => e.cat === cat);
+  const base = prov ? CATALOG.filter(e => PROVIDER.has(e.id)) : CATALOG;
+  const byCat = cat === 'all' ? base : base.filter(e => e.cat === cat);
+  const list = sort === 'new' ? [...byCat].reverse() : byCat;
   return (
     <main className="page comps">
       <section className="brand-h brand-h--wide">
@@ -727,13 +824,17 @@ function ComponentsPage({ lang, go }: { lang: Lang; go: Go }) {
         <p>{t('Все компоненты Parz UI. Потрогайте живое превью, откройте редактор, настройте под себя и скопируйте код.')}</p>
         <div className="comps-bar">
           <span className="comps-n">{t('{n} компонента', { n: list.length })}</span>
-          <Seg label={t('Категория')} value={cat} onChange={setCat} options={[['all', t('Все'), CATALOG.length] as const, ...cats.map(([c, l]) => [c, t(l), CATALOG.filter(e => e.cat === c).length] as const)]
+          <Seg label={t('Категория')} value={cat} onChange={setCat} options={[['all', t('Все'), base.length] as const, ...cats.map(([c, l]) => [c, t(l), base.filter(e => e.cat === c).length] as const)]
             .map(([c, l, n]) => [c, <span className="seg-n" key={c}>{l}<ParzBadge count={n} size="sm" variant={c === cat ? 'solid' : 'soft'} color={c === cat ? '#111114' : '#9a9aa6'} ariaLabel={String(n)} /></span>] as ['all' | Cat, ReactNode])} />
+          <div className="comps-sort">
+            <ParzToggle checked={prov} onChange={setProv} label="ParzProvider" size="sm" />
+            <ParzTabs size="sm" ariaLabel={t('Сортировка')} value={sort} onChange={setSort} options={[{ value: 'new', label: t('Новые') }, { value: 'old', label: t('Старые') }]} />
+          </div>
         </div>
       </section>
-      <section key={cat} className="cards cards--grid cards--all" aria-label={t('Компоненты')}>
+      <section key={`${cat}-${sort}-${prov}`} className="cards cards--grid cards--all" aria-label={t('Компоненты')}>
         {list.map((e, i) => <ComponentCard key={e.id} e={e} lang={lang} go={go} i={i} />)}
-        {cat === 'all' && <article className="card-soon" style={{ '--i': list.length } as React.CSSProperties}>
+        {cat === 'all' && !prov && <article className="card-soon" style={{ '--i': list.length } as React.CSSProperties}>
           <span className="material-symbols-rounded" aria-hidden="true">auto_awesome</span>
           <b>{t('Скоро новые компоненты')}</b>
           <p>{t('Мы собираем следующие детали интерфейса — они появятся здесь.')}</p>

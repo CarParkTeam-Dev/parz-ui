@@ -409,7 +409,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 /* команда установки на главной */
 .hero-cmd{display:flex;align-items:center;gap:6px;width:fit-content;max-width:100%;margin:22px auto 0;padding:5px 5px 5px 16px;border:1px solid #26262b;border-radius:99px;background:#111114}
 .hero-cmd code{font-size:14px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.hero-cmd code span{color:var(--acc);margin-right:4px;user-select:none}
+.hero-cmd code > span[aria-hidden]{color:var(--acc);margin-right:4px;user-select:none}
 .hero-cmd button{flex:none;display:inline-flex;align-items:center;gap:6px;border:0;border-radius:99px;padding:7px 12px;background:#1f1f24;color:var(--txt);font:600 12.5px Inter,system-ui,sans-serif;cursor:pointer;transition:background .25s,color .25s}
 .hero-cmd button .material-symbols-rounded{font-size:16px;transition:transform .35s cubic-bezier(.3,1.5,.5,1)}
 .hero-cmd button.is-done{background:rgba(110,231,160,.16);color:var(--acc)}
@@ -732,3 +732,94 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radiu
 .pz-beta p{margin:0;font-size:13px;line-height:1.5;color:#8b8b95}
 .pz-beta p code{font-size:12px;white-space:nowrap}
 .pz-beta .hero-cmd{max-width:100%}
+
+/* Parz Number Flow / Parz Ruler */
+.nf-stage{align-items:center}
+.nf-big{font-size:52px;font-weight:700;letter-spacing:-.01em;max-width:100%}
+@media (max-width:420px){.nf-big{font-size:40px}}
+.rl-stage{align-items:stretch;overflow:hidden}
+.card-demo--flow{font-size:44px;font-weight:700;color:#f4f4f6;background:radial-gradient(80% 80% at 30% 20%,#1d3a4d 0%,transparent 60%),#0b0b0e}
+.card-demo--ruler{padding:0 12px;background:linear-gradient(180deg,#56657d,#7a7a8a);overflow:hidden}
+.card-demo--ruler .pz-rl{gap:10px}
+.card-demo--ruler .pz-rl-value{font-size:36px}
+
+/* Parz Title Tabs / Parz Pager */
+.tt-stage{align-items:stretch;overflow:hidden;justify-content:flex-start;gap:14px}
+.tt-card{border-radius:20px;padding:12px 14px;min-height:150px;box-sizing:border-box;background:rgba(127,127,140,.14);display:flex;flex-direction:column;gap:10px;font-size:14px}
+.tt-card-h{display:flex;justify-content:space-between;font-size:11px;opacity:.5}
+.tt-task{display:flex;align-items:center;gap:10px}
+.tt-task i{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor;opacity:.6;flex:0 0 auto}
+.tt-new{color:var(--parz-accent,#8b8b96);font-weight:600}
+.tt-new b{display:grid;place-items:center;flex:0 0 auto;width:16px;height:16px;border-radius:50%;background:var(--parz-accent,#8b8b96);color:#111}
+.tt-new b svg{display:block}
+.pg-slide{height:170px;border-radius:20px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;padding:16px;box-sizing:border-box;color:#fff}
+.pg-slide b{font-size:40px;line-height:1}
+.pg-slide--sm{height:110px;padding:12px}
+.pg-dots{display:flex;gap:6px;justify-content:center;align-items:center;height:8px}
+.pg-dots span{width:8px;height:8px;border-radius:4px;background:currentColor;opacity:.35}
+.card-demo--tt{padding:0 16px;flex-direction:column;align-items:stretch;justify-content:center;gap:10px;background:radial-gradient(80% 80% at 20% 20%,#3a2f0d 0%,transparent 60%),#0b0b0e;overflow:hidden}
+.card-demo--tt small{text-align:center}
+.card-demo--pager{padding:0 16px;background:#0b0b0e;overflow:hidden}
+.card-demo--pager .pz-pgr{width:100%}
+
+.rl-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.rl-f{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#8b8b95;min-width:0}
+.rl-f input{background:var(--fld);border:1px solid #26262b;border-radius:9px;padding:8px 9px;outline:0;min-width:0;width:100%;box-sizing:border-box;color:inherit;font:inherit;font-size:14px;color:#e8e8ee}
+.rl-f input:focus{border-color:var(--acc)}
+.rl-group{display:flex;flex-direction:column;gap:16px}
+.rl-group .rl-f{gap:8px}
+.rl-group .rl-f > :not(span){align-self:flex-start;max-width:100%}
+.rl-group .rl-f input{align-self:stretch}
+.rl-group .rl-fields{gap:12px}
+.rl-group > :not(.rl-f):not(.rl-fields){align-self:flex-start;max-width:100%}
+.rl-group > .chk{align-self:stretch;margin:0}
+.rl-group > .days-btns{margin:0}
+
+/* Parz Pager: карточки в редакторе */
+.pg-stage{align-items:stretch;justify-content:flex-start;overflow:hidden;gap:18px}
+.pgr-card{position:relative;height:190px;border-radius:22px;padding:16px 18px;box-sizing:border-box;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.pgr-card::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.14),transparent 45%);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.pgr-card b{font-size:24px;letter-spacing:-.01em;line-height:1.1}
+.pgr-card small{font-size:13px;opacity:.82}
+.pgr-card-ic{position:absolute;left:16px;top:16px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.18);font-size:22px;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.pgr-card-n{position:absolute;right:18px;top:14px;font-size:13px;font-weight:700;opacity:.7;font-variant-numeric:tabular-nums}
+.rl-group .rl-f > .rl-mini{align-self:stretch;gap:6px}
+.rl-mini .pz-rl-value{font-size:22px}
+.rl-mini .pz-rl-track{height:36px}
+.pgr-card--sm{height:120px;padding:12px}
+.pgr-card--sm .pgr-card-ic{left:12px;top:12px;width:32px;height:32px;border-radius:10px;font-size:18px}
+.pgr-card--sm .pgr-card-n{right:12px;top:10px}
+
+/* Parz Title Tabs: страницы с разными компонентами */
+.tt-stage{position:relative}
+.tt-card{min-height:170px}
+.tt-stat{display:flex;align-items:center;justify-content:space-between;font-size:30px;font-weight:700}
+.tt-card .tt-tg{display:flex}
+.tt-card .tt-ruler{gap:8px}
+.tt-card .tt-ruler .pz-rl-value{font-size:28px}
+
+/* каталог: сортировка и фильтр ParzProvider — справа в строке категорий */
+.comps-sort{display:flex;align-items:center;gap:14px;margin-left:auto;flex-wrap:wrap}
+@media (max-width:720px){.comps-sort{margin-left:0}}
+/* метка ParzProvider: ярлычок на шве между превью и описанием, с переливающейся обводкой */
+.card-b{position:relative}
+.card-prov{position:absolute;top:0;right:18px;transform:translateY(-50%);z-index:2;display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 9px;border-radius:999px;
+  font-size:11.5px;font-weight:700;letter-spacing:.01em;color:#e9fff3;white-space:nowrap;
+  background:linear-gradient(#111116,#111116) padding-box,conic-gradient(from var(--pz-prov-a,0deg),#6ee7a0,#7a5cff,#4d9bff,#f07a2a,#6ee7a0) border-box;
+  border:1.5px solid transparent;box-shadow:0 6px 18px -8px rgba(110,231,160,.55);animation:pzProvSpin 6s linear infinite;animation-play-state:paused}
+/* обводка переливается только при наведении на карточку — в покое не тратит кадры */
+.card-c:hover .card-prov{animation-play-state:running}
+.card-prov svg{display:block;color:#6ee7a0}
+@property --pz-prov-a{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes pzProvSpin{to{--pz-prov-a:360deg}}
+@media (prefers-reduced-motion:reduce){.card-prov{animation:none}}
+
+/* переключатель Stable / Beta в шапке: ровные отступы, без прилипания к строке выше */
+.hero .pz-inst{margin:22px auto 0;gap:14px}
+.pz-inst .hero-cmd{margin:0}
+.pz-inst-note-w{display:grid;grid-template-rows:0fr;opacity:0;margin-top:-14px;transition:grid-template-rows .45s cubic-bezier(.3,.8,.3,1),opacity .3s ease,margin-top .45s cubic-bezier(.3,.8,.3,1)}
+.pz-inst-note-w.is-on{grid-template-rows:1fr;opacity:1;margin-top:0}
+.pz-inst-note-w > .pz-inst-note{overflow:hidden;min-height:0}
+@media (prefers-reduced-motion:reduce){.pz-inst-note-w{transition:none}}

@@ -55,16 +55,18 @@
 .pz-btn-ico .ltb-s{display:none}
 
 .pz-btn-dots{display:inline-flex;align-items:center;gap:calc(var(--ltb-icon)*.2);height:var(--ltb-icon)}
-.pz-btn-dots i{display:block;width:calc(var(--ltb-icon)*.3);height:calc(var(--ltb-icon)*.3);border-radius:50%;background:currentColor;animation:pzBtnDot 1.2s ease-in-out infinite}
-.pz-btn-dots i:nth-child(2){animation-delay:-1s}
-.pz-btn-dots i:nth-child(3){animation-delay:-.8s}
+/* точки крутятся только у кнопки в загрузке — у остальных не тратят кадры */
+.pz-btn-dots i{display:block;width:calc(var(--ltb-icon)*.3);height:calc(var(--ltb-icon)*.3);border-radius:50%;background:currentColor}
+.pz-btn.is-loading .pz-btn-dots i{animation:pzBtnDot 1.2s ease-in-out infinite}
+.pz-btn.is-loading .pz-btn-dots i:nth-child(2){animation-delay:-1s}
+.pz-btn.is-loading .pz-btn-dots i:nth-child(3){animation-delay:-.8s}
 /* волна: одна гладкая синусоида, без остановок и ударов */
 @keyframes pzBtnDot{0%,100%{transform:translateY(22%) scale(.82);opacity:.5}50%{transform:translateY(-22%) scale(1);opacity:1}}
 
 @media (prefers-reduced-motion:reduce){
   .pz-btn,.pz-btn-body,.pz-btn-load{transition-duration:.01ms!important}
   .pz-btn-drop{display:none}
-  .pz-btn-dots i{animation:pzBtnDotCalm 1.4s ease-in-out infinite}
+  .pz-btn.is-loading .pz-btn-dots i{animation:pzBtnDotCalm 1.4s ease-in-out infinite}
 }
 @keyframes pzBtnDotCalm{0%,100%{opacity:.35}50%{opacity:1}}
 /* иконка ровно по центру: шрифт Material не должен навязывать свои 24px */
@@ -83,7 +85,8 @@
 .pz-btn-hold{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1;opacity:0;
   --_g1:color-mix(in srgb,var(--pz-btn-accent) 55%,transparent);--_g2:color-mix(in srgb,var(--pz-btn-accent) 18%,transparent);
   background:linear-gradient(115deg,var(--_g2),var(--_g1) 30%,var(--_g2) 55%,var(--_g1) 80%,var(--_g2));background-size:260% 100%;
-  animation:pzBtnFlow 3.2s ease-in-out infinite alternate}
+  /* переливается, только пока кнопку держат (JS включает) */
+  animation:pzBtnFlow 3.2s ease-in-out infinite alternate;animation-play-state:paused}
 .pz-btn--solid .pz-btn-hold{--_g1:color-mix(in srgb,var(--pz-btn-accent) 60%,#fff);--_g2:color-mix(in srgb,var(--pz-btn-accent) 82%,#000)}
 .pz-btn--glass .pz-btn-hold{--_g1:rgba(255,255,255,.28);--_g2:rgba(255,255,255,.04)}
 @keyframes pzBtnFlow{from{background-position:0% 50%}to{background-position:100% 50%}}

@@ -1,0 +1,9 @@
+/* Parz UI · Parz Number Flow */
+.pz-nf{display:inline-flex;position:relative;white-space:nowrap;line-height:1.15}
+.pz-nf--tab{font-variant-numeric:tabular-nums}
+.pz-nf-row{display:inline-flex;align-items:baseline}
+.pz-nf-slot{position:relative;display:inline-block;white-space:pre;overflow:hidden;padding:.12em 0;margin:-.12em 0;vertical-align:top;
+  -webkit-mask:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);mask:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent)}
+.pz-nf-g{display:inline-block;will-change:transform,opacity,filter}
+.pz-nf-g.is-out{position:absolute;left:0;top:.12em}
+.pz-nf-sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}

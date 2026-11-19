@@ -1,0 +1,54 @@
+/* Parz UI · Parz Pager */
+.pz-pgr{--pz-pgr-fg:#f4f4f6;--pz-pgr-glass:rgba(28,28,34,.55);--pz-pgr-line:rgba(255,255,255,.14);
+  position:relative;width:100%;min-width:0;display:flex;flex-direction:column;gap:14px}
+.pz-pgr--light{--pz-pgr-fg:#16161b;--pz-pgr-glass:rgba(255,255,255,.7);--pz-pgr-line:rgba(22,22,27,.1)}
+/* режем только по горизонтали — тени сверху и снизу не обрезаются */
+.pz-pgr-view{position:relative;overflow:hidden;overflow-x:clip;overflow-y:visible;touch-action:pan-y;outline:none;user-select:none;-webkit-user-select:none}
+.pz-pgr-view:focus,.pz-pgr-view:focus-visible{outline:none}
+.pz-pgr-strip{display:flex;will-change:transform}
+.pz-pgr-page{flex:0 0 100%;min-width:0;box-sizing:border-box;will-change:transform,opacity;transform-origin:50% 50%}
+/* fade: страницы друг на друге */
+.pz-pgr--fade .pz-pgr-strip{display:grid}
+.pz-pgr--fade .pz-pgr-page{grid-area:1/1}
+
+/* стрелки: стеклянные кружки по краям, значок ровно по центру */
+.pz-pgr-arrow{all:unset;box-sizing:border-box;position:absolute;top:calc(50% - 4px);width:36px;height:36px;margin-top:-18px;border-radius:50%;display:grid;place-items:center;cursor:pointer;z-index:3;
+  color:var(--pz-pgr-fg);background:var(--pz-pgr-glass);-webkit-backdrop-filter:blur(12px) saturate(1.6);backdrop-filter:blur(12px) saturate(1.6);
+  box-shadow:0 6px 18px -6px rgba(0,0,0,.45),inset 0 0 0 1px var(--pz-pgr-line);
+  --pz-pgr-s:1;--pz-pgr-sx:1;--pz-pgr-sy:1;--pz-pgr-x:0px;transform:translateX(var(--pz-pgr-x)) scale(calc(var(--pz-pgr-s) * var(--pz-pgr-sx)),calc(var(--pz-pgr-s) * var(--pz-pgr-sy)));
+  transition:opacity .2s,transform var(--pz-pgr-dur,.5s) var(--pz-pgr-ease,cubic-bezier(.34,1.3,.64,1)),filter .25s}
+/* всегда свой слой: после анимации браузер не перерисовывает кнопку и значок не «доезжает» на пиксель */
+.pz-pgr-arrow{will-change:transform,opacity;backface-visibility:hidden;top:var(--pz-pgr-ay,calc(50% - 4px))}
+.pz-pgr-arrow svg{display:block;transform:translateZ(0)}
+.pz-pgr-arrow--prev{left:10px}
+.pz-pgr-arrow--next{right:10px}
+.pz-pgr-arrow:hover{--pz-pgr-s:1.06}
+.pz-pgr-arrow:active{--pz-pgr-s:.9;--pz-pgr-sx:1.08;--pz-pgr-sy:.92;transition-duration:.12s}
+.pz-pgr-arrow:disabled{opacity:0;pointer-events:none}
+/* на компьютере стрелки прячутся и выкатываются каплей при наведении на компонент */
+@media (hover:hover) and (pointer:fine){
+  .pz-pgr-arrow{opacity:0;pointer-events:none;filter:blur(3px);--pz-pgr-s:.35;--pz-pgr-sx:.7;--pz-pgr-sy:1.25;
+    transition:opacity .18s ease-in,transform .26s cubic-bezier(.5,0,.75,0),filter .2s}
+  .pz-pgr-arrow--prev{--pz-pgr-x:-10px}
+  .pz-pgr-arrow--next{--pz-pgr-x:10px}
+  .pz-pgr:hover .pz-pgr-arrow:not(:disabled),.pz-pgr:focus-within .pz-pgr-arrow:not(:disabled){opacity:1;pointer-events:auto;filter:none;--pz-pgr-s:1;--pz-pgr-sx:1;--pz-pgr-sy:1;--pz-pgr-x:0px;
+    transition:opacity .16s ease-out,transform var(--pz-pgr-dur,.5s) var(--pz-pgr-ease,cubic-bezier(.34,1.3,.64,1)),filter .2s}
+  .pz-pgr:hover .pz-pgr-arrow:not(:disabled):hover{--pz-pgr-s:1.06}
+  .pz-pgr:hover .pz-pgr-arrow:not(:disabled):active{--pz-pgr-s:.9;--pz-pgr-sx:1.08;--pz-pgr-sy:.92;transition-duration:.12s}
+}
+.pz-pgr-arrow:focus-visible{outline:2px solid var(--parz-accent,#7a5cff);outline-offset:2px}
+
+/* точки: активная тянется каплей */
+.pz-pgr-dots{display:flex;justify-content:center;align-items:center;gap:6px;height:12px}
+.pz-pgr-dot{--pz-pgr-k:0;all:unset;box-sizing:border-box;position:relative;overflow:hidden;width:8px;height:8px;border-radius:4px;cursor:pointer;flex:0 0 auto;
+  background:color-mix(in srgb,var(--pz-pgr-fg) calc(35% + var(--pz-pgr-k) * 65%),transparent)}
+/* автолистание: активная точка — цвет обычных, заливка идёт слева за время таймера */
+.pz-pgr.is-playing .pz-pgr-dot[aria-current]{background:color-mix(in srgb,var(--pz-pgr-fg) 35%,transparent)}
+.pz-pgr-fill{position:absolute;inset:0;border-radius:inherit;background:var(--pz-pgr-fg);clip-path:inset(0 100% 0 0 round 4px);
+  animation:pz-pgr-fill var(--pz-pgr-auto) linear forwards}
+/* пауза — заливка стоит там, где была */
+.pz-pgr.is-held .pz-pgr-fill{animation-play-state:paused}
+@keyframes pz-pgr-fill{to{clip-path:inset(0 0 0 0 round 4px)}}
+@media (prefers-reduced-motion:reduce){.pz-pgr-fill{animation:none;clip-path:none}}
+.pz-pgr-dot:focus-visible{outline:2px solid var(--parz-accent,#7a5cff);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.pz-pgr-arrow{transition:none}}

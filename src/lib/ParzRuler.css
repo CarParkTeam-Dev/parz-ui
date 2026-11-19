@@ -1,0 +1,21 @@
+/* Parz UI · Parz Ruler */
+.pz-rl{--pz-rl-tick:rgba(255,255,255,.34);--pz-rl-hi:rgba(255,255,255,.95);--pz-rl-fg:#f4f4f6;--pz-rl-h:24px;
+  display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;max-width:100%;box-sizing:border-box;color:var(--pz-rl-fg);user-select:none;-webkit-user-select:none}
+.pz-rl--light{--pz-rl-tick:rgba(22,22,27,.26);--pz-rl-hi:rgba(22,22,27,.88);--pz-rl-fg:#16161b}
+.pz-rl.is-disabled{opacity:.5;pointer-events:none}
+.pz-rl-value{font-size:48px;font-weight:700;letter-spacing:-.01em}
+.pz-rl-track{position:relative;width:100%;height:44px;touch-action:pan-y;cursor:grab;outline:none;border-radius:12px}
+.pz-rl-track:active{cursor:grabbing}
+.pz-rl-track:focus-visible{box-shadow:0 0 0 2px var(--pz-rl-accent)}
+.pz-rl-ticks{position:absolute;inset:0;pointer-events:none;
+  -webkit-mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent);mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent)}
+.pz-rl-ticks--hi{-webkit-mask:linear-gradient(90deg,transparent calc(50% - var(--pz-rl-gap) * 1.6),#000 50%,transparent calc(50% + var(--pz-rl-gap) * 1.6));
+  mask:linear-gradient(90deg,transparent calc(50% - var(--pz-rl-gap) * 1.6),#000 50%,transparent calc(50% + var(--pz-rl-gap) * 1.6))}
+.pz-rl-strip{position:absolute;top:50%;height:32px;margin-top:-16px;background-repeat:repeat-x;--pz-rl-c:var(--pz-rl-tick)}
+.pz-rl-ticks--hi .pz-rl-strip{--pz-rl-c:var(--pz-rl-hi)}
+.pz-rl-ind{position:absolute;left:50%;top:50%;width:4px;height:36px;margin-top:-18px;border-radius:2px;background:var(--pz-rl-accent);transform:translateX(-50%);transform-origin:50% 50%;pointer-events:none;
+  box-shadow:0 0 12px -2px var(--pz-rl-accent)}
+@media (max-width:420px){.pz-rl-value{font-size:40px}}
+.pz-rl-value{max-width:100%;overflow:hidden}
+.pz-rl.is-text .pz-rl-value{font-size:32px}
+@media (max-width:420px){.pz-rl.is-text .pz-rl-value{font-size:26px}}

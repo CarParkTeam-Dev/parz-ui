@@ -38,6 +38,10 @@ Not in the stable 1.1.0 yet — install the pre-release to use them: `npm i @car
 | `ParzDays` | A strip of days under a still card: the days glide like a wheel and spring onto the date. Supports `ParzProvider` motion presets | [docs](docs/parz-days.en.md) |
 | `ParzColorPicker` | Color picker: a liquid thumb on the saturation field, hue and opacity, HEX / RGB / HSL input, swatches, eyedropper; inline or in a popover | [docs](docs/parz-color-picker.en.md) |
 | `ParzAvatar` | Avatar: photo, initials or icon, status dot with a spring, “stories” ring, avatar change with upload. `ParzAvatarGroup` — a stack with “+N” that spreads on hover | [docs](docs/parz-avatar.en.md) |
+| `ParzNumberFlow` | A number where each digit changes on its own: the old one slides out with a blur, the new one springs in | [docs](docs/parz-number-flow.en.md) |
+| `ParzRuler` | A tick scale under a pointer: inertia, a spring onto the tick, the number above flips | [docs](docs/parz-ruler.en.md) |
+| `ParzTitleTabs` | Large title tabs: the color and icon flow with the finger, pull to add, pairs with Parz Pager | [docs](docs/parz-title-tabs.en.md) |
+| `ParzPager` | Swipeable pages: follow the finger, inertia and a spring, edge resistance | [docs](docs/parz-pager.en.md) |
 | `ParzProvider` | Shared motion preset (`calm`, `bouncy`, `snappy`) for the new components | — |
 | `ParzVideo` (update) | **Big upgrade in the beta:** playlists with “Up next”, auto quality, audio in several languages, remembered progress, share — see the [changelog](CHANGELOG.md). | [docs](docs/parz-video.en.md) |
 
