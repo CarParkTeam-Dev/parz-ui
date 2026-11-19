@@ -3,12 +3,12 @@
   <img alt="Parz UI — React կոմպոնենտներ հեղուկ անիմացիայով" src=".github/banner-light.svg" width="100%">
 </picture>
 
-<p align="center"><a href="https://github.com/CarParkTeam-Dev/parz-ui/releases/tag/v1.2.0-beta.0"><picture>
+<p align="center"><a href="https://github.com/CarParkTeam-Dev/parz-ui/releases/tag/v1.2.0-beta.1"><picture>
   <source media="(prefers-color-scheme: dark)" srcset=".github/beta-1.2-dark.svg">
   <img alt="Parz UI 1.2 beta: npm i @carparkteam/parz-ui@next" src=".github/beta-1.2-light.svg" width="100%">
 </picture></a></p>
 
-> **Թողարկվեց 1.2 բետան** — Parz Tabs, Expander, Days, Color Picker, Avatar և Parz Video-ի մեծ թարմացում։ Փորձել՝ `npm i @carparkteam/parz-ui@next` · [ինչն է նոր](https://github.com/CarParkTeam-Dev/parz-ui/releases/tag/v1.2.0-beta.0) · սովորական տեղադրումը դեռ տալիս է կայուն 1.1.0-ն։
+> **Թողարկվեց 1.2 բետան** — Parz Tabs, Expander, Days, Color Picker, Avatar, Number Flow, Ruler, Pager, Title Tabs և Parz Video-ի մեծ թարմացում։ Փորձել՝ `npm i @carparkteam/parz-ui@next` · [ինչն է նոր](https://github.com/CarParkTeam-Dev/parz-ui/releases/tag/v1.2.0-beta.1) · սովորական տեղադրումը դեռ տալիս է կայուն 1.1.0-ն։
 
 <p align="center"><a href="README.md">English</a> · <b>Հայերեն</b> · <a href="README.ru.md">Русский</a></p>
 

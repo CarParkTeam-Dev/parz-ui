@@ -1,6 +1,6 @@
 """Карточка пробной версии 1.2 для README (.github/beta-1.2-dark.svg и beta-1.2-light.svg).
 Сделана по образцу основного баннера (scripts/banner.py): слева логотип, заголовок, список и команда установки,
-справа «живая» панель с мини-версиями новых компонентов (Days, Avatar, Color Picker).
+справа «живая» панель с мини-версиями новых компонентов (Days, Avatar, Ruler).
 Запуск из папки parz-ui:  python scripts/banner_beta.py
 """
 import os
@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from banner import THEMES, FONT, MONO, OUT, W, H, anim, logo_inner  # noqa: E402
 
 NEW = ['Tabs', 'Expander', 'Days', 'Color Picker', 'Avatar']
+NEW2 = ['Number Flow', 'Ruler', 'Pager', 'Title Tabs']
 
 
 def days(c, a, x0, y0, w):
@@ -71,6 +72,23 @@ def color(c, a, x0, y0, w):
     <circle cx="{x0 + w - 20}" cy="{y0}" r="20" fill="#4dffc3">{anim("fill", fill, a)}</circle>'''
 
 
+def ruler(c, a, x0, y0, w):
+    """Шкала Parz Ruler: засечки едут под неподвижным красным указателем, края гаснут."""
+    gap, n = 16, int(w / 16) + 8
+    cx = x0 + w / 2
+    ticks = ''.join(f'<rect x="{x0 - 64 + i * gap - 1}" y="{y0 - 12}" width="2" height="24" rx="1" fill="{c["text"]}" fill-opacity=".45"/>' for i in range(n))
+    shift = [(0, 0), (.2, 0), (.38, -48), (.55, -48), (.72, 16), (.85, 16), (1, 0)]
+    tr = ('<animateTransform attributeName="transform" type="translate" dur="7s" repeatCount="indefinite" calcMode="spline" '
+          f'keyTimes="{";".join(str(t) for t, _ in shift)}" values="{";".join(f"{v} 0" for _, v in shift)}" '
+          f'keySplines="{";".join([".32 .72 0 1"] * (len(shift) - 1))}"/>') if a else ''
+    gid = f'rf{"a" if a else "s"}'
+    return f'''
+    <linearGradient id="{gid}" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".3" stop-color="#fff"/><stop offset=".7" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <mask id="m{gid}"><rect x="{x0}" y="{y0 - 20}" width="{w}" height="40" fill="url(#{gid})"/></mask>
+    <g mask="url(#m{gid})"><g>{tr}{ticks}</g></g>
+    <rect x="{cx - 2}" y="{y0 - 18}" width="4" height="36" rx="2" fill="{c["red"]}"/>'''
+
+
 def panel(c, a):
     px, py, pw = 690, 56, 530
     x0 = px + 34
@@ -81,7 +99,7 @@ def panel(c, a):
     <line x1="{x0}" x2="{x0 + iw}" y1="{py + 172}" y2="{py + 172}" stroke="{c["divider"]}"/>
     {avatars(c, a, x0, py + 236)}
     <line x1="{x0}" x2="{x0 + iw}" y1="{py + 300}" y2="{py + 300}" stroke="{c["divider"]}"/>
-    {color(c, a, x0, py + 362, iw)}'''
+    {ruler(c, a, x0, py + 362, iw)}'''
 
 
 def card(t):
@@ -96,7 +114,7 @@ def card(t):
         for i, n in enumerate(names):
             out.append((f'<tspan fill="{c["acc"]}" dx="9">•</tspan><tspan dx="9">{n}</tspan>') if i else f'<tspan>{n}</tspan>')
         return ''.join(out)
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="Parz UI 1.2 beta: five new components and a reworked Parz Video. npm i @carparkteam/parz-ui@next">
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="Parz UI 1.2 beta: nine new components and a reworked Parz Video. npm i @carparkteam/parz-ui@next">
   <title>Parz UI 1.2 beta</title>
   <style>
     .parz-main,.parz-ui,.parz-credit{{fill:currentColor}}
@@ -128,13 +146,14 @@ def card(t):
     </svg>
     <text x="{lx + lw + 12}" y="{ly + lh * .6}" font-size="28" font-weight="700" letter-spacing="-.5" fill="{c["acc"]}">1.2 beta</text>
 
-    <text x="{lx + 4}" y="272" font-size="38" font-weight="700" letter-spacing="-1" fill="{c["text"]}">Five new components</text>
+    <text x="{lx + 4}" y="272" font-size="38" font-weight="700" letter-spacing="-1" fill="{c["text"]}">Nine new components</text>
     <text x="{lx + 4}" y="316" font-size="38" font-weight="700" letter-spacing="-1" fill="{c["text"]}">and a reworked <tspan fill="{c["acc"]}">Parz Video</tspan></text>
-    <text x="{lx + 4}" y="358" font-size="15" font-weight="500" fill="{c["sub"]}">{comp_line(NEW)}</text>
-    <text x="{lx + 4}" y="382" font-size="15" font-weight="500" fill="{c["sub"]}">Video: playlists, auto quality, audio languages, resume</text>
-    <rect x="{lx + 4}" y="414" width="330" height="38" rx="12" fill="{c["code_bg"]}" fill-opacity="{c["code_op"]}" stroke="{c["panel_line"]}" stroke-opacity="{c["panel_line_op"]}"/>
-    <text x="{lx + 20}" y="438" font-family="{MONO}" font-size="14" fill="{c["text"]}"><tspan fill="{c["acc"]}">$</tspan> npm i @carparkteam/parz-ui@next</text>
-    <text x="{lx + 4}" y="480" font-size="13" fill="{c["mut"]}">Pre-release. A regular install still gives you 1.1.0.</text>
+    <text x="{lx + 4}" y="354" font-size="15" font-weight="500" fill="{c["sub"]}">{comp_line(NEW)}</text>
+    <text x="{lx + 4}" y="377" font-size="15" font-weight="500" fill="{c["sub"]}">{comp_line(NEW2)}</text>
+    <text x="{lx + 4}" y="400" font-size="15" font-weight="500" fill="{c["sub"]}">Video: playlists, auto quality, audio languages, resume</text>
+    <rect x="{lx + 4}" y="422" width="330" height="38" rx="12" fill="{c["code_bg"]}" fill-opacity="{c["code_op"]}" stroke="{c["panel_line"]}" stroke-opacity="{c["panel_line_op"]}"/>
+    <text x="{lx + 20}" y="446" font-family="{MONO}" font-size="14" fill="{c["text"]}"><tspan fill="{c["acc"]}">$</tspan> npm i @carparkteam/parz-ui@next</text>
+    <text x="{lx + 4}" y="488" font-size="13" fill="{c["mut"]}">1.2.0-beta.1 · a regular install still gives you 1.1.0.</text>
 
     <g class="live">{panel(c, True)}
     </g>
